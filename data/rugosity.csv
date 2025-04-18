@@ -1,0 +1,121 @@
+Deployment-id,treatment,Sample,Measured-length-cm
+20241213,Negative Control,1,117
+20241213,Negative Control,2,126
+20241213,Negative Control,3,152
+20241213,Positive Control,1,166
+20241213,Positive Control,2,156
+20241213,Positive Control,3,147
+20241213,Barracuda,1,159
+20241213,Barracuda,2,137
+20241213,Barracuda,3,151
+20241213,Grouper,1,152
+20241213,Grouper,2,159
+20241213,Grouper,3,156
+20241228,Negative Control,1,175
+20241228,Negative Control,2,149
+20241228,Negative Control,3,146
+20241228,Positive Control,1,160
+20241228,Positive Control,2,142
+20241228,Positive Control,3,156
+20241228,Barracuda,1,152
+20241228,Barracuda,2,150
+20241228,Barracuda,3,167
+20241228,Grouper,1,150
+20241228,Grouper,2,168
+20241228,Grouper,3,151
+20241230,Grouper,1,143
+20241230,Grouper,2,149
+20241230,Grouper,3,162
+20241230,Barracuda,1,116
+20241230,Barracuda,2,135
+20241230,Barracuda,3,137
+20241230,Positive Control,1,151
+20241230,Positive Control,2,159
+20241230,Positive Control,3,163
+20241230,Negative Control,1,141
+20241230,Negative Control,2,148
+20241230,Negative Control,3,151
+20250103,Grouper,1,177
+20250103,Grouper,2,153
+20250103,Grouper,3,168
+20250103,Barracuda,1,164
+20250103,Barracuda,2,160
+20250103,Barracuda,3,159
+20250103,Positive Control,1,145
+20250103,Positive Control,2,147
+20250103,Positive Control,3,153
+20250103,Negative Control,1,162
+20250103,Negative Control,2,163
+20250103,Negative Control,3,154
+20250107,Grouper,1,118
+20250107,Grouper,2,110
+20250107,Grouper,3,125
+20250107,Barracuda,1,116
+20250107,Barracuda,2,111
+20250107,Barracuda,3,98
+20250107,Positive Control,1,128
+20250107,Positive Control,2,125
+20250107,Positive Control,3,122
+20250107,Negative Control,1,151
+20250107,Negative Control,2,146
+20250107,Negative Control,3,146
+20250109,Grouper,1,157
+20250109,Grouper,2,169
+20250109,Grouper,3,162
+20250109,Barracuda,1,144
+20250109,Barracuda,2,163
+20250109,Barracuda,3,145
+20250109,Positive Control,1,152
+20250109,Positive Control,2,162
+20250109,Positive Control,3,147
+20250109,Negative Control,1,159
+20250109,Negative Control,2,158
+20250109,Negative Control,3,158
+20250114,Grouper,1,126
+20250114,Grouper,2,164
+20250114,Grouper,3,154
+20250114,Barracuda,1,177
+20250114,Barracuda,2,164
+20250114,Barracuda,3,170
+20250114,Positive Control,1,152
+20250114,Positive Control,2,158
+20250114,Positive Control,3,155
+20250114,Negative Control,1,155
+20250114,Negative Control,2,162
+20250114,Negative Control,3,172
+20250119,Grouper,1,168
+20250119,Grouper,2,170
+20250119,Grouper,3,160
+20250119,Barracuda,1,142
+20250119,Barracuda,2,131
+20250119,Barracuda,3,161
+20250119,Positive Control,1,148
+20250119,Positive Control,2,170
+20250119,Positive Control,3,173
+20250119,Negative Control,1,161
+20250119,Negative Control,2,167
+20250119,Negative Control,3,177
+20250123,Grouper,1,154
+20250123,Grouper,2,156
+20250123,Grouper,3,174
+20250123,Barracuda,1,154
+20250123,Barracuda,2,159
+20250123,Barracuda,3,161
+20250123,Positive Control,1,173
+20250123,Positive Control,2,169
+20250123,Positive Control,3,164
+20250123,Negative Control,1,157
+20250123,Negative Control,2,134
+20250123,Negative Control,3,142
+20250127,Grouper,1,134
+20250127,Grouper,2,149
+20250127,Grouper,3,154
+20250127,Barracuda,1,168
+20250127,Barracuda,2,156
+20250127,Barracuda,3,151
+20250127,Positive Control,1,147
+20250127,Positive Control,2,129
+20250127,Positive Control,3,136
+20250127,Negative Control,1,171
+20250127,Negative Control,2,163
+20250127,Negative Control,3,157

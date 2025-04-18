@@ -1,0 +1,10 @@
+name,type,description
+Feeding,State,The animal has taken a bite in the last 5 seconds
+Vigilance,State,The animal is alert and scanning the environment
+Moving,State,The animal is moving from one place to another
+Bite,Event,The animal is biting something
+Predator avoidance,Event,The animal is avoiding a predator
+Conspecific aggression,Event,The animal is showing aggression towards another of its species
+Escape from aggression,Event,The animal is escaping from aggression
+Escape from predator,Event,The animal is escaping from a predator
+Aggression against predator,Event,The animal is showing aggression towards a predator

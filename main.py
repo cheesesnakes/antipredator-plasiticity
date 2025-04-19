@@ -1,3 +1,11 @@
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#     "marimo",
+#     "pandas==2.2.3",
+# ]
+# ///
+
 import marimo
 
 __generated_with = "0.12.10"
@@ -414,6 +422,91 @@ def _(mo):
 @app.cell
 def _(sizes):
     sizes
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""# Data cleaning and standardisation""")
+    return
+
+
+@app.cell
+def _(benthic_cover, rugosity, sites):
+    # create a predictors data frame, drop unnecessary variables from sites
+
+    predictors = sites.drop(
+        columns=["date", "time_in", "time_out", "lat", "lon", "crew", "remarks"]
+    )
+
+    # calculate rugosity index
+
+    D_max = 190  # length of the chain used
+
+    rugosity["rugosity"] = rugosity["measured_length_cm"] / D_max
+
+    rugosity["plot_id"] = (
+        rugosity["deployment_id"].astype(str)
+        + "_"
+        + rugosity["treatment"].astype(str).str.lower().str.replace(" ", "-")
+    )
+
+    rug = (
+        rugosity.groupby(["deployment_id", "plot_id"])
+        .agg(rugosity_mean=("rugosity", "mean"), rugosity_std=("rugosity", "std"))
+        .reset_index()
+    )
+
+    predictors = predictors.merge(rug, how="left", on="deployment_id")
+
+    # calculate benthic cover
+
+    benthic_cover["category"].unique()
+
+    benthic_classes = {
+        "Coral" : ["CORAL (CO)"],
+        "Biomass": ["CRUSTOSE CORALLINE ALGAE (CCA)", "MACROALGAE (MA)", "TURF ALGAE (TA)", "BENTHIC CYANOBACTERIAL MAT (BCM)"],
+        "Sponge": ["SPONGE (SP)"],
+        "Substrate": ["RUBBLE (RB)", "Dead Coral (DC)", "SAND (SA)", "OTHERS (OTS)", "SAND (SA)", "TAPE (TP)"],
+    }
+
+    benthic_classes = {label: category for category, labels in benthic_classes.items() for label in labels}
+
+    benthic_cover["category"] = benthic_cover["category"].map(benthic_classes)
+
+    n_points = 100 # number of points sampled
+
+    benthic_classes = benthic_cover.groupby(["plot_id", "category"]).size().reset_index(name="count")
+
+    benthic_classes["cover"] = benthic_classes["count"] / n_points
+
+    benthic_classes = benthic_classes.pivot(index = "plot_id", columns = "category", values = "cover").reset_index()
+
+    benthic_classes.columns = benthic_classes.columns.str.lower()
+
+    benthic_classes["plot_id"] = benthic_classes["plot_id"].str.replace("positive", "positive-control", regex = True)
+    benthic_classes["plot_id"] = benthic_classes["plot_id"].str.replace("negative", "negative-control", regex = True)
+
+    predictors = predictors.merge(benthic_classes, how="left", on="plot_id")
+
+    return D_max, benthic_classes, n_points, predictors, rug
+
+
+@app.cell
+def _(benthic_classes):
+    benthic_classes
+    return
+
+
+@app.cell
+def _(predictors):
+    predictors
+    return
+
+
+@app.cell
+def _(predictors):
+    predictors.describe()
     return
 
 

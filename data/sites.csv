@@ -1,0 +1,11 @@
+date,Deployment-id,location,protection,Time-in,Time-out,Depth-avg,Depth-max,visibility,lat,lon,crew,remarks
+13-12-2024,20241213,Oshark,Unprotected,08:05:00,10:00:00,6,7.5,5,11.63351,92.59016,"Babu, Jeevan, Agu, James, Chaitanya, Nina, Danita, Samar, Akshta, Shawn","Light rain, overcast weather"
+28-12-2024,20241228,Playground,Unprotected,08:45:00,10:00:00,4.5,5.5,5,11 37.3687,92 33.5882,"Babu, Jeevan, Sushil, James, Nina, Danita, Samar, Akshta, Shawn",clear
+30-12-2024,20241228,Boat,Protected,08:45:00,10:00:00,4.5,5,3,11 31.8656,92 34.1988,"Jeevan, James, Nina, Samar, Akshta, Shawn",clear
+03-01-2025,20250103,Playground,Unprotected,08:30:00,09:45:00,7.5,8,5,11 37.1032,92 33.789,"Jeevan, Ledu, Nina, Samar, Shawn",clear
+07-01-2025,20250107,Boat,Protected,08:45:00,09:45:00,3.6,5.6,5,11.540879,92.561523,"Jeevan, Thesoro, Akshta, Samar, Shawn",Clear
+09-01-2025,20250109,Boat,Protected,09:10:00,10:00:00,4.6,6.9,5,11.53107,92.549795,"Jeevan, Babu, Akshta, Samar, Shawn",Overcast
+14-01-2025,20250114,Oshark,Unprotected,08:30:00,09:40:00,5.3,7,3,11.632781,92.592046,"Jeevan, Sebian, Akshta, Samar, Shawn",Clear
+19-01-2025,20250119,Boat,Protected,08:50:00,09:45:00,6,8,5,11.53107,92.549795,"Jeevan, Thesoro, Akshta, Samar, Shawn",Overcast
+23-01-2025,20250123,Oshark,Unprotected,08:30:00,09:20:00,5.8,8.3,5,11.632692,92.50622,"Jeevan, Thesoro, Akshta, Samar, Shawn",Clear
+27-01-2025,20250127,Boat,Protected,08:30:00,09:30:00,6.8,9.5,5,11.53086,92.549904,"Jeevan, Thesoro, Akshta, Samar, Shawn, Kartik, Babu, Sebian",Clear

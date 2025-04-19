@@ -8,6 +8,7 @@ wheels/
 
 figures/
 outputs/
+.vscode/
 
 # Virtual environments
 .venv

@@ -565,6 +565,90 @@ def _(abundance_size):
 
 
 @app.cell
+def _(mo):
+    mo.md(r"""### Individual level response""")
+    return
+
+
+@app.cell
+def _(individuals):
+    response = individuals[["plot_id", "ind_id", "species", "size_class"]].copy()
+
+    return (response,)
+
+
+@app.cell
+def _(response):
+    response
+    return
+
+
+@app.cell
+def _(behaviours, observations, samples):
+    def calculate_duration(df):
+        """
+        Calculate duration of state type behaviours
+        """
+
+        # Group by and compute min/max time
+        df = df.groupby(["ind_id", "behaviour"]).agg(
+            time_start=("time", "min"),
+            time_end=("time", "max")
+        ).reset_index()
+
+        # Calculate duration
+        df["duration"] = df["time_end"] - df["time_start"]
+
+        # Extract sample_id from ind_id
+        df["sample_id"] = df["ind_id"].str.split("_").str[0] + "_" + df["ind_id"].str.split("_").str[1] + "_" + df["ind_id"].str.split("_").str[2]
+
+        # Fix rows with 0 duration
+        for index, row in df.iterrows():
+            if row["duration"] == 0:
+                sample_row = samples[samples["sample_id"] == row["sample_id"]]
+                if not sample_row.empty:
+                    start_time = sample_row["start_time"].values[0]
+                    df.loc[index, "time_end"] = (start_time + 120)*1000  # assuming milliseconds
+                    df.loc[index, "duration"] = df.loc[index, "time_end"] - df.loc[index, "time_start"]
+
+        return df
+
+
+
+
+    def transform_behaviours():
+
+        for index, row in behaviours.iterrows():
+
+            df = observations[observations["behaviour"] == row["name"]]
+
+            if row["type"] == "Event":
+
+                col = row["name"].lower() + "_" + "count"
+
+                df = df.groupby("ind_id").size().reset_index(name = col)
+
+            elif row["type"] == "State":
+
+                df = calculate_duration(df)
+
+                df = df["ind_id", "behaviour", "duration"]
+
+                df = df.pivot(index = "ind_id", columns = "behaviour", values = "duration").reset_index()
+            
+                print(df)
+        return 
+
+    return calculate_duration, transform_behaviours
+
+
+@app.cell
+def _(transform_behaviours):
+    transform_behaviours()
+    return
+
+
+@app.cell
 def _():
     return
 

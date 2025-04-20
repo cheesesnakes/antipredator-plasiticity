@@ -17,9 +17,7 @@ app = marimo.App(
 
 @app.cell
 def _(mo):
-    mo.md(
-        r"""# Plasticity in anti-predator behaviour of coral reef fish in the Andaman Islands"""
-    )
+    mo.md(r"""# Plasticity in anti-predator behaviour of coral reef fish in the Andaman Islands""")
     return
 
 
@@ -124,7 +122,7 @@ def _(individuals):
 
 @app.cell
 def _(individuals):
-    individuals.describe()
+    individuals.describe(include="all")
     return
 
 
@@ -163,7 +161,7 @@ def _(observations):
 
 @app.cell
 def _(observations):
-    observations.describe()
+    observations.describe(include="all")
     return
 
 
@@ -201,7 +199,7 @@ def _(predators):
 
 @app.cell
 def _(predators):
-    predators.describe()
+    predators.describe(include="all")
     return
 
 
@@ -282,7 +280,7 @@ def _(plots):
 
 @app.cell
 def _(plots):
-    plots.describe()
+    plots.describe(include="all")
     return
 
 
@@ -317,7 +315,7 @@ def _(samples):
 
 @app.cell
 def _(samples):
-    samples.describe()
+    samples.describe(include="all")
     return
 
 
@@ -355,7 +353,7 @@ def _(benthic_cover):
 
 @app.cell
 def _(benthic_cover):
-    benthic_cover.describe()
+    benthic_cover.describe(include="all")
     return
 
 
@@ -391,7 +389,7 @@ def _(rugosity):
 
 @app.cell
 def _(rugosity):
-    rugosity.describe()
+    rugosity.describe(include="all")
     return
 
 
@@ -428,6 +426,12 @@ def _(sizes):
 @app.cell
 def _(mo):
     mo.md(r"""# Data cleaning and standardisation""")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""## Predictors""")
     return
 
 
@@ -493,12 +497,6 @@ def _(benthic_cover, rugosity, sites):
 
 
 @app.cell
-def _(benthic_classes):
-    benthic_classes
-    return
-
-
-@app.cell
 def _(predictors):
     predictors
     return
@@ -506,7 +504,68 @@ def _(predictors):
 
 @app.cell
 def _(predictors):
-    predictors.describe()
+    predictors.describe(include="all")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""## Response variables""")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""### Plot - level""")
+    return
+
+
+@app.cell
+def _(individuals, predators):
+    individuals["plot_id"] = individuals["ind_id"].str.split("_").str[0] + "_" + individuals["ind_id"].str.split("_").str[1]
+
+    abundance = individuals[["ind_id", "plot_id"]].groupby("plot_id").size().reset_index(name="n_prey")
+
+    predators["plot_id"] = predators["predator_id"].str.split("_").str[1] + "_" + predators["predator_id"].str.split("_").str[2]
+
+    abundance = abundance.merge(predators[["plot_id", "predator_id"]].groupby("plot_id").size().reset_index(name="n_predators"), how="left", on="plot_id")
+    return (abundance,)
+
+
+@app.cell
+def _(abundance):
+    abundance
+    return
+
+
+@app.cell
+def _(abundance):
+    abundance.describe(include="all")
+    return
+
+
+@app.cell
+def _(individuals, predators):
+    abundance_size = individuals[["ind_id", "plot_id", "size_class"]].groupby(["plot_id", "size_class"]).size().reset_index(name="n_prey")
+
+    abundance_size = abundance_size.merge(predators[["plot_id", "predator_id", "size_class"]].groupby(["plot_id", "size_class"]).size().reset_index(name="n_predators"), how="left", on=["plot_id", "size_class"])
+    return (abundance_size,)
+
+
+@app.cell
+def _(abundance_size):
+    abundance_size
+    return
+
+
+@app.cell
+def _(abundance_size):
+    abundance_size.describe(include="all")
+    return
+
+
+@app.cell
+def _():
     return
 
 

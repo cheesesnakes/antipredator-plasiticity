@@ -734,22 +734,20 @@ def _(mo):
 def _(individuals, mo, plots, sites):
     treatments = ["positive-control", "negative-control", "grouper", "baracuda"]
 
-    with mo.redirect_stdout():
-        print(
-            f"Deployments: {len(sites['deployment_id'].unique())}\n\
-        Locations: {len(sites['location'].unique())}\n\
-        Plots: {len(plots['plot_id'].unique())}\n\
-        Individuals: {len(individuals['ind_id'].unique())}\n\
-        Treatments: {len(treatments)}\n\
-        Species: {len(individuals['species'].unique())}\n"
-        )
+    mo.md(
+        f"Deployments: {len(sites['deployment_id'].unique())}\n\n\
+        Locations: {len(sites['location'].unique())}\n\n\
+        Plots: {len(plots['plot_id'].unique())}\n\n\
+        Individuals: {len(individuals['ind_id'].unique())}\n\n\
+        Treatments: {len(treatments)}\n\n\
+        Species: {len(individuals['species'].unique())}\n\n"
+    )
     return (treatments,)
 
 
 @app.cell
 def _(mo, treatments):
-    with mo.redirect_stdout():
-        print(treatments)
+    mo.md(f"Treatments: {treatments}")
     return
 
 
@@ -761,8 +759,7 @@ def _(mo):
 
 @app.cell
 def _(mo, predictors):
-    with mo.redirect_stdout():
-        print(f"Depth:\nmean = {predictors['depth_avg'].mean():.2f} m, std = {predictors['depth_avg'].std():.2f} m")
+    mo.md(f"Depth:\n\nmean = {predictors['depth_avg'].mean():.2f} m, SD = {predictors['depth_avg'].std():.2f} m")
     return
 
 
@@ -775,10 +772,9 @@ def _(plt, predictors, sns):
 
 @app.cell
 def _(mo, predictors):
-    with mo.redirect_stdout():
-        print(
-            f"Mean Rugosity:\nmean = {predictors['rugosity_mean'].mean():.2f}, std = {predictors['rugosity_mean'].std():.2f}"
-        )
+    mo.md(
+        f"Mean Rugosity:\n\nmean = {predictors['rugosity_mean'].mean():.2f}, SD = {predictors['rugosity_mean'].std():.2f}"
+    )
     return
 
 
@@ -791,10 +787,9 @@ def _(plt, predictors, sns):
 
 @app.cell
 def _(mo, predictors):
-    with mo.redirect_stdout():
-        print(
-            f"Variation in Rugosity:\nmean = {predictors['rugosity_std'].mean():.2f}, std = {predictors['rugosity_std'].std():.2f}"
-        )
+    mo.md(
+        f"Variation in Rugosity:\n\nmean = {predictors['rugosity_std'].mean():.2f}, SD = {predictors['rugosity_std'].std():.2f}"
+    )
     return
 
 
@@ -807,8 +802,7 @@ def _(plt, predictors, sns):
 
 @app.cell
 def _(mo, predictors):
-    with mo.redirect_stdout():
-        print(f"Biomas Cover:\nmean = {predictors['biomass'].mean():.2f}, std = {predictors['biomass'].std():.2f}")
+    mo.md(f"Biomas Cover:\n\nmean = {predictors['biomass'].mean():.2f}, SD = {predictors['biomass'].std():.2f}")
     return
 
 
@@ -821,8 +815,7 @@ def _(plt, predictors, sns):
 
 @app.cell
 def _(mo, predictors):
-    with mo.redirect_stdout():
-        print(f"Coral Cover:\nmean = {predictors['coral'].mean():.2f}, std = {predictors['coral'].std():.2f}")
+    mo.md(f"Coral Cover:\n\nmean = {predictors['coral'].mean():.2f}, SD = {predictors['coral'].std():.2f}")
     return
 
 
@@ -835,8 +828,7 @@ def _(plt, predictors, sns):
 
 @app.cell
 def _(mo, predictors):
-    with mo.redirect_stdout():
-        print(f"Sponge Cover:\nmean = {predictors['sponge'].mean():.2f}, std = {predictors['sponge'].std():.2f}")
+    mo.md(f"Sponge Cover:\n\nmean = {predictors['sponge'].mean():.2f}, SD = {predictors['sponge'].std():.2f}")
     return
 
 
@@ -861,10 +853,9 @@ def _(mo):
 
 @app.cell
 def _(abundance, mo):
-    with mo.redirect_stdout():
-        print(
-            f"Abundance of individuals in plots: \nmean = {abundance['n_prey'].mean():.2f}, std = {abundance['n_prey'].std():.2f}"
-        )
+    mo.md(
+        f"Abundance of individuals in plots: \n\nmean = {abundance['n_prey'].mean():.2f}, SD = {abundance['n_prey'].std():.2f}"
+    )
     return
 
 
@@ -877,10 +868,9 @@ def _(abundance, plt, sns):
 
 @app.cell
 def _(abundance, mo):
-    with mo.redirect_stdout():
-        print(
-            f"Abundance of predators in plots: \nmean = {abundance['n_predators'].mean():.2f}, std = {abundance['n_predators'].std():.2f}"
-        )
+    mo.md(
+        f"Abundance of predators in plots: \n\nmean = {abundance['n_predators'].mean():.2f}, SD = {abundance['n_predators'].std():.2f}"
+    )
     return
 
 
@@ -893,10 +883,9 @@ def _(abundance, plt, sns):
 
 @app.cell
 def _(abundance, mo):
-    with mo.redirect_stdout():
-        print(
-            f"Species richness in plots: \nmean = {abundance['n_species'].mean():.2f}, std = {abundance['n_species'].std():.2f}"
-        )
+    mo.md(
+        f"Species richness in plots: \n\nmean = {abundance['n_species'].mean():.2f}, SD = {abundance['n_species'].std():.2f}"
+    )
     return
 
 
@@ -921,8 +910,7 @@ def _(mo, response):
 
     species.to_csv("outputs/species_list.csv", index=False)
 
-    with mo.redirect_stdout():
-        print(f"Number of observed species: {len(species)}")
+    mo.md(f"Number of observed species: {len(species)}")
     return (species,)
 
 
@@ -938,8 +926,7 @@ def _(plt, sns, species):
 def _(mo, response):
     size_class_dist = response.groupby("size_class").size().reset_index(name="count")
 
-    with mo.redirect_stdout():
-        print(f"Distribution of individuals by size class")
+    mo.md(f"Distribution of individuals by size class")
     return (size_class_dist,)
 
 
@@ -953,8 +940,7 @@ def _(plt, size_class_dist, sns):
 
 @app.cell
 def _(mo):
-    with mo.redirect_stdout():
-        print(f"Distribution of behavioural responses")
+    mo.md(r"""Distribution of behavioural responses""")
     return
 
 
@@ -965,21 +951,24 @@ def _(response, sns):
     response["treatment"] = response["treatment"].str.replace("negative-control", "negative")
     response["treatment"] = response["treatment"].str.replace("barracuda", "baracuda")
 
-    sns.pairplot(response[["treatment", "feeding", "vigilance", "moving", "bite_count"]], diag_kind="kde", hue="treatment")
+    sns.pairplot(
+        response[["treatment", "feeding", "vigilance", "moving", "bite_count"]],
+        diag_kind="kde",
+        hue="treatment",
+    )
     return
 
 
 @app.cell
 def _(mo, response):
-    with mo.redirect_stdout():
-        print(
-            f"Number of other behavioural observed\n\
-        Predator Avoidance: {response['predator_avoidance_count'].sum()}\n\
-        Aggression: {response['conspecific_aggression_count'].sum()}\n\
-        Escape from Agression: {response['escape_from_aggression_count'].sum()}\n\
-        Escape from predator: {response['escape_from_predator_count'].sum()}\n\
-        Agression against predator: {response['aggression_against_predator_count'].sum()}\n"
-        )
+    mo.md(
+        f"Number of other behavioural observed\n\n\
+        Predator Avoidance: {response['predator_avoidance_count'].sum()}\n\n\
+        Aggression: {response['conspecific_aggression_count'].sum()}\n\n\
+        Escape from Agression: {response['escape_from_aggression_count'].sum()}\n\n\
+        Escape from predator: {response['escape_from_predator_count'].sum()}\n\n\
+        Agression against predator: {response['aggression_against_predator_count'].sum()}\n\n"
+    )
     return
 
 

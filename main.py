@@ -1,9 +1,23 @@
 # /// script
-# requires-python = ">=3.12"
-# dependencies = [
-#     "marimo",
-#     "pandas==2.2.3",
-# ]
+# [tool.marimo.save]
+# autosave_delay = 1000
+# autosave = true
+# format_on_save = true
+#
+# [tool.marimo.experimental]
+# multi_column = true
+# chat_sidebar = true
+## Very experimental!
+# lsp = true
+#
+# [tool.marimo.display]
+# dataframes = "rich"
+# default_width = "medium"
+# [tool.marimo.runtime]
+# watcher_on_save = "autorun"
+# output_max_bytes = 10_000_000
+# std_stream_max_bytes = 2_000_000
+# dotenv = [".env"]
 # ///
 
 import marimo
@@ -24,7 +38,6 @@ def _(mo):
 @app.cell
 def _():
     import marimo as mo
-
     return (mo,)
 
 
@@ -439,9 +452,7 @@ def _(mo):
 def _(benthic_cover, rugosity, sites):
     # create a predictors data frame, drop unnecessary variables from sites
 
-    predictors = sites.drop(
-        columns=["date", "time_in", "time_out", "lat", "lon", "crew", "remarks"]
-    )
+    predictors = sites.drop(columns=["date", "time_in", "time_out", "lat", "lon", "crew", "remarks"])
 
     # calculate rugosity index
 
@@ -450,9 +461,7 @@ def _(benthic_cover, rugosity, sites):
     rugosity["rugosity"] = rugosity["measured_length_cm"] / D_max
 
     rugosity["plot_id"] = (
-        rugosity["deployment_id"].astype(str)
-        + "_"
-        + rugosity["treatment"].astype(str).str.lower().str.replace(" ", "-")
+        rugosity["deployment_id"].astype(str) + "_" + rugosity["treatment"].astype(str).str.lower().str.replace(" ", "-")
     )
 
     rug = (
@@ -468,31 +477,42 @@ def _(benthic_cover, rugosity, sites):
     benthic_cover["category"].unique()
 
     benthic_classes = {
-        "Coral" : ["CORAL (CO)"],
-        "Biomass": ["CRUSTOSE CORALLINE ALGAE (CCA)", "MACROALGAE (MA)", "TURF ALGAE (TA)", "BENTHIC CYANOBACTERIAL MAT (BCM)"],
+        "Coral": ["CORAL (CO)"],
+        "Biomass": [
+            "CRUSTOSE CORALLINE ALGAE (CCA)",
+            "MACROALGAE (MA)",
+            "TURF ALGAE (TA)",
+            "BENTHIC CYANOBACTERIAL MAT (BCM)",
+        ],
         "Sponge": ["SPONGE (SP)"],
-        "Substrate": ["RUBBLE (RB)", "Dead Coral (DC)", "SAND (SA)", "OTHERS (OTS)", "SAND (SA)", "TAPE (TP)"],
+        "Substrate": [
+            "RUBBLE (RB)",
+            "Dead Coral (DC)",
+            "SAND (SA)",
+            "OTHERS (OTS)",
+            "SAND (SA)",
+            "TAPE (TP)",
+        ],
     }
 
     benthic_classes = {label: category for category, labels in benthic_classes.items() for label in labels}
 
     benthic_cover["category"] = benthic_cover["category"].map(benthic_classes)
 
-    n_points = 100 # number of points sampled
+    n_points = 100  # number of points sampled
 
     benthic_classes = benthic_cover.groupby(["plot_id", "category"]).size().reset_index(name="count")
 
     benthic_classes["cover"] = benthic_classes["count"] / n_points
 
-    benthic_classes = benthic_classes.pivot(index = "plot_id", columns = "category", values = "cover").reset_index()
+    benthic_classes = benthic_classes.pivot(index="plot_id", columns="category", values="cover").reset_index()
 
     benthic_classes.columns = benthic_classes.columns.str.lower()
 
-    benthic_classes["plot_id"] = benthic_classes["plot_id"].str.replace("positive", "positive-control", regex = True)
-    benthic_classes["plot_id"] = benthic_classes["plot_id"].str.replace("negative", "negative-control", regex = True)
+    benthic_classes["plot_id"] = benthic_classes["plot_id"].str.replace("positive", "positive-control", regex=True)
+    benthic_classes["plot_id"] = benthic_classes["plot_id"].str.replace("negative", "negative-control", regex=True)
 
     predictors = predictors.merge(benthic_classes, how="left", on="plot_id")
-
     return D_max, benthic_classes, n_points, predictors, rug
 
 
@@ -526,9 +546,15 @@ def _(individuals, predators):
 
     abundance = individuals[["ind_id", "plot_id"]].groupby("plot_id").size().reset_index(name="n_prey")
 
-    predators["plot_id"] = predators["predator_id"].str.split("_").str[1] + "_" + predators["predator_id"].str.split("_").str[2]
+    predators["plot_id"] = (
+        predators["predator_id"].str.split("_").str[1] + "_" + predators["predator_id"].str.split("_").str[2]
+    )
 
-    abundance = abundance.merge(predators[["plot_id", "predator_id"]].groupby("plot_id").size().reset_index(name="n_predators"), how="left", on="plot_id")
+    abundance = abundance.merge(
+        predators[["plot_id", "predator_id"]].groupby("plot_id").size().reset_index(name="n_predators"),
+        how="left",
+        on="plot_id",
+    )
     return (abundance,)
 
 
@@ -546,9 +572,21 @@ def _(abundance):
 
 @app.cell
 def _(individuals, predators):
-    abundance_size = individuals[["ind_id", "plot_id", "size_class"]].groupby(["plot_id", "size_class"]).size().reset_index(name="n_prey")
+    abundance_size = (
+        individuals[["ind_id", "plot_id", "size_class"]]
+        .groupby(["plot_id", "size_class"])
+        .size()
+        .reset_index(name="n_prey")
+    )
 
-    abundance_size = abundance_size.merge(predators[["plot_id", "predator_id", "size_class"]].groupby(["plot_id", "size_class"]).size().reset_index(name="n_predators"), how="left", on=["plot_id", "size_class"])
+    abundance_size = abundance_size.merge(
+        predators[["plot_id", "predator_id", "size_class"]]
+        .groupby(["plot_id", "size_class"])
+        .size()
+        .reset_index(name="n_predators"),
+        how="left",
+        on=["plot_id", "size_class"],
+    )
     return (abundance_size,)
 
 
@@ -571,10 +609,85 @@ def _(mo):
 
 
 @app.cell
-def _(individuals):
+def _(behaviours, individuals, observations, pd, samples):
     response = individuals[["plot_id", "ind_id", "species", "size_class"]].copy()
 
-    return (response,)
+    # add behavioural observations
+
+    def calculate_duration(df):
+        """
+        Calculate duration of state type behaviours
+        """
+
+        # Group by and compute min/max time
+        df = df.groupby(["ind_id", "behaviour"]).agg(time_start=("time", "min"), time_end=("time", "max")).reset_index()
+
+        # Calculate duration
+        df["duration"] = df["time_end"] - df["time_start"]
+
+        # Extract sample_id from ind_id
+        df["sample_id"] = (
+            df["ind_id"].str.split("_").str[0]
+            + "_"
+            + df["ind_id"].str.split("_").str[1]
+            + "_"
+            + df["ind_id"].str.split("_").str[2]
+        )
+
+        # Fix rows with 0 duration
+        for index, row in df.iterrows():
+            if row["duration"] == 0:
+                if index + 1 < len(df):
+                    if df.loc[index + 1, "ind_id"] == row["ind_id"]:
+                        df.loc[index, "time_end"] = df.loc[index + 1, "time_start"]
+                        df.loc[index, "duration"] = df.loc[index, "time_end"] - df.loc[index, "time_start"]
+                    else:
+                        sample_row = samples[samples["sample_id"] == row["sample_id"]]
+                        if not sample_row.empty:
+                            start_time = sample_row["start_time"].values[0]
+                            df.loc[index, "time_end"] = (start_time + 120) * 1000  # assuming milliseconds
+                            df.loc[index, "duration"] = df.loc[index, "time_end"] - df.loc[index, "time_start"]
+                else:
+                    sample_row = samples[samples["sample_id"] == row["sample_id"]]
+                    if not sample_row.empty:
+                        start_time = sample_row["start_time"].values[0]
+                        df.loc[index, "time_end"] = (start_time + 120) * 1000  # assuming milliseconds
+                        df.loc[index, "duration"] = df.loc[index, "time_end"] - df.loc[index, "time_start"]
+
+        return df
+
+
+    def transform_behaviours():
+        data = pd.DataFrame({"ind_id": observations["ind_id"].unique()})
+
+        for index, row in behaviours.iterrows():
+            df = observations[observations["behaviour"] == row["name"]]
+
+            if row["type"] == "Event":
+                col = row["name"].lower() + "_" + "count"
+
+                df = df.groupby("ind_id").size().reset_index(name=col)
+
+            elif row["type"] == "State":
+                df = calculate_duration(df)
+
+                df = df[["ind_id", "behaviour", "duration"]]
+
+                df = df.pivot(index="ind_id", columns="behaviour", values="duration").reset_index()
+
+            df.columns = df.columns.str.lower()
+            df.columns = df.columns.str.replace("-", "_")
+            df.columns = df.columns.str.replace(" ", "_")
+
+            data = data.merge(df, how="left", on="ind_id")
+
+        return data
+
+
+    ind_beh = transform_behaviours()
+
+    response = response.merge(ind_beh, how="left", on="ind_id")
+    return calculate_duration, ind_beh, response, transform_behaviours
 
 
 @app.cell
@@ -584,67 +697,7 @@ def _(response):
 
 
 @app.cell
-def _(behaviours, observations, samples):
-    def calculate_duration(df):
-        """
-        Calculate duration of state type behaviours
-        """
-
-        # Group by and compute min/max time
-        df = df.groupby(["ind_id", "behaviour"]).agg(
-            time_start=("time", "min"),
-            time_end=("time", "max")
-        ).reset_index()
-
-        # Calculate duration
-        df["duration"] = df["time_end"] - df["time_start"]
-
-        # Extract sample_id from ind_id
-        df["sample_id"] = df["ind_id"].str.split("_").str[0] + "_" + df["ind_id"].str.split("_").str[1] + "_" + df["ind_id"].str.split("_").str[2]
-
-        # Fix rows with 0 duration
-        for index, row in df.iterrows():
-            if row["duration"] == 0:
-                sample_row = samples[samples["sample_id"] == row["sample_id"]]
-                if not sample_row.empty:
-                    start_time = sample_row["start_time"].values[0]
-                    df.loc[index, "time_end"] = (start_time + 120)*1000  # assuming milliseconds
-                    df.loc[index, "duration"] = df.loc[index, "time_end"] - df.loc[index, "time_start"]
-
-        return df
-
-
-
-
-    def transform_behaviours():
-
-        for index, row in behaviours.iterrows():
-
-            df = observations[observations["behaviour"] == row["name"]]
-
-            if row["type"] == "Event":
-
-                col = row["name"].lower() + "_" + "count"
-
-                df = df.groupby("ind_id").size().reset_index(name = col)
-
-            elif row["type"] == "State":
-
-                df = calculate_duration(df)
-
-                df = df["ind_id", "behaviour", "duration"]
-
-                df = df.pivot(index = "ind_id", columns = "behaviour", values = "duration").reset_index()
-            
-                print(df)
-        return 
-
-    return calculate_duration, transform_behaviours
-
-
-@app.cell
-def _(transform_behaviours):
-    transform_behaviours()
+def _():
     return
 
 

@@ -670,6 +670,8 @@ def _(behaviours, individuals, observations, pd, samples):
                         df.loc[index, "time_end"] = (start_time + 120) * 1000  # assuming milliseconds
                         df.loc[index, "duration"] = df.loc[index, "time_end"] - df.loc[index, "time_start"]
 
+        df["duration"] = df["duration"] / (120*1000)
+
         return df
 
 

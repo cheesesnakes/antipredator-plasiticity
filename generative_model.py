@@ -14,9 +14,10 @@ def _():
     from random import choices
     import matplotlib.pyplot as plt
     import seaborn as sns
+    import pandas as pd
 
     sns.set_theme(style="white", palette="pastel")
-    return bern, choices, dirichlet, mo, np, plt, sns, softmax
+    return bern, choices, dirichlet, mo, np, pd, plt, sns, softmax
 
 
 @app.cell
@@ -25,11 +26,15 @@ def _():
     M = [0, 1]  # protection status
     Q = [0, 1, 2, 3]  # treatments: 0: negative control, 1: positive control, 2: baracuda, 3: grouper
 
-    # transition between states logit(p(s_i | s_{i-1}, M)) = p(s_i | s_{i-1}) + beta_m * M
+    # transition between states logit(p(s_i | s_{i-1}, M, Q)) = p(s_i | s_{i-1}) + beta_m + beta_q
 
-    T_s = [[0.0, 0.5, 0.5], [0.5, 0.0, 0.5], [0.5, 0.5, 0.0]]
+    T_s = [[0.0, 0.2, 0.8], [0.5, 0.0, 0.5], [0.5, 0.5, 0.0]]
 
-    beta_m = 0.5
+    # beta_m = [0, 0.5]
+    beta_m = [0, 0]
+
+    # beta_q = [0.0, 0.01, 1, 0.5]  # negative control, positive control, baracuda, grouper
+    beta_q = [0.0, 0.0, 0.0, 0.0]  # negative control, positive control, baracuda, grouper
 
     # duration in each state
 
@@ -54,6 +59,7 @@ def _():
         alpha_s,
         behaviours,
         beta_m,
+        beta_q,
         p_b,
         states,
         theta_b,
@@ -64,11 +70,13 @@ def _():
 @app.cell
 def _(
     M,
+    Q,
     T_s,
     alpha_b,
     alpha_s,
     behaviours,
     beta_m,
+    beta_q,
     np,
     p_b,
     softmax,
@@ -80,10 +88,11 @@ def _(
 
     T = 120.0  # max duration
     dt = 0.1
-    i = 2  # number of individuals
+    i = 100  # number of individuals
 
     # outputs
-    m = [0, 1]
+    m = np.random.choice(M, size=i)
+    q = np.random.choice(Q, size=i)
     x_i = [[] for _ in range(i)]
     t_x_i = [[] for _ in range(i)]
     b_i = [[] for _ in range(i)]
@@ -102,7 +111,7 @@ def _(
             # how much time does the individual spend in this state (x_t)
             d_x_t = np.random.gamma(alpha_s[x_t - 1], theta_s[x_t - 1])
             end_s = tao + d_x_t
-            t_x_i[ind].append(min(end_s, 120))
+            t_x_i[ind].append(min(tao, 120))
 
             # make emission
 
@@ -125,7 +134,7 @@ def _(
 
             # pick next state
 
-            p_x_t = softmax(np.log(T_s[x_t - 1]) + beta_m * M[ind])
+            p_x_t = softmax(np.log(T_s[x_t - 1]) + beta_m[m[ind]] + beta_q[q[ind]])
 
             x_t = np.random.choice(states, p=p_x_t)
 
@@ -147,6 +156,7 @@ def _(
         p_b_t,
         p_x,
         p_x_t,
+        q,
         t_b_i,
         t_x_i,
         tao,
@@ -157,16 +167,12 @@ def _(
 
 
 @app.cell
-def _(i):
-    list(range(i))
-    return
-
-
-@app.cell
-def _(i, plt, sns, t_x_i, x_i):
+def _(i, np, plt, sns, t_x_i, x_i):
     plt.figure(figsize=(12, 5))  # Create one figure
 
-    for indi in range(i):
+    sample = np.random.choice(i, size=10)
+
+    for indi in sample:
         sns.lineplot(x=t_x_i[indi], y=x_i[indi], drawstyle="steps-post", label=f"{indi + 1}", linewidth=2)
 
     plt.xlim(0, 120)
@@ -177,14 +183,14 @@ def _(i, plt, sns, t_x_i, x_i):
     plt.title("State Trajectories per Individual")
     plt.tight_layout()
     plt.show()
-    return (indi,)
+    return indi, sample
 
 
 @app.cell
-def _(b_i, i, plt, sns, t_b_i):
+def _(b_i, plt, sample, sns, t_b_i):
     plt.figure(figsize=(12, 5))  # Create one figure
 
-    for _ in range(i):
+    for _ in sample:
         sns.lineplot(x=t_b_i[_], y=b_i[_], drawstyle="steps-post", label=f"{_ + 1}", linewidth=2)
 
     plt.xlim(0, 120)
@@ -195,6 +201,76 @@ def _(b_i, i, plt, sns, t_b_i):
     plt.title("Behaviour Trajectories per Individual")
     plt.tight_layout()
     plt.show()
+    return
+
+
+@app.cell
+def _(i, pd, q, t_x_i, x_i):
+    # generate data
+
+
+    def state_to_df():
+        data = pd.DataFrame()
+
+        for ind in range(i):
+            d = pd.DataFrame({"ind_id": ind, "treatment": q[ind], "state": x_i[ind], "start_time": t_x_i[ind]})
+
+            data = pd.concat([data, d], ignore_index=True)
+
+        data["duration"] = data["start_time"].diff().shift(-1)
+
+        data.loc[data["duration"] < 0, "duration"] += 120
+        return data
+
+
+    state_df = state_to_df()
+
+    state_df = state_df.groupby(["ind_id", "state"]).agg({"duration": "sum"})
+
+    state_df["prob"] = state_df["duration"] / 120
+    return state_df, state_to_df
+
+
+@app.cell
+def _(plt, sns, state_df):
+    sns.violinplot(data=state_df, x="state", y="prob", hue="state")
+    plt.xticks([0, 1, 2], ["Fear", "Huger", "Rest"])
+    plt.xlabel("State")
+    plt.ylabel("Probability")
+    plt.legend(title="State")
+    plt.show()
+    return
+
+
+@app.cell
+def _(b_i, i, pd, q, t_b_i):
+    # generate data
+
+
+    def generate_data():
+        data = pd.DataFrame()
+
+        for ind in range(i):
+            d = pd.DataFrame({"ind_id": ind, "treatment": q[ind], "behaviour": b_i[ind], "start_time": t_b_i[ind]})
+
+            data = pd.concat([data, d], ignore_index=True)
+
+        return data
+
+
+    data = generate_data()
+    return data, generate_data
+
+
+@app.cell
+def _(data):
+    data.head()
+    return
+
+
+@app.cell
+def _(data):
+    data.describe(include="all")
     return
 
 

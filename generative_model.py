@@ -24,7 +24,12 @@ def _():
 def _():
     states = [1, 2, 3]  # fear, hunger, rest
     M = [0, 1]  # protection status
-    Q = [0, 1, 2, 3]  # treatments: 0: negative control, 1: positive control, 2: baracuda, 3: grouper
+    Q = [
+        0,
+        1,
+        2,
+        3,
+    ]  # treatments: 0: negative control, 1: positive control, 2: baracuda, 3: grouper
 
     # transition between states logit(p(s_i | s_{i-1}, M, Q)) = p(s_i | s_{i-1}) + beta_m + beta_q
 
@@ -34,7 +39,12 @@ def _():
     beta_m = [0, 0]
 
     # beta_q = [0.0, 0.01, 1, 0.5]  # negative control, positive control, baracuda, grouper
-    beta_q = [0.0, 0.0, 0.0, 0.0]  # negative control, positive control, baracuda, grouper
+    beta_q = [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+    ]  # negative control, positive control, baracuda, grouper
 
     # duration in each state
 
@@ -170,10 +180,16 @@ def _(
 def _(i, np, plt, sns, t_x_i, x_i):
     plt.figure(figsize=(12, 5))  # Create one figure
 
-    sample = np.random.choice(i, size=10)
+    sample = np.random.choice(i, size=5)
 
     for indi in sample:
-        sns.lineplot(x=t_x_i[indi], y=x_i[indi], drawstyle="steps-post", label=f"{indi + 1}", linewidth=2)
+        sns.lineplot(
+            x=t_x_i[indi],
+            y=x_i[indi],
+            drawstyle="steps-post",
+            label=f"{indi + 1}",
+            linewidth=2,
+        )
 
     plt.xlim(0, 120)
     plt.xlabel("Time")
@@ -191,7 +207,9 @@ def _(b_i, plt, sample, sns, t_b_i):
     plt.figure(figsize=(12, 5))  # Create one figure
 
     for _ in sample:
-        sns.lineplot(x=t_b_i[_], y=b_i[_], drawstyle="steps-post", label=f"{_ + 1}", linewidth=2)
+        sns.lineplot(
+            x=t_b_i[_], y=b_i[_], drawstyle="steps-post", label=f"{_ + 1}", linewidth=2
+        )
 
     plt.xlim(0, 120)
     plt.xlabel("Time")
@@ -208,12 +226,18 @@ def _(b_i, plt, sample, sns, t_b_i):
 def _(i, pd, q, t_x_i, x_i):
     # generate data
 
-
     def state_to_df():
         data = pd.DataFrame()
 
         for ind in range(i):
-            d = pd.DataFrame({"ind_id": ind, "treatment": q[ind], "state": x_i[ind], "start_time": t_x_i[ind]})
+            d = pd.DataFrame(
+                {
+                    "ind_id": ind,
+                    "treatment": q[ind],
+                    "state": x_i[ind],
+                    "start_time": t_x_i[ind],
+                }
+            )
 
             data = pd.concat([data, d], ignore_index=True)
 
@@ -221,7 +245,6 @@ def _(i, pd, q, t_x_i, x_i):
 
         data.loc[data["duration"] < 0, "duration"] += 120
         return data
-
 
     state_df = state_to_df()
 
@@ -246,17 +269,22 @@ def _(plt, sns, state_df):
 def _(b_i, i, pd, q, t_b_i):
     # generate data
 
-
     def generate_data():
         data = pd.DataFrame()
 
         for ind in range(i):
-            d = pd.DataFrame({"ind_id": ind, "treatment": q[ind], "behaviour": b_i[ind], "start_time": t_b_i[ind]})
+            d = pd.DataFrame(
+                {
+                    "ind_id": ind,
+                    "treatment": q[ind],
+                    "behaviour": b_i[ind],
+                    "start_time": t_b_i[ind],
+                }
+            )
 
             data = pd.concat([data, d], ignore_index=True)
 
         return data
-
 
     data = generate_data()
     return data, generate_data
@@ -264,7 +292,7 @@ def _(b_i, i, pd, q, t_b_i):
 
 @app.cell
 def _(data):
-    data.head()
+    data
     return
 
 
@@ -275,7 +303,8 @@ def _(data):
 
 
 @app.cell
-def _():
+def _(data):
+    data.to_csv("outputs/generated_data.csv")
     return
 
 

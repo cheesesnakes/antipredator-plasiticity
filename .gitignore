@@ -12,3 +12,6 @@ outputs/
 
 # Virtual environments
 .venv
+
+# compiled stan model
+model

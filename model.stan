@@ -1,119 +1,105 @@
-functions {
-
-    real hmm_log_likelihood(
-        int N, // number of observations
-        int K, // number of states
-        int M, // number of behaviours
-        int I, // number of individuals
-        array[] int id, // individual IDs
-        array[] int B_t, // observed behaviours
-        array[] real D_b, // observed behaviour durations
-        vector pi_s0, // initial state probabilities
-        array[] vector transition_matrix, // transition matrix
-        array[] vector eta, // behaviour probabilities
-        array[] vector alpha, // mean duration parameters
-        array[] vector theta // scale parameters
-    ) {
-        real log_likelihood = 0;
-        array[K] real prev_log_alpha; // log alpha for the previous observation
-        array[K] real curr_log_alpha; // log alpha for the current observation
-
-        for (i in 1:I) {
-            int start_idx = 1;
-            while (start_idx <= N && id[start_idx] != i) {
-                start_idx += 1;
-            }
-            if (start_idx > N) continue;
-
-            // Initialize for the first observation of the individual
-            for (k in 1:K) {
-                real emission_prob = log(eta[k][B_t[start_idx]]) +
-                                     gamma_lpdf(D_b[start_idx] | alpha[k][B_t[start_idx]], theta[k][B_t[start_idx]]);
-                prev_log_alpha[k] = log(pi_s0[k]) + emission_prob;
-            }
-
-            // Process subsequent observations
-            for (n in (start_idx + 1):N) {
-                if (id[n] != i) break;
-
-                for (k in 1:K) {
-                    real max_log_alpha = negative_infinity();
-                    for (j in 1:K) {
-                        real transition_prob = log(transition_matrix[j][k]);
-                        max_log_alpha = log_sum_exp(max_log_alpha, prev_log_alpha[j] + transition_prob);
-                    }
-                    real emission_prob = log(eta[k][B_t[n]]) +
-                                         gamma_lpdf(D_b[n] | alpha[k][B_t[n]], theta[k][B_t[n]]);
-                    curr_log_alpha[k] = max_log_alpha + emission_prob;
-                }
-                prev_log_alpha = curr_log_alpha;
-            }
-
-            // Add the log-sum-exp of the final alpha values to the total log likelihood
-            log_likelihood += log_sum_exp(prev_log_alpha);
-        }
-
-        return log_likelihood;
-    }
-}
-
 data {
-    int<lower=0> N; // number of observations
-    int<lower=1> M; // number of behaviours
-    int<lower=1> K; // number of states
-    int<lower=1> I; // number of individuals
-    array[N] int<lower=1, upper=I> id; // individual IDs
-    array[N] int<lower=1, upper=M> B_t; //observed behaviours
-    array[N] real<lower=0> D_b; // observed behaviour durations
+  int<lower=0> N; // number of observations
+  int<lower=0> T; // number of treatments
+  array[N] real<lower=0> D; // observed durations
+  
+  // Predictor variables
+  array[N] int<lower=0, upper=1> predator; // predator presence (0 or 1)
+  array[N] real rugosity; // rugosity (continuous variable)
+  array[N] int<lower=1, upper=4> treatment; // treatment group (0, 1, 2, or 3)
+  array[N] real resource; // resource availability (continuous variable)
 }
-
 parameters {
-    simplex[K] pi_s0; // initial state probabilities
-    array[K] simplex[K] transition_matrix; // transition matrix
-
-    array[K] simplex[M] eta; // behaviour probabilities
-    array[K] vector<lower=1e-9>[M] alpha; // mean duration parameters (S_t, B_t)
-    array[K] vector<lower=0>[M] theta; // scale parameters (S_t, B_t)
+  // Top-level coefficients
+  real beta_risk; // effect of risk on duration
+  real beta_energy; // effect of energy on duration
+  
+  real<lower=0, upper=1> pi; // zero-inflation parameter for duration
+  
+  // Risk model coefficients
+  real alpha_risk; // baseline risk
+  real beta_predator; // effect of predator presence on risk
+  real beta_rug; // effect of rugosity on risk
+  array[T] real beta_treatment; // effect of treatment on risk
+  real<lower=0> sigma_risk; // standard deviation of risk
+  
+  // Energy model coefficients
+  real alpha_energy; // baseline energy
+  real beta_res; // effect of resource availability on energy
+  real<lower=0> sigma_energy; // standard deviation of energy
+  
+  // Observation model
+  real<lower=0> sigma_D; // standard deviation of duration
+  
+  // Latent variables per observation
+  vector<lower=0>[N] risk; // latent risk variable
+  vector<lower=0>[N] energy; // latent energy variable
+}
+transformed parameters {
+  vector<lower=0>[N] mu_risk; // mean risk
+  vector<lower=0>[N] a_risk; // shape parameter for risk
+  vector<lower=0>[N] b_risk; // rate parameter for risk
+  
+  vector<lower=0>[N] mu_energy; // mean energy
+  vector<lower=0>[N] a_energy; // shape parameter for energy
+  vector<lower=0>[N] b_energy; // rate parameter for energy
+  
+  vector<lower=0>[N] mu_D; // mean duration
+  vector<lower=0>[N] a_D; // shape parameter for duration
+  vector<lower=0>[N] b_D; // rate parameter for duration
+  
+  for (n in 1 : N) {
+    // Risk model parameters
+    mu_risk[n] = exp(alpha_risk + beta_predator * predator[n]
+                     + beta_rug * rugosity[n] + beta_treatment[treatment[n]]);
+    a_risk[n] = square(mu_risk[n] / sigma_risk);
+    b_risk[n] = mu_risk[n] / square(sigma_risk);
+    
+    // Energy model parameters
+    mu_energy[n] = exp(alpha_energy + beta_res * resource[n]);
+    a_energy[n] = square(mu_energy[n] / sigma_energy);
+    b_energy[n] = mu_energy[n] / square(sigma_energy);
+    
+    // Duration model parameters
+    mu_D[n] = exp(beta_risk * risk[n] + beta_energy * energy[n]);
+    a_D[n] = square(mu_D[n] / sigma_D);
+    b_D[n] = mu_D[n] / square(sigma_D);
+  }
 }
 model {
-    
-    // Priors
-    
-    // Initial state probabilities
-    pi_s0 ~ dirichlet(rep_vector(1, K));
-
-    for (k in 1:K) {
-        // Transition matrix
-    
-        transition_matrix[k] ~ dirichlet(rep_vector(1, K));
-        
-        // Behaviour probabilities
-        eta[k] ~ dirichlet(rep_vector(1, M));
-        
-        // Duration parameters
-
-        for (m in 1:M) {
-            alpha[k][m] ~ gamma(2, 2);
-            theta[k][m] ~ gamma(2, 2);
-        }
-    
+  // Priors
+  beta_risk ~ normal(0, 1);
+  beta_energy ~ normal(0, 1);
+  pi ~ beta(1, 1); // Uniform prior for zero-inflation
+  
+  alpha_risk ~ normal(0, 1);
+  beta_predator ~ normal(0, 1);
+  beta_rug ~ normal(0, 1);
+  beta_treatment ~ normal(0, 1);
+  sigma_risk ~ exponential(1);
+  
+  alpha_energy ~ normal(0, 1);
+  beta_res ~ normal(0, 1);
+  sigma_energy ~ exponential(1);
+  
+  sigma_D ~ exponential(1);
+  
+  // Risk and energy latent variables
+  for (n in 1 : N) {
+    risk[n] ~ gamma(a_risk[n], b_risk[n]);
+    energy[n] ~ gamma(a_energy[n], b_energy[n]);
+  }
+  
+  // Observation model
+  for (n in 1 : N) {
+    if (D[n] == 0) {
+      target += bernoulli_lpmf(1 | pi); // zero-inflation
+    } else {
+      target += bernoulli_lpmf(0 | pi); // non-zero inflation
+      target += gamma_lpdf(D[n] | a_D[n], b_D[n]); // duration model
     }
-
-    
-    // Likelihood
-
-    target += hmm_log_likelihood(N, K, M, I, id, B_t, D_b, pi_s0, transition_matrix, eta, alpha, theta);
+  }
 }
-
 generated quantities {
-   vector[N] log_likelihoods;
-
-    for (n in 1:N) {
-         log_likelihoods[n] = 0;
-         for (k in 1:K) {
-              real emission_prob = log(eta[k][B_t[n]]) +
-                                  gamma_lpdf(D_b[n] | alpha[k][B_t[n]], theta[k][B_t[n]]);
-              log_likelihoods[n] += log(pi_s0[k]) + emission_prob;
-         }
-    }
+  // Optional: you can compute posterior predictions or other derived quantities here
 }

@@ -7,34 +7,51 @@ app = marimo.App(width="medium")
 @app.cell
 def _():
     import marimo as mo
+
     from cmdstanpy import CmdStanModel
+
+    # from cmdstanpy import install_cmdstan
+    from cmdstanpy import CmdStanMCMC
+
     import pandas as pd
     import numpy as np
-    from cmdstanpy import install_cmdstan
-    from cmdstanpy import CmdStanMCMC
+
     import arviz as az
-    import os
     import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    from scipy.special import logsumexp
+    from scipy.stats import gamma
+
+    from tqdm import tqdm
+    import os
+
     # Install CmdStan if not already installed
-    install_cmdstan()
-    return CmdStanMCMC, CmdStanModel, az, install_cmdstan, mo, np, os, pd, plt
+    # install_cmdstan()
+
+    sns.set_theme(style="white", palette="pastel")
+    return (
+        CmdStanMCMC,
+        CmdStanModel,
+        az,
+        gamma,
+        logsumexp,
+        mo,
+        np,
+        os,
+        pd,
+        plt,
+        sns,
+        tqdm,
+    )
 
 
 @app.cell
 def _(pd):
     df = pd.read_csv("outputs/generated_data.csv")
 
-    # calculate duration
 
-    df.sort_values(by=["ind_id", "start_time"], inplace=True)
-
-    df["duration"] = df.groupby("ind_id")["start_time"].shift(-1) - df["start_time"]
-
-    # fill NaN values with 0
-
-    df.fillna({"duration": 1e-10}, inplace=True)
-
-    df.loc[df["duration"] == 0, "duration"] = 1e-10
+    df
     return (df,)
 
 
@@ -43,13 +60,14 @@ def _(CmdStanModel, df):
     # Prepare Stan data
     stan_data = {
         "N": len(df),
-        "M": df["behaviour"].nunique(),
-        "K": 3,  # Number of latent states to infer
-        "I": df["ind_id"].nunique(),
-        "id": df["ind_id"].values + 1,  # Stan is 1-indexed
-        "B_t": df["behaviour"].values,
-        "D_b": df["duration"].values,
+        "T": len(df["treatment"].unique()),
+        "D": df["foraging"].values,
+        "predator": df["predator"].values,
+        "rugosity": df["rugosity"].values,
+        "treatment": df["treatment"].values + 1,
+        "resource": df["resource"].values,
     }
+
 
     # stan model
 
@@ -59,7 +77,7 @@ def _(CmdStanModel, df):
 
 @app.cell
 def _(az, model, os, stan_data):
-    run = False
+    run = True
     chains = 4
 
     output_dir = "outputs/model/generated/"
@@ -79,7 +97,7 @@ def _(az, model, os, stan_data):
     if not run and len(model_files) == chains:
         print("Loading samples from existing files...")
 
-        fit = az.from_cmdstan(output_dir + "*.csv")
+        model_data = az.from_cmdstan(output_dir + "*.csv")
     else:
         print("Running model...")
 
@@ -93,13 +111,38 @@ def _(az, model, os, stan_data):
             threads_per_chain=4,
             output_dir=output_dir,
         )
-    return chains, filename, fit, model_files, output_dir, run
+
+        model_data = az.from_cmdstanpy(fit)
+    return chains, filename, fit, model_data, model_files, output_dir, run
 
 
 @app.cell
-def _(az, fit):
-    az.plot_trace(fit, compact=False, var_names=["eta"], figsize=(15, 30))
+def _(az, model_data):
+    az.plot_trace(model_data, compact=False, var_names=["beta_treatment"], figsize=(16, 6))
     return
+
+
+@app.cell
+def _(az, model_data):
+    az.plot_trace(model_data, compact=False, var_names=["beta_rug"], figsize=(16, 6))
+    return
+
+
+@app.cell
+def _(az, model_data):
+    az.plot_trace(model_data, compact=False, var_names=["beta_predator"], figsize=(16, 6))
+    return
+
+
+@app.cell
+def _(mo, model_data):
+    posterior = model_data.posterior
+    n_chains = posterior.sizes["chain"]
+    n_draw = posterior.sizes["draw"]
+    n_samples = n_chains * n_draw
+
+    mo.md(f"Total number of samples = {n_samples}")
+    return n_chains, n_draw, n_samples, posterior
 
 
 @app.cell

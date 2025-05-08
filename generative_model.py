@@ -11,18 +11,20 @@ def _():
     from scipy.stats import bernoulli as bern
     from scipy.stats import dirichlet
     from scipy.stats import beta
-    from scipy.special import softmax
+    from scipy.special import expit
     from random import choices
     import matplotlib.pyplot as plt
     import seaborn as sns
     import pandas as pd
 
+    from params import params
+
     sns.set_theme(style="white", palette="pastel")
-    return bern, beta, choices, dirichlet, mo, np, pd, plt, sns, softmax
+    return bern, beta, choices, dirichlet, expit, mo, np, params, pd, plt, sns
 
 
 @app.cell
-def _(bern, beta, np, pd):
+def _(bern, beta, expit, np, params, pd):
     # experiment definition
 
     n_protection = 2
@@ -44,10 +46,13 @@ def _(bern, beta, np, pd):
         """
         Simulate a predator covariate.
         """
-        if protection == 0:
-            return bern.rvs(0.3, size=1)
-        else:
-            return bern.rvs(0.75, size=1)
+        alpha = params["alpha_protection_predator"]
+
+        beta = params["beta_protection_predator"]
+
+        p = expit(alpha + beta[protection])
+
+        return bern.rvs(p, size=1)
 
 
     def rugosity(protection):
@@ -57,13 +62,13 @@ def _(bern, beta, np, pd):
 
         D_max = 190
 
-        if protection == 0:
-            # less rugose
+        D_chain_mean = params["D_protection_mean"]
 
-            a = np.random.normal(150, 10, size=1)
-        else:
-            # more rugose
-            a = np.random.normal(100, 20, size=1)
+        D_chain_var = params["D_protection_std"]
+
+        a = np.random.normal(0, 1)
+
+        a = (a * D_chain_var[protection]) + D_chain_mean[protection]
 
         b = D_max - a
 
@@ -77,27 +82,17 @@ def _(bern, beta, np, pd):
 
         points = 100
 
-        if protection == 0:
-            # more resource
-            a = np.random.normal(20, 2, size=1)
-        else:
-            # less resource
-            a = np.random.normal(10, 2, size=1)
+        points_mean = params["points_protection_mean"]
+
+        points_var = params["points_protection_std"]
+
+        a = np.random.normal(0, 1)
+
+        a = a * points_var[protection] + points_mean[protection]
 
         b = points - a
 
         return beta.rvs(a, b, size=1)
-
-
-    def unobserved(predator):
-        """
-        Simulate an unobserved covariate affecting energy through predator presence.
-        """
-
-        if predator == 0:
-            return np.random.normal(0, 1, size=1)
-        else:
-            return np.random.normal(1, 1, size=1)
 
 
     predator = [predator(p) for p in protection]
@@ -106,8 +101,6 @@ def _(bern, beta, np, pd):
     rugosity = np.array(rugosity).flatten()
     resource = [resource(p) for p in protection]
     resource = np.array(resource).flatten()
-    unobs_pred = [unobserved(predator[i]) for i in range(len(predator))]
-    unobs_pred = np.array(unobs_pred).flatten()
 
     # predictor dataframe
 
@@ -120,7 +113,6 @@ def _(bern, beta, np, pd):
             "predator": predator,
             "rugosity": rugosity,
             "resource": resource,
-            "unobs_pred": unobs_pred,
         }
     )
 
@@ -138,9 +130,13 @@ def _(bern, beta, np, pd):
         resource,
         rugosity,
         treatment,
-        unobs_pred,
-        unobserved,
     )
+
+
+@app.cell
+def _(predictor_df):
+    predictor_df.to_csv("outputs/generated_data_predictors.csv", index=False)
+    return
 
 
 @app.cell
@@ -164,31 +160,26 @@ def _(plt, predictor_df, sns):
 
 
 @app.cell
-def _(n_ind, np, pd, plot_id, predictor_df):
+def _(n_ind, np, params, pd, plot_id, predictor_df):
     # unobserved variables
 
 
-    def energy(resource, unobserved):
+    def energy(resource, predator):
         """
         Simulate an energy covariate.
         """
 
-        beta = 10
+        beta_resource = params["beta_energy_resource"]
 
-        beta_unobserved = -1
+        beta_predator = params["beta_predator_energy"][predator]
 
-        alpha = 2
+        alpha = params["alpha_energy"]
 
-        eta = beta * resource + beta_unobserved * unobserved
+        mu = alpha + beta_resource * resource + beta_predator
 
-        mu = np.exp(eta)
+        sigma = params["sigma_energy"]
 
-        sigma = np.random.exponential(1)
-
-        shape = (mu / sigma) ** 2
-        scale = sigma**2 / mu
-
-        return np.random.gamma(shape, scale, size=1)
+        return np.random.normal(mu, sigma, size=1)
 
 
     def risk(rugosity, predator, treatment):
@@ -196,22 +187,19 @@ def _(n_ind, np, pd, plot_id, predictor_df):
         Simulate a risk covariate.
         """
 
-        beta_rugosity = -0.5
+        beta_rugosity = params["beta_risk_rugosity"]
 
-        beta_predator = 2
+        beta_predator = params["beta_risk_predator"][predator]
 
-        beta_treatment = [0, 0, 1, 2]
+        beta_treatment = params["beta_risk_treatment"][treatment - 1]
 
-        eta = (beta_rugosity * rugosity) + (beta_predator * predator) + beta_treatment[treatment - 1]
+        alpha = params["alpha_risk"]
 
-        mu = np.exp(eta)
+        mu = alpha + (beta_rugosity * rugosity) + beta_predator + beta_treatment
 
-        sigma = np.random.exponential(1)
+        sigma = params["sigma_risk"]
 
-        shape = (mu / sigma) ** 2
-        scale = sigma**2 / mu
-
-        return np.random.gamma(shape, scale, size=1)
+        return np.random.normal(mu, sigma, size=1)
 
 
     indiviudals = list(range(1, (len(plot_id) * n_ind) + 1))
@@ -220,7 +208,7 @@ def _(n_ind, np, pd, plot_id, predictor_df):
     energy = [
         energy(
             predictor_df.loc[predictor_df["plot_id"] == i, "resource"].iloc[0],
-            predictor_df.loc[predictor_df["plot_id"] == i, "unobs_pred"].iloc[0],
+            predictor_df.loc[predictor_df["plot_id"] == i, "predator"].iloc[0],
         )
         for i in plot_ind
     ]
@@ -268,87 +256,43 @@ def _(plt, sns, unobserved_df):
 
 
 @app.cell
-def _(indiviudals, np, pd, plot_ind, predictor_df, unobserved_df):
+def _(bern, expit, indiviudals, np, params, pd, plot_ind, unobserved_df):
     # response variable
 
 
-    def foraging(energy, risk):
+    def total_time(behaviour, energy, risk):
         """
         Simulate a behavioural response.
         """
 
-        beta_energy = -0.2
+        beta_energy = params["beta_energy"][behaviour]
 
-        beta_risk = -0.2
+        beta_risk = params["beta_risk"][behaviour]
 
-        alpha = 2
+        alpha = params["alpha"][behaviour]
 
-        eta = alpha + beta_energy * energy + beta_risk * risk
+        mu = alpha + beta_energy * energy + beta_risk * risk
 
-        mu = np.exp(eta)
+        sigma = params["sigma"][behaviour]
 
-        sigma = np.random.exponential(1)
+        # zero inflation
+        pi_0 = expit(
+            params["alpha_pi"][behaviour] + params["beta_pi_risk"][behaviour] * risk + params["beta_pi_energy"][behaviour] * energy
+        )
 
-        shape = (mu / sigma) ** 2
-        scale = sigma**2 / mu
+        zero = bern.rvs(pi_0)
 
-        return np.random.gamma(shape, scale, size=1)
-
-
-    def vigilance(energy, risk):
-        """
-        Simulate a behavioural response.
-        """
-
-        beta_energy = 0.01
-
-        beta_risk = 0.1
-
-        alpha = 1
-
-        eta = alpha + beta_energy * energy + beta_risk * risk
-
-        mu = np.exp(eta)
-
-        sigma = np.random.exponential(1)
-
-        if mu < 0:
-            mu = 0
-
-        shape = (mu / sigma) ** 2
-        scale = sigma**2 / mu
-
-        return np.random.gamma(shape, scale, size=1)
+        if zero:
+            return [0]
+        else:
+            return np.random.lognormal(mu, sigma, size=1)
 
 
-    def movement(energy, risk):
-        """
-        Simulate a behavioural response.
-        """
-
-        beta_energy = 0.091
-
-        beta_risk = -1
-
-        alpha = 1
-
-        eta = alpha + beta_energy * energy + beta_risk * risk
-
-        mu = np.exp(eta)
-
-        sigma = np.random.exponential(1)
-
-        shape = (mu / sigma) ** 2
-        scale = sigma**2 / mu
-
-        return np.random.gamma(shape, scale, size=1)
-
-
-    foraging = [foraging(row["energy"], row["risk"]) for _, row in unobserved_df.iterrows()]
+    foraging = [total_time(0, row["energy"], row["risk"]) for _, row in unobserved_df.iterrows()]
     foraging = np.array(foraging).flatten()
-    vigilance = [vigilance(row["energy"], row["risk"]) for _, row in unobserved_df.iterrows()]
+    vigilance = [total_time(1, row["energy"], row["risk"]) for _, row in unobserved_df.iterrows()]
     vigilance = np.array(vigilance).flatten()
-    movement = [movement(row["energy"], row["risk"]) for _, row in unobserved_df.iterrows()]
+    movement = [total_time(2, row["energy"], row["risk"]) for _, row in unobserved_df.iterrows()]
     movement = np.array(movement).flatten()
 
     # response dataframe
@@ -362,35 +306,40 @@ def _(indiviudals, np, pd, plot_ind, predictor_df, unobserved_df):
         }
     )
 
-    response_df = response_df.merge(predictor_df, on="plot_id")
-
     response_df
-    return foraging, movement, response_df, vigilance
-
-
-@app.cell
-def _(plt, response_df, sns):
-    plt.figure(figsize=(18, 6))
-    plt.subplot(1, 3, 1)
-    sns.histplot(data=response_df, x="foraging", hue="protection", kde=True)
-    plt.title("Foraging")
-    plt.legend(title="Protection", labels=["Outside", "Inside"])
-    plt.subplot(1, 3, 2)
-    sns.histplot(data=response_df, x="vigilance", hue="protection", kde=True)
-    plt.title("Vigilance")
-    plt.legend(title="Protection", labels=["Outside", "Inside"])
-    plt.subplot(1, 3, 3)
-    sns.histplot(data=response_df, x="movement", hue="protection", kde=True)
-    plt.title("Movement")
-    plt.legend(title="Protection", labels=["Outside", "Inside"])
-    plt.tight_layout()
-    plt.show()
-    return
+    return foraging, movement, response_df, total_time, vigilance
 
 
 @app.cell
 def _(response_df):
-    response_df.to_csv("outputs/generated_data.csv", index=False)
+    response_df.to_csv("outputs/generated_data_response.csv", index=False)
+    return
+
+
+@app.cell
+def _(plt, predictor_df, response_df, sns):
+    behaviour = response_df.merge(predictor_df, on="plot_id")
+
+    plt.figure(figsize=(18, 6))
+    plt.subplot(1, 3, 1)
+    sns.histplot(data=behaviour, x="foraging", hue="protection", kde=False)
+    plt.title("Foraging")
+    plt.legend(title="Protection", labels=["Outside", "Inside"])
+    plt.subplot(1, 3, 2)
+    sns.histplot(data=behaviour, x="vigilance", hue="protection", kde=False)
+    plt.title("Vigilance")
+    plt.legend(title="Protection", labels=["Outside", "Inside"])
+    plt.subplot(1, 3, 3)
+    sns.histplot(data=behaviour, x="movement", hue="protection", kde=False)
+    plt.title("Movement")
+    plt.legend(title="Protection", labels=["Outside", "Inside"])
+    plt.tight_layout()
+    plt.show()
+    return (behaviour,)
+
+
+@app.cell
+def _():
     return
 
 

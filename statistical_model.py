@@ -48,35 +48,51 @@ def _():
 
 @app.cell
 def _(pd):
-    df = pd.read_csv("outputs/generated_data.csv")
+    predictors = pd.read_csv("outputs/generated_data_predictors.csv")
 
 
-    df
-    return (df,)
+    predictors
+    return (predictors,)
 
 
 @app.cell
-def _(CmdStanModel, df):
+def _(pd):
+    response = pd.read_csv("outputs/generated_data_response.csv")
+
+    response
+    return (response,)
+
+
+@app.cell
+def _(predictors, response):
     # Prepare Stan data
     stan_data = {
-        "N": len(df),
-        "T": len(df["treatment"].unique()),
-        "D": df["foraging"].values,
-        "predator": df["predator"].values,
-        "rugosity": df["rugosity"].values,
-        "treatment": df["treatment"].values + 1,
-        "resource": df["resource"].values,
+        "N": len(response),
+        "T": len(predictors["treatment"].unique()),
+        "B": 3,
+        "P": predictors["protection"].nunique(),
+        "S": predictors["plot_id"].nunique(),
+        "D": response["foraging"].values,
+        "predator": predictors["predator"].values + 1,
+        "plot": response["plot_id"].values,
+        "rugosity": predictors["rugosity"].values,
+        "protection": predictors["protection"].values + 1,
+        "treatment": predictors["treatment"].values + 1,
+        "resource": predictors["resource"].values,
     }
+    return (stan_data,)
 
 
+@app.cell
+def _(CmdStanModel):
     # stan model
 
     model = CmdStanModel(stan_file="model.stan")
-    return model, stan_data
+    return (model,)
 
 
 @app.cell
-def _(az, model, os, stan_data):
+def _(az, model, os, response, stan_data):
     run = True
     chains = 4
 
@@ -97,9 +113,19 @@ def _(az, model, os, stan_data):
     if not run and len(model_files) == chains:
         print("Loading samples from existing files...")
 
-        model_data = az.from_cmdstan(output_dir + "*.csv")
+        obs = az.from_dict(observed_data={"D_obs": response["foraging"].values})
+
+        model_data = az.from_cmdstan(output_dir + "*.csv", posterior_predictive="D_pred")
+
+        model_data = az.concat(model_data, obs)
+
+
     else:
         print("Running model...")
+
+        # delete model_files
+        for filename in model_files:
+            os.remove(output_dir + filename)
 
         fit = model.sample(
             data=stan_data,
@@ -112,13 +138,38 @@ def _(az, model, os, stan_data):
             output_dir=output_dir,
         )
 
-        model_data = az.from_cmdstanpy(fit)
-    return chains, filename, fit, model_data, model_files, output_dir, run
+        obs = az.from_dict(observed_data={"D_obs": response["foraging"].values})
+        model_data = az.from_cmdstanpy(fit, posterior_predictive="D_pred")
+        model_data = az.concat(model_data, obs)
+    return chains, filename, fit, model_data, model_files, obs, output_dir, run
 
 
 @app.cell
 def _(az, model_data):
-    az.plot_trace(model_data, compact=False, var_names=["beta_treatment"], figsize=(16, 6))
+    az.summary(model_data, hdi_prob=0.95, round_to=2)
+    return
+
+
+@app.cell
+def _():
+    return
+
+
+@app.cell
+def _(az, model_data):
+    az.plot_trace(model_data, compact=False, var_names=["beta_res"], figsize=(16, 6))
+    return
+
+
+@app.cell
+def _(az, model_data):
+    az.plot_trace(model_data, compact=False, var_names=["beta_predator_energy"], figsize=(16, 12))
+    return
+
+
+@app.cell
+def _(az, model_data):
+    az.plot_trace(model_data, compact=False, var_names=["beta_treatment"], figsize=(16, 24))
     return
 
 
@@ -130,8 +181,29 @@ def _(az, model_data):
 
 @app.cell
 def _(az, model_data):
-    az.plot_trace(model_data, compact=False, var_names=["beta_predator"], figsize=(16, 6))
+    az.plot_trace(model_data, compact=False, var_names=["beta_predator"], figsize=(16, 12))
     return
+
+
+@app.cell
+def _(az, model_data):
+    az.plot_trace(model_data, compact=False, var_names=["beta_energy"], figsize=(16, 6))
+    return
+
+
+@app.cell
+def _(az, model_data):
+    az.plot_trace(model_data, compact=False, var_names=["beta_risk"], figsize=(16, 6))
+    return
+
+
+@app.cell
+def _(az, model_data, plt):
+    ax = az.plot_ppc(model_data, kind="kde", data_pairs={"D_obs": "D_pred"}, figsize=(8, 6))
+    ax.set_xscale("log")
+    plt.tight_layout()
+    plt.show()
+    return (ax,)
 
 
 @app.cell

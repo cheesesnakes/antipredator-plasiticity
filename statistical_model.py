@@ -50,7 +50,6 @@ def _():
 def _(pd):
     predictors = pd.read_csv("outputs/generated_data_predictors.csv")
 
-
     predictors
     return (predictors,)
 
@@ -93,7 +92,7 @@ def _(CmdStanModel):
 
 @app.cell
 def _(az, model, os, response, stan_data):
-    run = True
+    run = False
     chains = 4
 
     output_dir = "outputs/model/generated/"
@@ -108,7 +107,6 @@ def _(az, model, os, response, stan_data):
     for filename in os.listdir(output_dir):
         if filename.endswith(".csv"):
             model_files.append(filename)
-
 
     if not run and len(model_files) == chains:
         print("Loading samples from existing files...")
@@ -127,7 +125,6 @@ def _(az, model, os, response, stan_data):
         )
 
         model_data = az.concat(model_data, obs)
-
 
     else:
         print("Running model...")
@@ -238,15 +235,17 @@ def _(az, model_data):
 
     Diff_negative_positive = D_pred_treatment[1,] - D_pred_treatment[0,]
 
-    Diff_negative_positive = Diff_negative_positive.mean(axis=0)
+    Diff_negative_positive = Diff_negative_positive.mean(axis=1)
 
     Diff_negative_1 = D_pred_treatment[2,] - D_pred_treatment[0,]
 
-    Diff_negative_1 = Diff_negative_1.mean(axis=0)
+    Diff_negative_1 = Diff_negative_1.mean(axis=1)
 
     Diff_negative_2 = D_pred_treatment[3,] - D_pred_treatment[0,]
 
-    Diff_negative_2 = Diff_negative_2.mean(axis=0)
+    Diff_negative_2 = Diff_negative_2.mean(axis=1)
+
+    Diff_negative_2.shape
     return (
         D_pred_treatment,
         Diff_negative_1,
@@ -258,9 +257,15 @@ def _(az, model_data):
 @app.cell
 def _(Diff_negative_1, Diff_negative_2, Diff_negative_positive, plt, sns):
     plt.figure(figsize=(8, 6))
-    sns.kdeplot(Diff_negative_positive, label="Postive Control", color="blue", fill=True, alpha=0.25)
-    sns.kdeplot(Diff_negative_1, label="Treatment 1", color="orange", fill=True, alpha=0.25)
-    sns.kdeplot(Diff_negative_2, label="Treatment 2", color="green", fill=True, alpha=0.25)
+    sns.kdeplot(
+        Diff_negative_positive[0],
+        label="Postive Control",
+        color="blue",
+        fill=True,
+        alpha=0.25,
+    )
+    sns.kdeplot(Diff_negative_1[0], label="Treatment 1", color="orange", fill=True, alpha=0.25)
+    sns.kdeplot(Diff_negative_2[0], label="Treatment 2", color="green", fill=True, alpha=0.25)
     plt.legend()
     return
 

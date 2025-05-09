@@ -8,7 +8,16 @@ import numpy as np
 output_dir = "outputs/model/generated/"
 
 # Load model data from CmdStan CSV outputs
-model_data = az.from_cmdstan(output_dir + "*.csv", posterior_predictive="D_pred")
+model_data = az.from_cmdstan(
+    output_dir + "*.csv",
+    posterior_predictive=[
+        "D_pred",
+        "D_pred_treatment",
+        "mu_risk_treatment",
+        "mu_energy_treatment",
+        "mu_D_treatment",
+    ],
+)
 
 # Define mapping of parameter names
 test_params = {
@@ -36,8 +45,8 @@ summary = []
 for true_param, stan_param in test_params.items():
     samples = post[stan_param].values.flatten()
     mean_val = samples.mean()
-    lower_50 = np.percentile(samples, 25)
-    upper_50 = np.percentile(samples, 75)
+    lower_50 = np.percentile(samples, 2.5)
+    upper_50 = np.percentile(samples, 97.5)
     true_val = target[true_param]
 
     # Check if true value is within 95% CI

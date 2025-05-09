@@ -1,7 +1,6 @@
 params = {
     # effect of protection on predation
-    "beta_protection_predator": [-0.5, 0.5],
-    "alpha_protection_predator": -1,
+    "alpha_predator": [-0.5, 0],
     # effect of protection on rugosity
     "D_protection_mean": [150, 100],
     "D_protection_std": [10, 10],
@@ -11,14 +10,14 @@ params = {
     # engery variable
     "beta_energy_resource": 1,
     "beta_predator_energy": [0.5, -0.5],
-    "alpha_energy": 1,
-    "sigma_energy": 0.1,
+    "alpha_energy": [0.5, 1],
+    "sigma_energy": [1, 1],
     # risk variable
     "beta_risk_rugosity": -0.5,
     "beta_risk_predator": [-0.5, 0.5],
     "beta_risk_treatment": [0, 0.5, 2, 5],
-    "alpha_risk": 0.01,
-    "sigma_risk": 0.1,
+    "alpha_risk": [0, 1],
+    "sigma_risk": [1, 1],
     # time model: foraging, vigilance, movement
     "beta_energy": [-0.2, 0, 0.1],
     "beta_risk": [-0.2, 0.2, -0.1],

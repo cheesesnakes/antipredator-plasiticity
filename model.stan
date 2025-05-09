@@ -23,17 +23,22 @@ parameters {
   real beta_pi_energy; // effect of energy on zero-inflation
   
   // Risk model coefficients
-  array[S] real alpha_risk; // baseline risk
-  ordered[2] beta_predator; // effect of predator presence on risk
+  array[N] real alpha_risk; // random risk per individual
+  ordered[P] beta_predator; // effect of predator presence on risk
   real beta_rug; // effect of rugosity on risk
   ordered[T] beta_treatment; // effect of treatment on risk
   array[S] real<lower=0> sigma_risk; // standard deviation of risk
   
   // Energy model coefficients
-  array[S] real alpha_energy; // baseline energy
+  array[N] real alpha_energy; // random energy per individual
   real beta_res; // effect of resource availability on energy
   ordered[2] beta_predator_energy; // effect of predator presence on energy through unobserved variables
   array[S] real<lower=0> sigma_energy; // standard deviation of energy
+  
+  // protection model coefficients
+  
+  ordered[P] beta_risk_protection; // effect on risk
+  ordered[P] beta_energy_protection; // effect on energy
   
   // Observation model
   real alpha_D; // baseline duration
@@ -44,15 +49,13 @@ parameters {
   array[N] real z_energy; // latent energy variable
 }
 transformed parameters {
-  array[S] real mu_risk; // mean risk
-  array[S] real a_risk; // shape parameter for risk
-  array[S] real b_risk; // rate parameter for risk
+  array[S] real beta_mu_risk; // mean risk
+  array[S] real beta_mu_energy; // mean energy
   
-  array[S] real mu_energy; // mean energy
-  array[S] real a_energy; // shape parameter for energy
-  array[S] real b_energy; // rate parameter for energy
+  array[N] real mu_risk; // mean risk
+  array[N] real mu_energy; // mean energy
   
-  array[N] real mu_D; // mean duration
+  array[N] real<upper=20> mu_D; // mean duration
   
   array[N] real pi; // zero-inflation probability
   
@@ -62,15 +65,20 @@ transformed parameters {
   
   for (s in 1 : S) {
     // Risk model parameters
-    mu_risk[s] = alpha_risk[s] + beta_predator[predator[s]]
-                 + beta_rug * rugosity[s] + beta_treatment[treatment[s]];
+    beta_mu_risk[s] = beta_predator[predator[s]] + beta_rug * rugosity[s]
+                      + beta_treatment[treatment[s]]
+                      + beta_risk_protection[protection[s]];
     
     // Energy model parameters
-    mu_energy[s] = alpha_energy[s] + beta_res * resource[s]
-                   + beta_predator_energy[predator[s]];
+    beta_mu_energy[s] = beta_res * resource[s]
+                        + beta_predator_energy[predator[s]]
+                        + beta_risk_protection[protection[s]];
   }
   
   for (n in 1 : N) {
+    mu_risk[n] = alpha_risk[n] + beta_mu_risk[plot[n]];
+    mu_energy[n] = alpha_energy[n] + beta_mu_energy[plot[n]];
+    
     // Latent variables
     risk[n] = mu_risk[plot[n]] + sigma_risk[plot[n]] * z_risk[n];
     energy[n] = mu_energy[plot[n]] + sigma_energy[plot[n]] * z_energy[n];
@@ -96,11 +104,13 @@ model {
   beta_rug ~ normal(0, 0.1);
   beta_treatment ~ normal(0, 0.1);
   sigma_risk ~ exponential(1);
+  beta_risk_protection ~ normal(0, 0.5);
   
   beta_predator_energy ~ normal(0, 0.5);
   alpha_energy ~ normal(0, 0.5);
   beta_res ~ normal(0, 0.5);
   sigma_energy ~ exponential(1);
+  beta_energy_protection ~ normal(0, 0.5);
   
   alpha_D ~ normal(0, 0.5);
   sigma_D ~ normal(0, 0.5) T[1e-6, ]; // truncated lognormal scale
@@ -125,7 +135,7 @@ generated quantities {
   array[T, N] real mu_risk_treatment;
   array[T, N] real mu_energy_treatment;
   array[T, N] real mu_D_treatment;
-  array[T, N] real D_pred_treatment;
+  array[T, P, N] real D_pred_treatment;
   
   // posterior predictive check
   for (n in 1 : N) {
@@ -138,29 +148,35 @@ generated quantities {
   
   // Posterior predictive per treatment × observation
   for (t in 1 : T) {
-    for (n in 1 : N) {
-      int s = plot[n]; // plot index for observation n
-      
-      // 1️⃣ Compute mu_risk for this treatment & obs
-      mu_risk_treatment[t, n] = alpha_risk[s] + beta_predator[predator[s]]
-                                + beta_rug * rugosity[s] + beta_treatment[t];
-      
-      // 2️⃣ Compute mu_energy for this treatment & obs
-      mu_energy_treatment[t, n] = alpha_energy[s] + beta_res * resource[s]
-                                  + beta_predator_energy[predator[s]];
-      
-      // 3️⃣ Compute mean duration (log scale) for this treatment & obs
-      mu_D_treatment[t, n] = alpha_D + beta_risk * mu_risk_treatment[t, n]
-                             + beta_energy * mu_energy_treatment[t, n];
-      
-      // 4️⃣ Predict new duration:
-      if (bernoulli_rng(inv_logit(alpha_pi
-                                  + beta_pi_risk * mu_risk_treatment[t, n]
-                                  + beta_pi_energy
-                                    * mu_energy_treatment[t, n]))) {
-        D_pred_treatment[t, n] = 0;
-      } else {
-        D_pred_treatment[t, n] = lognormal_rng(mu_D_treatment[t, n], sigma_D);
+    for (p in 1 : P) {
+      for (n in 1 : N) {
+        int s = plot[n]; // plot index for observation n
+        
+        // 1️⃣ Compute mu_risk for this treatment & obs
+        mu_risk_treatment[t, n] = alpha_risk[s] + beta_predator[predator[s]]
+                                  + beta_rug * rugosity[s]
+                                  + beta_treatment[t]
+                                  + beta_risk_protection[p];
+        
+        // 2️⃣ Compute mu_energy for this treatment & obs
+        mu_energy_treatment[t, n] = alpha_energy[s] + beta_res * resource[s]
+                                    + beta_predator_energy[predator[s]]
+                                    + beta_energy_protection[p];
+        
+        // 3️⃣ Compute mean duration (log scale) for this treatment & obs
+        mu_D_treatment[t, n] = alpha_D + beta_risk * mu_risk_treatment[t, n]
+                               + beta_energy * mu_energy_treatment[t, n];
+        
+        // 4️⃣ Predict new duration:
+        if (bernoulli_rng(inv_logit(alpha_pi
+                                    + beta_pi_risk * mu_risk_treatment[t, n]
+                                    + beta_pi_energy
+                                      * mu_energy_treatment[t, n]))) {
+          D_pred_treatment[t, p, n] = 0;
+        } else {
+          D_pred_treatment[t, p, n] = lognormal_rng(mu_D_treatment[t, n],
+                                                    sigma_D);
+        }
       }
     }
   }

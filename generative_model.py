@@ -46,11 +46,11 @@ def _(bern, beta, expit, np, params, pd):
         """
         Simulate a predator covariate.
         """
-        alpha = params["alpha_protection_predator"]
+        alpha = np.random.normal(params["alpha_predator"][protection], 0.1)  # plot-level random effect
 
-        beta = params["beta_protection_predator"]
+        # link
 
-        p = expit(alpha + beta[protection])
+        p = expit(alpha)
 
         return bern.rvs(p, size=1)
 
@@ -62,13 +62,13 @@ def _(bern, beta, expit, np, params, pd):
 
         D_max = 190
 
-        D_chain_mean = params["D_protection_mean"]
+        D_chain_mean = params["D_protection_mean"][protection]
 
-        D_chain_var = params["D_protection_std"]
+        D_chain_var = params["D_protection_std"][protection]
 
-        a = np.random.normal(0, 1)
+        a = np.random.normal(0, 1)  # plot level randomness
 
-        a = D_chain_mean[protection] + D_chain_var[protection]*a
+        a = D_chain_mean + D_chain_var * a
 
         b = D_max - a
 
@@ -82,13 +82,13 @@ def _(bern, beta, expit, np, params, pd):
 
         points = 100
 
-        points_mean = params["points_protection_mean"]
+        points_mean = params["points_protection_mean"][protection]
 
-        points_var = params["points_protection_std"]
+        points_var = params["points_protection_std"][protection]
 
-        a = np.random.normal(0, 1)
+        a = np.random.normal(0, 1)  # plot - level randomness
 
-        a = a * points_var[protection] + points_mean[protection]
+        a = a * points_var + points_mean
 
         b = points - a
 
@@ -143,15 +143,15 @@ def _(predictor_df):
 def _(plt, predictor_df, sns):
     plt.figure(figsize=(18, 6))
     plt.subplot(1, 3, 1)
-    sns.boxplot(data=predictor_df, x = "protection", y="predator", hue="protection")
+    sns.boxplot(data=predictor_df, x="protection", y="predator", hue="protection")
     plt.title("Predator Presence")
     plt.legend(title="Protection", labels=["Outside", "Inside"])
     plt.subplot(1, 3, 2)
-    sns.boxplot(data=predictor_df, x = "protection", y="rugosity", hue="protection")
+    sns.boxplot(data=predictor_df, x="protection", y="rugosity", hue="protection")
     plt.title("Rugosity")
     plt.legend(title="Protection", labels=["Outside", "Inside"])
     plt.subplot(1, 3, 3)
-    sns.boxplot(data=predictor_df, x = "protection", y="resource", hue="protection")
+    sns.boxplot(data=predictor_df, x="protection", y="resource", hue="protection")
     plt.title("Resource Availability")
     plt.legend(title="Protection", labels=["Outside", "Inside"])
     plt.tight_layout()
@@ -164,7 +164,7 @@ def _(n_ind, np, params, pd, plot_id, predictor_df):
     # unobserved variables
 
 
-    def energy(resource, predator):
+    def energy(resource, predator, protection):
         """
         Simulate an energy covariate.
         """
@@ -173,16 +173,18 @@ def _(n_ind, np, params, pd, plot_id, predictor_df):
 
         beta_predator = params["beta_predator_energy"][predator]
 
-        alpha = params["alpha_energy"]
+        alpha_energy = params["alpha_energy"][protection]  # effect of protection on energy
+
+        alpha = np.random.normal(alpha_energy, 1)  # individual level randomness
 
         mu = alpha + beta_resource * resource + beta_predator
 
-        sigma = params["sigma_energy"]
+        sigma = np.random.exponential(params["sigma_energy"][protection])  # individual level randomness
 
         return np.random.normal(mu, sigma, size=1)
 
 
-    def risk(rugosity, predator, treatment):
+    def risk(rugosity, predator, treatment, protection):
         """
         Simulate a risk covariate.
         """
@@ -193,11 +195,13 @@ def _(n_ind, np, params, pd, plot_id, predictor_df):
 
         beta_treatment = params["beta_risk_treatment"][treatment]
 
-        alpha = params["alpha_risk"]
+        alpha_risk = params["alpha_risk"][protection]  # effect of protection on risk
+
+        alpha = np.random.normal(alpha_risk, 0.1)  # individual-level randomness
 
         mu = alpha + (beta_rugosity * rugosity) + beta_predator + beta_treatment
 
-        sigma = params["sigma_risk"]
+        sigma = np.random.exponential(params["sigma_risk"][protection])  # individual-level randomness
 
         return np.random.normal(mu, sigma, size=1)
 
@@ -209,6 +213,7 @@ def _(n_ind, np, params, pd, plot_id, predictor_df):
         energy(
             predictor_df.loc[predictor_df["plot_id"] == i, "resource"].iloc[0],
             predictor_df.loc[predictor_df["plot_id"] == i, "predator"].iloc[0],
+            predictor_df.loc[predictor_df["plot_id"] == i, "protection"].iloc[0],
         )
         for i in plot_ind
     ]
@@ -219,6 +224,7 @@ def _(n_ind, np, params, pd, plot_id, predictor_df):
             predictor_df.loc[predictor_df["plot_id"] == i, "rugosity"].iloc[0],
             predictor_df.loc[predictor_df["plot_id"] == i, "predator"].iloc[0],
             predictor_df.loc[predictor_df["plot_id"] == i, "treatment"].iloc[0],
+            predictor_df.loc[predictor_df["plot_id"] == i, "protection"].iloc[0],
         )
         for i in plot_ind
     ]
@@ -243,11 +249,11 @@ def _(n_ind, np, params, pd, plot_id, predictor_df):
 def _(plt, sns, unobserved_df):
     plt.figure(figsize=(12, 6))
     plt.subplot(1, 2, 1)
-    sns.boxplot(data=unobserved_df, y="energy", x = "protection", hue="protection")
+    sns.boxplot(data=unobserved_df, y="energy", x="protection", hue="protection")
     plt.title("Energy")
     plt.legend(title="Protection", labels=["Outside", "Inside"])
     plt.subplot(1, 2, 2)
-    sns.boxplot(data=unobserved_df, y="risk", x ="protection", hue="protection")
+    sns.boxplot(data=unobserved_df, y="risk", x="protection", hue="protection")
     plt.title("Risk")
     plt.legend(title="Protection", labels=["Outside", "Inside"])
     plt.tight_layout()
@@ -257,7 +263,7 @@ def _(plt, sns, unobserved_df):
 
 @app.cell
 def _(plt, sns, unobserved_df):
-    sns.boxplot(x="treatment", y="risk", hue = "protection", data=unobserved_df)
+    sns.boxplot(x="treatment", y="risk", hue="protection", data=unobserved_df)
     plt.title("Risk by Treatment")
     plt.show()
     return
@@ -285,7 +291,7 @@ def _(bern, expit, indiviudals, np, params, pd, plot_ind, unobserved_df):
 
         # zero inflation
         pi_0 = expit(
-            params["alpha_pi"][behaviour]
+            params["alpha_pi"][behaviour]  # individual-level variation
             + params["beta_pi_risk"][behaviour] * risk
             + params["beta_pi_energy"][behaviour] * energy
         )

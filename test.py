@@ -25,7 +25,7 @@ target = {p: params[p] for p in test_params.keys()}
 for param in target:
     val = target[param]
     if isinstance(val, list):
-        target[param] = val[0]
+        target[param] = val[1]
 
 # Extract posterior samples
 post = model_data.posterior

@@ -121,6 +121,11 @@ model {
 }
 generated quantities {
   array[N] real D_pred; // predicted durations
+  // For treatment-specific predictions per observation (N-scale)
+  array[T, N] real mu_risk_treatment;
+  array[T, N] real mu_energy_treatment;
+  array[T, N] real mu_D_treatment;
+  array[T, N] real D_pred_treatment;
   
   // posterior predictive check
   for (n in 1 : N) {
@@ -128,6 +133,35 @@ generated quantities {
       D_pred[n] = 0; // zero-inflation
     } else {
       D_pred[n] = lognormal_rng(mu_D[n], sigma_D);
+    }
+  }
+  
+  // Posterior predictive per treatment × observation
+  for (t in 1 : T) {
+    for (n in 1 : N) {
+      int s = plot[n]; // plot index for observation n
+      
+      // 1️⃣ Compute mu_risk for this treatment & obs
+      mu_risk_treatment[t, n] = alpha_risk[s] + beta_predator[predator[s]]
+                                + beta_rug * rugosity[s] + beta_treatment[t];
+      
+      // 2️⃣ Compute mu_energy for this treatment & obs
+      mu_energy_treatment[t, n] = alpha_energy[s] + beta_res * resource[s]
+                                  + beta_predator_energy[predator[s]];
+      
+      // 3️⃣ Compute mean duration (log scale) for this treatment & obs
+      mu_D_treatment[t, n] = alpha_D + beta_risk * mu_risk_treatment[t, n]
+                             + beta_energy * mu_energy_treatment[t, n];
+      
+      // 4️⃣ Predict new duration:
+      if (bernoulli_rng(inv_logit(alpha_pi
+                                  + beta_pi_risk * mu_risk_treatment[t, n]
+                                  + beta_pi_energy
+                                    * mu_energy_treatment[t, n]))) {
+        D_pred_treatment[t, n] = 0;
+      } else {
+        D_pred_treatment[t, n] = lognormal_rng(mu_D_treatment[t, n], sigma_D);
+      }
     }
   }
 }

@@ -72,7 +72,7 @@ def _(predictors, response):
         "B": 3,
         "P": predictors["protection"].nunique(),
         "S": predictors["plot_id"].nunique(),
-        "D": response["foraging"].values,
+        "D": response["vigilance"].values,
         "predator": predictors["predator"].values + 1,
         "plot": response["plot_id"].values,
         "rugosity": predictors["rugosity"].values,
@@ -113,9 +113,18 @@ def _(az, model, os, response, stan_data):
     if not run and len(model_files) == chains:
         print("Loading samples from existing files...")
 
-        obs = az.from_dict(observed_data={"D_obs": response["foraging"].values})
+        obs = az.from_dict(observed_data={"D_obs": response["vigilance"].values})
 
-        model_data = az.from_cmdstan(output_dir + "*.csv", posterior_predictive="D_pred")
+        model_data = az.from_cmdstan(
+            output_dir + "*.csv",
+            posterior_predictive=[
+                "D_pred",
+                "D_pred_treatment",
+                "mu_risk_treatment",
+                "mu_energy_treatment",
+                "mu_D_treatment",
+            ],
+        )
 
         model_data = az.concat(model_data, obs)
 
@@ -138,8 +147,17 @@ def _(az, model, os, response, stan_data):
             output_dir=output_dir,
         )
 
-        obs = az.from_dict(observed_data={"D_obs": response["foraging"].values})
-        model_data = az.from_cmdstanpy(fit, posterior_predictive="D_pred")
+        obs = az.from_dict(observed_data={"D_obs": response["vigilance"].values})
+        model_data = az.from_cmdstanpy(
+            fit,
+            posterior_predictive=[
+                "D_pred",
+                "D_pred_treatment",
+                "mu_risk_treatment",
+                "mu_energy_treatment",
+                "mu_D_treatment",
+            ],
+        )
         model_data = az.concat(model_data, obs)
     return chains, filename, fit, model_data, model_files, obs, output_dir, run
 
@@ -147,11 +165,6 @@ def _(az, model, os, response, stan_data):
 @app.cell
 def _(az, model_data):
     az.summary(model_data, hdi_prob=0.95, round_to=2)
-    return
-
-
-@app.cell
-def _():
     return
 
 
@@ -215,6 +228,41 @@ def _(mo, model_data):
 
     mo.md(f"Total number of samples = {n_samples}")
     return n_chains, n_draw, n_samples, posterior
+
+
+@app.cell
+def _(az, model_data):
+    D_pred_treatment = az.extract(model_data.posterior_predictive, var_names="D_pred_treatment")
+
+    D_pred_treatment = D_pred_treatment.values
+
+    Diff_negative_positive = D_pred_treatment[1,] - D_pred_treatment[0,]
+
+    Diff_negative_positive = Diff_negative_positive.mean(axis=0)
+
+    Diff_negative_1 = D_pred_treatment[2,] - D_pred_treatment[0,]
+
+    Diff_negative_1 = Diff_negative_1.mean(axis=0)
+
+    Diff_negative_2 = D_pred_treatment[3,] - D_pred_treatment[0,]
+
+    Diff_negative_2 = Diff_negative_2.mean(axis=0)
+    return (
+        D_pred_treatment,
+        Diff_negative_1,
+        Diff_negative_2,
+        Diff_negative_positive,
+    )
+
+
+@app.cell
+def _(Diff_negative_1, Diff_negative_2, Diff_negative_positive, plt, sns):
+    plt.figure(figsize=(8, 6))
+    sns.kdeplot(Diff_negative_positive, label="Postive Control", color="blue", fill=True, alpha=0.25)
+    sns.kdeplot(Diff_negative_1, label="Treatment 1", color="orange", fill=True, alpha=0.25)
+    sns.kdeplot(Diff_negative_2, label="Treatment 2", color="green", fill=True, alpha=0.25)
+    plt.legend()
+    return
 
 
 @app.cell

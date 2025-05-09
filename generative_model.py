@@ -68,11 +68,11 @@ def _(bern, beta, expit, np, params, pd):
 
         a = np.random.normal(0, 1)
 
-        a = (a * D_chain_var[protection]) + D_chain_mean[protection]
+        a = D_chain_mean[protection] + D_chain_var[protection]*a
 
         b = D_max - a
 
-        return beta.rvs(a, b, size=1)
+        return 1 - beta.rvs(a, b, size=1)
 
 
     def resource(protection):
@@ -143,15 +143,15 @@ def _(predictor_df):
 def _(plt, predictor_df, sns):
     plt.figure(figsize=(18, 6))
     plt.subplot(1, 3, 1)
-    sns.histplot(data=predictor_df, x="predator", hue="protection", kde=True)
+    sns.boxplot(data=predictor_df, x = "protection", y="predator", hue="protection")
     plt.title("Predator Presence")
     plt.legend(title="Protection", labels=["Outside", "Inside"])
     plt.subplot(1, 3, 2)
-    sns.histplot(data=predictor_df, x="rugosity", hue="protection", kde=True)
+    sns.boxplot(data=predictor_df, x = "protection", y="rugosity", hue="protection")
     plt.title("Rugosity")
     plt.legend(title="Protection", labels=["Outside", "Inside"])
     plt.subplot(1, 3, 3)
-    sns.histplot(data=predictor_df, x="resource", hue="protection", kde=True)
+    sns.boxplot(data=predictor_df, x = "protection", y="resource", hue="protection")
     plt.title("Resource Availability")
     plt.legend(title="Protection", labels=["Outside", "Inside"])
     plt.tight_layout()
@@ -191,7 +191,7 @@ def _(n_ind, np, params, pd, plot_id, predictor_df):
 
         beta_predator = params["beta_risk_predator"][predator]
 
-        beta_treatment = params["beta_risk_treatment"][treatment - 1]
+        beta_treatment = params["beta_risk_treatment"][treatment]
 
         alpha = params["alpha_risk"]
 
@@ -243,14 +243,22 @@ def _(n_ind, np, params, pd, plot_id, predictor_df):
 def _(plt, sns, unobserved_df):
     plt.figure(figsize=(12, 6))
     plt.subplot(1, 2, 1)
-    sns.histplot(data=unobserved_df, x="energy", hue="protection", kde=True)
+    sns.boxplot(data=unobserved_df, y="energy", x = "protection", hue="protection")
     plt.title("Energy")
     plt.legend(title="Protection", labels=["Outside", "Inside"])
     plt.subplot(1, 2, 2)
-    sns.histplot(data=unobserved_df, x="risk", hue="protection", kde=True)
+    sns.boxplot(data=unobserved_df, y="risk", x ="protection", hue="protection")
     plt.title("Risk")
     plt.legend(title="Protection", labels=["Outside", "Inside"])
     plt.tight_layout()
+    plt.show()
+    return
+
+
+@app.cell
+def _(plt, sns, unobserved_df):
+    sns.boxplot(x="treatment", y="risk", hue = "protection", data=unobserved_df)
+    plt.title("Risk by Treatment")
     plt.show()
     return
 
@@ -277,7 +285,9 @@ def _(bern, expit, indiviudals, np, params, pd, plot_ind, unobserved_df):
 
         # zero inflation
         pi_0 = expit(
-            params["alpha_pi"][behaviour] + params["beta_pi_risk"][behaviour] * risk + params["beta_pi_energy"][behaviour] * energy
+            params["alpha_pi"][behaviour]
+            + params["beta_pi_risk"][behaviour] * risk
+            + params["beta_pi_energy"][behaviour] * energy
         )
 
         zero = bern.rvs(pi_0)
@@ -336,6 +346,29 @@ def _(plt, predictor_df, response_df, sns):
     plt.tight_layout()
     plt.show()
     return (behaviour,)
+
+
+@app.cell
+def _(behaviour, plt, sns):
+    plt.figure(figsize=(18, 6))
+    plt.subplot(1, 3, 1)
+    sns.histplot(data=behaviour, x="foraging", hue="treatment", kde=False)
+    plt.title("Foraging")
+    plt.legend(title="Protection", labels=["Negative", "Positive", "Treatment 1", "Treatment 2"])
+    plt.xscale("log")
+    plt.subplot(1, 3, 2)
+    sns.histplot(data=behaviour, x="vigilance", hue="treatment", kde=False)
+    plt.title("Vigilance")
+    plt.legend(title="Protection", labels=["Negative", "Positive", "Treatment 1", "Treatment 2"])
+    plt.xscale("log")
+    plt.subplot(1, 3, 3)
+    sns.histplot(data=behaviour, x="movement", hue="treatment", kde=False)
+    plt.title("Movement")
+    plt.legend(title="Protection", labels=["Negative", "Positive", "Treatment 1", "Treatment 2"])
+    plt.xscale("log")
+    plt.tight_layout()
+    plt.show()
+    return
 
 
 @app.cell

@@ -29,7 +29,7 @@ def _(bern, beta, expit, np, params, pd):
 
     n_protection = 2
     n_treatment = 4
-    n_ind = 20
+    n_ind = 10
     n_rep = 5
 
     # treatment and protection levels
@@ -164,42 +164,24 @@ def _(n_ind, np, params, pd, plot_id, predictor_df):
     # unobserved variables
 
 
-    def energy(resource, predator, protection):
-        """
-        Simulate an energy covariate.
-        """
-
-        beta_resource = params["beta_energy_resource"]
-
-        beta_predator = params["beta_predator_energy"][predator]
-
-        alpha_energy = params["alpha_energy"][protection]  # effect of protection on energy
-
-        alpha = np.random.normal(alpha_energy, 1)  # individual level randomness
-
-        mu = alpha + beta_resource * resource + beta_predator
-
-        sigma = np.random.exponential(params["sigma_energy"][protection])  # individual level randomness
-
-        return np.random.normal(mu, sigma, size=1)
-
-
-    def risk(rugosity, predator, treatment, protection):
+    def risk(rugosity, predator, treatment, protection, resource):
         """
         Simulate a risk covariate.
         """
 
         beta_rugosity = params["beta_risk_rugosity"]
 
-        beta_predator = params["beta_risk_predator"][predator]
+        beta_predator = params["beta_risk_predator"] * predator
 
         beta_treatment = params["beta_risk_treatment"][treatment]
 
-        alpha_risk = params["alpha_risk"][protection]  # effect of protection on risk
+        beta_resource = params["beta_risk_resource"]
 
-        alpha = np.random.normal(alpha_risk, 0.1)  # individual-level randomness
+        alpha_risk = params["alpha_risk"] * protection  # effect of protection on risk
 
-        mu = alpha + (beta_rugosity * rugosity) + beta_predator + beta_treatment
+        eta = alpha_risk + (beta_rugosity * rugosity) + beta_predator + beta_treatment + beta_resource * resource
+
+        mu = np.random.normal(eta, 0.1)  # individual-level random effect
 
         sigma = np.random.exponential(params["sigma_risk"][protection])  # individual-level randomness
 
@@ -209,22 +191,13 @@ def _(n_ind, np, params, pd, plot_id, predictor_df):
     indiviudals = list(range(1, (len(plot_id) * n_ind) + 1))
     plot_ind = [plot for i in range(n_ind) for plot in plot_id]
 
-    energy = [
-        energy(
-            predictor_df.loc[predictor_df["plot_id"] == i, "resource"].iloc[0],
-            predictor_df.loc[predictor_df["plot_id"] == i, "predator"].iloc[0],
-            predictor_df.loc[predictor_df["plot_id"] == i, "protection"].iloc[0],
-        )
-        for i in plot_ind
-    ]
-    energy = np.array(energy).flatten()
-
     risk = [
         risk(
             predictor_df.loc[predictor_df["plot_id"] == i, "rugosity"].iloc[0],
             predictor_df.loc[predictor_df["plot_id"] == i, "predator"].iloc[0],
             predictor_df.loc[predictor_df["plot_id"] == i, "treatment"].iloc[0],
             predictor_df.loc[predictor_df["plot_id"] == i, "protection"].iloc[0],
+            predictor_df.loc[predictor_df["plot_id"] == i, "resource"].iloc[0],
         )
         for i in plot_ind
     ]
@@ -235,24 +208,18 @@ def _(n_ind, np, params, pd, plot_id, predictor_df):
         {
             "ind_id": indiviudals,
             "plot_id": plot_ind,
-            "energy": energy,
             "risk": risk,
         }
     )
 
     unobserved_df = unobserved_df.merge(predictor_df, on="plot_id")
     unobserved_df
-    return energy, indiviudals, plot_ind, risk, unobserved_df
+    return indiviudals, plot_ind, risk, unobserved_df
 
 
 @app.cell
 def _(plt, sns, unobserved_df):
-    plt.figure(figsize=(12, 6))
-    plt.subplot(1, 2, 1)
-    sns.boxplot(data=unobserved_df, y="energy", x="protection", hue="protection")
-    plt.title("Energy")
-    plt.legend(title="Protection", labels=["Outside", "Inside"])
-    plt.subplot(1, 2, 2)
+    plt.figure(figsize=(8, 6))
     sns.boxplot(data=unobserved_df, y="risk", x="protection", hue="protection")
     plt.title("Risk")
     plt.legend(title="Protection", labels=["Outside", "Inside"])
@@ -274,27 +241,19 @@ def _(bern, expit, indiviudals, np, params, pd, plot_ind, unobserved_df):
     # response variable
 
 
-    def total_time(behaviour, energy, risk):
+    def total_time(behaviour, risk):
         """
         Simulate a behavioural response.
         """
 
-        beta_energy = params["beta_energy"][behaviour]
+        beta_risk = np.random.normal(params["beta_risk"][behaviour], 0.1)
 
-        beta_risk = params["beta_risk"][behaviour]
-
-        alpha = params["alpha"][behaviour]
-
-        mu = alpha + beta_energy * energy + beta_risk * risk
+        mu = beta_risk * risk
 
         sigma = params["sigma"][behaviour]
 
         # zero inflation
-        pi_0 = expit(
-            params["alpha_pi"][behaviour]  # individual-level variation
-            + params["beta_pi_risk"][behaviour] * risk
-            + params["beta_pi_energy"][behaviour] * energy
-        )
+        pi_0 = expit(params["alpha_pi"][behaviour] + params["beta_pi_risk"][behaviour] * risk)
 
         zero = bern.rvs(pi_0)
 
@@ -304,11 +263,11 @@ def _(bern, expit, indiviudals, np, params, pd, plot_ind, unobserved_df):
             return np.random.lognormal(mu, sigma, size=1)
 
 
-    foraging = [total_time(0, row["energy"], row["risk"]) for _, row in unobserved_df.iterrows()]
+    foraging = [total_time(0, row["risk"]) for _, row in unobserved_df.iterrows()]
     foraging = np.array(foraging).flatten()
-    vigilance = [total_time(1, row["energy"], row["risk"]) for _, row in unobserved_df.iterrows()]
+    vigilance = [total_time(1, row["risk"]) for _, row in unobserved_df.iterrows()]
     vigilance = np.array(vigilance).flatten()
-    movement = [total_time(2, row["energy"], row["risk"]) for _, row in unobserved_df.iterrows()]
+    movement = [total_time(2, row["risk"]) for _, row in unobserved_df.iterrows()]
     movement = np.array(movement).flatten()
 
     # response dataframe

@@ -30,10 +30,26 @@ def _():
     # install_cmdstan()
 
     sns.set_theme(style="white", palette="pastel")
+
+    status = "test"
+
+    if status == "test":
+        dirs = [
+            "outputs/generated_data_predictors.csv",
+            "outputs/generated_data_response.csv",
+            "outputs/model/generated/",
+        ]
+    else:
+        dirs = [
+            "outputs/generated_data_predictors.csv",
+            "outputs/generated_data_response.csv",
+            "outputs/model/data/",
+        ]
     return (
         CmdStanMCMC,
         CmdStanModel,
         az,
+        dirs,
         gamma,
         logsumexp,
         mo,
@@ -42,21 +58,22 @@ def _():
         pd,
         plt,
         sns,
+        status,
         tqdm,
     )
 
 
 @app.cell
-def _(pd):
-    predictors = pd.read_csv("outputs/generated_data_predictors.csv")
+def _(dirs, pd):
+    predictors = pd.read_csv(dirs[0])
 
     predictors
     return (predictors,)
 
 
 @app.cell
-def _(pd):
-    response = pd.read_csv("outputs/generated_data_response.csv")
+def _(dirs, pd):
+    response = pd.read_csv(dirs[1])
 
     response
     return (response,)
@@ -91,11 +108,11 @@ def _(CmdStanModel):
 
 
 @app.cell
-def _(az, model, os, response, stan_data):
-    run = False
+def _(az, dirs, model, os, response, stan_data):
+    run = True
     chains = 4
 
-    output_dir = "outputs/model/generated/"
+    output_dir = dirs[2]
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -119,7 +136,6 @@ def _(az, model, os, response, stan_data):
                 "D_pred",
                 "D_pred_treatment",
                 "mu_risk_treatment",
-                "mu_energy_treatment",
                 "mu_D_treatment",
             ],
         )
@@ -130,8 +146,8 @@ def _(az, model, os, response, stan_data):
         print("Running model...")
 
         # delete model_files
-        for filename in model_files:
-            os.remove(output_dir + filename)
+        for file in os.listdir(output_dir):
+            os.remove(output_dir + file)
 
         fit = model.sample(
             data=stan_data,
@@ -151,12 +167,21 @@ def _(az, model, os, response, stan_data):
                 "D_pred",
                 "D_pred_treatment",
                 "mu_risk_treatment",
-                "mu_energy_treatment",
                 "mu_D_treatment",
             ],
         )
         model_data = az.concat(model_data, obs)
-    return chains, filename, fit, model_data, model_files, obs, output_dir, run
+    return (
+        chains,
+        file,
+        filename,
+        fit,
+        model_data,
+        model_files,
+        obs,
+        output_dir,
+        run,
+    )
 
 
 @app.cell
@@ -168,12 +193,6 @@ def _(az, model_data):
 @app.cell
 def _(az, model_data):
     az.plot_trace(model_data, compact=False, var_names=["beta_res"], figsize=(16, 6))
-    return
-
-
-@app.cell
-def _(az, model_data):
-    az.plot_trace(model_data, compact=False, var_names=["beta_predator_energy"], figsize=(16, 12))
     return
 
 
@@ -191,13 +210,7 @@ def _(az, model_data):
 
 @app.cell
 def _(az, model_data):
-    az.plot_trace(model_data, compact=False, var_names=["beta_predator"], figsize=(16, 12))
-    return
-
-
-@app.cell
-def _(az, model_data):
-    az.plot_trace(model_data, compact=False, var_names=["beta_energy"], figsize=(16, 6))
+    az.plot_trace(model_data, compact=False, var_names=["beta_predator"], figsize=(16, 6))
     return
 
 
@@ -244,8 +257,6 @@ def _(az, model_data):
     Diff_negative_2 = D_pred_treatment[3,] - D_pred_treatment[0,]
 
     Diff_negative_2 = Diff_negative_2.mean(axis=1)
-
-    Diff_negative_2.shape
     return (
         D_pred_treatment,
         Diff_negative_1,
@@ -256,7 +267,8 @@ def _(az, model_data):
 
 @app.cell
 def _(Diff_negative_1, Diff_negative_2, Diff_negative_positive, plt, sns):
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(16, 6))
+    plt.subplot(1, 2, 1)
     sns.kdeplot(
         Diff_negative_positive[0],
         label="Postive Control",
@@ -266,6 +278,18 @@ def _(Diff_negative_1, Diff_negative_2, Diff_negative_positive, plt, sns):
     )
     sns.kdeplot(Diff_negative_1[0], label="Treatment 1", color="orange", fill=True, alpha=0.25)
     sns.kdeplot(Diff_negative_2[0], label="Treatment 2", color="green", fill=True, alpha=0.25)
+    plt.xlim(-20,20)
+    plt.subplot(1, 2, 2)
+    sns.kdeplot(
+        Diff_negative_positive[1],
+        label="Postive Control",
+        color="blue",
+        fill=True,
+        alpha=0.25,
+    )
+    sns.kdeplot(Diff_negative_1[1], label="Treatment 1", color="orange", fill=True, alpha=0.25)
+    sns.kdeplot(Diff_negative_2[1], label="Treatment 2", color="green", fill=True, alpha=0.25)
+    plt.xlim(-20,20)
     plt.legend()
     return
 

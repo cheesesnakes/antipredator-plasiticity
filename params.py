@@ -7,23 +7,16 @@ params = {
     # effect of protection on resource availability
     "points_protection_mean": [50, 70],
     "points_protection_std": [2, 2],
-    # engery variable
-    "beta_energy_resource": 1,
-    "beta_predator_energy": [0.5, -0.5],
-    "alpha_energy": [0.5, 1],
-    "sigma_energy": [1, 1],
     # risk variable
-    "beta_risk_rugosity": -0.5,
-    "beta_risk_predator": [-0.5, 0.5],
-    "beta_risk_treatment": [0, 0.5, 2, 5],
-    "alpha_risk": [0, 1],
-    "sigma_risk": [1, 1],
+    "beta_risk_resource": -1,
+    "beta_risk_rugosity": -1,
+    "beta_risk_predator": 0.5,
+    "beta_risk_treatment": [0, 0.5, 1, 2],
+    "alpha_risk": 0.5,
+    "sigma_risk": [0.5, 0.5],
     # time model: foraging, vigilance, movement
-    "beta_energy": [-0.2, 0, 0.1],
-    "beta_risk": [-0.2, 0.2, -0.1],
-    "alpha": [0.2, 0.1, 0.1],
+    "beta_risk": [-0.5, 0.5, -0.1],
     "sigma": [1, 1, 1],
-    "beta_pi_risk": [1, -1, 1],
-    "beta_pi_energy": [1, 1, -1],
-    "alpha_pi": [-2, -2, -2],
+    "beta_pi_risk": [0.5, -0.5, 0.5],
+    "alpha_pi": [-5, -5, -5],
 }

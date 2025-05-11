@@ -28,7 +28,6 @@ sizes = pd.read_csv("data/sizes.csv")
 individuals.columns = individuals.columns.str.lower()
 individuals.columns = individuals.columns.str.replace("-", "_")
 
-individuals
 print("Individuals data")
 print("=====================================")
 print("Columns:\n")
@@ -235,6 +234,8 @@ benthic_classes["plot_id"] = benthic_classes["plot_id"].str.replace(
     "negative", "negative-control", regex=True
 )
 
+benthic_classes.fillna(0, inplace=True)
+
 predictors = predictors.merge(benthic_classes, how="left", on="plot_id")
 
 predictors["treatment"] = predictors["plot_id"].str.split("_").str[1]
@@ -289,7 +290,9 @@ abundance = abundance.merge(
     on="plot_id",
 )
 
-individuals
+predictors["predator"] = np.array(
+    [1 if x > 0 else 0 for x in abundance["n_predators"].values]
+)
 
 print("Plot level abundance data")
 print("=====================================")
@@ -388,7 +391,7 @@ def calculate_duration(df):
                         df.loc[index, "time_end"] - df.loc[index, "time_start"]
                     )
 
-    df["duration"] = df["duration"] / (120 * 1000)
+    df["duration"] = df["duration"] / (1000)
 
     return df
 
@@ -424,8 +427,11 @@ def transform_behaviours():
 
 ind_beh = transform_behaviours()
 
+ind_beh.fillna(0, inplace=True)
+
 response = response.merge(ind_beh, how="left", on="ind_id")
 
+response
 response.rename(columns={"feeding": "foraging", "moving": "movement"}, inplace=True)
 
 print("Behavioural response data")
@@ -497,6 +503,9 @@ for df in data:
                 df[col], categories=order_categoricals[col], ordered=True
             )
             df[col] = df[col].cat.codes
+
+            if col == "plot_id":
+                df[col] += 1  # > 0
 
 # save data
 

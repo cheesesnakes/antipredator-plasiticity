@@ -31,7 +31,7 @@ def _():
 
     sns.set_theme(style="white", palette="pastel")
 
-    status = "test"
+    status = "data"
 
     if status == "test":
         dirs = [
@@ -41,7 +41,7 @@ def _():
             "outputs/generated_data_rugosity.csv",
         ]
     else:
-        dirs = ["outputs/predictors.csv", "outputs/response.csv", "outputs/model/data/", "outputs/rugosity.csv"]
+        dirs = ["outputs/predictors.csv", "outputs/response.csv", "outputs/model/data/", "outputs/rugosity_raw.csv"]
     return (
         CmdStanMCMC,
         CmdStanModel,
@@ -283,7 +283,7 @@ def _(Diff_negative_1, Diff_negative_2, Diff_negative_positive, plt, sns):
     )
     sns.kdeplot(Diff_negative_1[0], label="Treatment 1", color="orange", fill=True, alpha=0.25)
     sns.kdeplot(Diff_negative_2[0], label="Treatment 2", color="green", fill=True, alpha=0.25)
-    # plt.xlim(-20, 20)
+    plt.xlim(-20, 20)
     plt.subplot(1, 2, 2)
     sns.kdeplot(
         Diff_negative_positive[1],
@@ -294,7 +294,7 @@ def _(Diff_negative_1, Diff_negative_2, Diff_negative_positive, plt, sns):
     )
     sns.kdeplot(Diff_negative_1[1], label="Treatment 1", color="orange", fill=True, alpha=0.25)
     sns.kdeplot(Diff_negative_2[1], label="Treatment 2", color="green", fill=True, alpha=0.25)
-    # plt.xlim(-20, 20)
+    plt.xlim(-20, 20)
     plt.legend()
     return
 

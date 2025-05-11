@@ -163,6 +163,8 @@ def _(az, dirs, model, os, response, stan_data):
             parallel_chains=4,
             threads_per_chain=4,
             output_dir=output_dir,
+            # max_treedepth=15,
+            # adapt_delta=0.99,
         )
 
         obs = az.from_dict(observed_data={"D_obs": response["vigilance"].values})
@@ -187,6 +189,12 @@ def _(az, dirs, model, os, response, stan_data):
         output_dir,
         run,
     )
+
+
+@app.cell
+def _():
+    # fit.diagnose() # if divergence is observed
+    return
 
 
 @app.cell
@@ -228,7 +236,7 @@ def _(az, model_data):
 @app.cell
 def _(az, model_data, plt):
     ax = az.plot_ppc(model_data, kind="kde", data_pairs={"D_obs": "D_pred"}, figsize=(8, 6))
-    ax.set_xscale("log")
+    plt.xlim(-1, 120)
     plt.tight_layout()
     plt.show()
     return (ax,)
@@ -283,7 +291,7 @@ def _(Diff_negative_1, Diff_negative_2, Diff_negative_positive, plt, sns):
     )
     sns.kdeplot(Diff_negative_1[0], label="Treatment 1", color="orange", fill=True, alpha=0.25)
     sns.kdeplot(Diff_negative_2[0], label="Treatment 2", color="green", fill=True, alpha=0.25)
-    plt.xlim(-20, 20)
+    # plt.xlim(-120, 120)
     plt.subplot(1, 2, 2)
     sns.kdeplot(
         Diff_negative_positive[1],
@@ -294,7 +302,7 @@ def _(Diff_negative_1, Diff_negative_2, Diff_negative_positive, plt, sns):
     )
     sns.kdeplot(Diff_negative_1[1], label="Treatment 1", color="orange", fill=True, alpha=0.25)
     sns.kdeplot(Diff_negative_2[1], label="Treatment 2", color="green", fill=True, alpha=0.25)
-    plt.xlim(-20, 20)
+    # plt.xlim(-120, 120)
     plt.legend()
     return
 

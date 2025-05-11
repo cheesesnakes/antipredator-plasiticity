@@ -30,7 +30,7 @@ parameters {
   real beta_predator; // effect of predator presence on risk
   real beta_rug; // effect of rugosity on risk
   ordered[T] beta_treatment; // effect of treatment on risk
-  array[N] real<lower=0> sigma_risk; // standard deviation of risk
+  array[S] real<lower=0> sigma_risk; // standard deviation of risk
   real beta_res; // effect of biomass availability on energy
   
   // Observation model
@@ -75,7 +75,7 @@ model {
   beta_risk ~ normal(0, 1);
   
   beta_pi_risk ~ normal(0, 1);
-  alpha_pi ~ normal(-2, 1);
+  alpha_pi ~ normal(0, 2);
   
   // Risk model priors
   beta_rug ~ normal(0, 1);
@@ -83,20 +83,17 @@ model {
   alpha_risk_protection ~ normal(0, 1);
   beta_predator ~ normal(0, 1);
   
-  beta_treatment[1] ~ normal(0, 0.5);
-  beta_treatment[2] ~ normal(0, 1);
-  beta_treatment[3] ~ normal(1, 1);
-  beta_treatment[4] ~ normal(2, 1);
+  beta_treatment ~ normal(0, 1);
   
-  z_risk ~ normal(0, 2); // latent risk variable
+  z_risk ~ normal(0, 1); // latent risk variable
   sigma_risk ~ exponential(1);
   
   // rugosity priors
-  rugosity ~ beta(2, 2); // beta distribution for rugosity
-  phi_rug ~ gamma(2, 1); // precision of rugosity
+  rugosity ~ beta(1, 1); // beta distribution for rugosity
+  phi_rug ~ gamma(2, 2); // precision of rugosity
   
   // Latent variables priors
-  sigma_D ~ normal(0, 1) T[1e-6, ]; // truncated normal scale
+  sigma_D ~ exponential(1);
   
   // rugosity
   for (s in 1 : S) {
@@ -144,7 +141,7 @@ generated quantities {
                                   + beta_predator * (predator[s] - 1)
                                   + beta_rug * rugosity[s]
                                   + beta_treatment[t] + beta_res * biomass[s]
-                                  + sigma_risk[n] * z_risk[n];
+                                  + sigma_risk[s] * z_risk[n];
         // 3️⃣ Compute mean duration (log scale) for this treatment & obs
         mu_D_treatment[t, n] = beta_risk * mu_risk_treatment[t, n];
         

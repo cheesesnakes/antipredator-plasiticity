@@ -93,7 +93,7 @@ def _(predictors, response, rugosity):
         "B": 3,
         "P": predictors["protection"].nunique(),
         "S": predictors["plot_id"].nunique(),
-        "D": response["vigilance"].values,
+        "D": response["foraging"].values,
         "predator": predictors["predator"].values + 1,
         "plot": response["plot_id"].values,
         "rugosity_raw": rugosity[["sample_1", "sample_2", "sample_3"]].values,

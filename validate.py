@@ -50,15 +50,15 @@ def compare_parameters():
 
     # Get the true parameter values from the true_params dictionary.
     true_values = [
-        true_params.get("beta_risk")[1],
-        true_params.get("alpha_pi")[1],
-        true_params.get("beta_pi_risk")[1],
+        true_params.get("beta_risk")[0],
+        true_params.get("alpha_pi")[0],
+        true_params.get("beta_pi_risk")[0],
         true_params.get("alpha_risk"),
         true_params.get("beta_risk_resource"),
         true_params.get("beta_risk_predator"),
         true_params.get("beta_risk_rugosity"),
         true_params.get("beta_risk_treatment"),
-        true_params.get("sigma")[1],
+        true_params.get("sigma")[0],
     ]
 
     # Dynamically calculate the number of rows and columns

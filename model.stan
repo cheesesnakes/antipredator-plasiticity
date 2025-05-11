@@ -74,18 +74,13 @@ model {
   // Top-level priors
   beta_risk ~ normal(0, 1);
   
-  mu_D ~ normal(0, 2);
-  
   beta_pi_risk ~ normal(0, 1);
   alpha_pi ~ normal(-2, 1);
   
-  pi ~ beta(1, 1);
-  
   // Risk model priors
   beta_rug ~ normal(0, 1);
-  sigma_risk ~ exponential(1);
   beta_res ~ normal(0, 1);
-  alpha_risk_protection ~ normal(0, 0.5);
+  alpha_risk_protection ~ normal(0, 1);
   beta_predator ~ normal(0, 1);
   
   beta_treatment[1] ~ normal(0, 0.5);
@@ -93,16 +88,15 @@ model {
   beta_treatment[3] ~ normal(1, 1);
   beta_treatment[4] ~ normal(2, 1);
   
+  z_risk ~ normal(0, 2); // latent risk variable
+  sigma_risk ~ exponential(1);
+  
   // rugosity priors
   rugosity ~ beta(2, 2); // beta distribution for rugosity
   phi_rug ~ gamma(2, 1); // precision of rugosity
   
   // Latent variables priors
-  mu_risk ~ normal(0, 2);
-  
-  sigma_D ~ normal(0, 0.5) T[1e-6, ]; // truncated normal scale
-  
-  z_risk ~ normal(0, 1); // latent risk variable
+  sigma_D ~ normal(0, 1) T[1e-6, ]; // truncated normal scale
   
   // rugosity
   for (s in 1 : S) {

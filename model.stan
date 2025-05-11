@@ -11,7 +11,7 @@ data {
   array[S] real<lower=0, upper=1> rugosity; // rugosity (continuous variable)
   array[S] int<lower=1, upper=2> protection; // protection level (0 or 1)
   array[S] int<lower=1, upper=4> treatment; // treatment group (0, 1, 2, or 3)
-  array[S] real<lower=0, upper=1> resource; // resource availability (continuous variable)
+  array[S] real<lower=0, upper=1> biomass; // biomass availability (continuous variable)
 }
 parameters {
   // Top-level coefficients
@@ -26,7 +26,7 @@ parameters {
   real beta_rug; // effect of rugosity on risk
   ordered[T] beta_treatment; // effect of treatment on risk
   array[N] real<lower=0> sigma_risk; // standard deviation of risk
-  real beta_res; // effect of resource availability on energy
+  real beta_res; // effect of biomass availability on energy
   
   // Observation model
   real<lower=1e-6, upper=10> sigma_D; // standard deviation of duration, non-zero
@@ -47,7 +47,7 @@ transformed parameters {
   for (s in 1 : S) {
     mu_risk[s] = alpha_risk_protection * (protection[s] - 1)
                  + beta_predator * (predator[s] - 1) + beta_rug * rugosity[s]
-                 + beta_treatment[treatment[s]] + beta_res * resource[s];
+                 + beta_treatment[treatment[s]] + beta_res * biomass[s];
   }
   
   for (n in 1 : N) {
@@ -131,8 +131,7 @@ generated quantities {
         mu_risk_treatment[t, n] = alpha_risk_protection * (protection[s] - 1)
                                   + beta_predator * (predator[s] - 1)
                                   + beta_rug * rugosity[s]
-                                  + beta_treatment[t]
-                                  + beta_res * resource[s]
+                                  + beta_treatment[t] + beta_res * biomass[s]
                                   + sigma_risk[n] * z_risk[n];
         // 3️⃣ Compute mean duration (log scale) for this treatment & obs
         mu_D_treatment[t, n] = beta_risk * mu_risk_treatment[t, n];

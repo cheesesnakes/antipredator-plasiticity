@@ -1,7 +1,7 @@
 import marimo
 
 __generated_with = "0.12.10"
-app = marimo.App(width="medium")
+app = marimo.App()
 
 
 @app.cell
@@ -94,7 +94,7 @@ def _(predictors, response):
         "rugosity": predictors["rugosity"].values,
         "protection": predictors["protection"].values + 1,
         "treatment": predictors["treatment"].values + 1,
-        "resource": predictors["resource"].values,
+        "biomass": predictors["biomass"].values,
     }
     return (stan_data,)
 
@@ -198,7 +198,9 @@ def _(az, model_data):
 
 @app.cell
 def _(az, model_data):
-    az.plot_trace(model_data, compact=False, var_names=["beta_treatment"], figsize=(16, 24))
+    az.plot_trace(
+        model_data, compact=False, var_names=["beta_treatment"], figsize=(16, 24)
+    )
     return
 
 
@@ -210,7 +212,9 @@ def _(az, model_data):
 
 @app.cell
 def _(az, model_data):
-    az.plot_trace(model_data, compact=False, var_names=["beta_predator"], figsize=(16, 6))
+    az.plot_trace(
+        model_data, compact=False, var_names=["beta_predator"], figsize=(16, 6)
+    )
     return
 
 
@@ -222,7 +226,9 @@ def _(az, model_data):
 
 @app.cell
 def _(az, model_data, plt):
-    ax = az.plot_ppc(model_data, kind="kde", data_pairs={"D_obs": "D_pred"}, figsize=(8, 6))
+    ax = az.plot_ppc(
+        model_data, kind="kde", data_pairs={"D_obs": "D_pred"}, figsize=(8, 6)
+    )
     ax.set_xscale("log")
     plt.tight_layout()
     plt.show()
@@ -242,7 +248,9 @@ def _(mo, model_data):
 
 @app.cell
 def _(az, model_data):
-    D_pred_treatment = az.extract(model_data.posterior_predictive, var_names="D_pred_treatment")
+    D_pred_treatment = az.extract(
+        model_data.posterior_predictive, var_names="D_pred_treatment"
+    )
 
     D_pred_treatment = D_pred_treatment.values
 
@@ -276,9 +284,13 @@ def _(Diff_negative_1, Diff_negative_2, Diff_negative_positive, plt, sns):
         fill=True,
         alpha=0.25,
     )
-    sns.kdeplot(Diff_negative_1[0], label="Treatment 1", color="orange", fill=True, alpha=0.25)
-    sns.kdeplot(Diff_negative_2[0], label="Treatment 2", color="green", fill=True, alpha=0.25)
-    plt.xlim(-20,20)
+    sns.kdeplot(
+        Diff_negative_1[0], label="Treatment 1", color="orange", fill=True, alpha=0.25
+    )
+    sns.kdeplot(
+        Diff_negative_2[0], label="Treatment 2", color="green", fill=True, alpha=0.25
+    )
+    #plt.xlim(-20, 20)
     plt.subplot(1, 2, 2)
     sns.kdeplot(
         Diff_negative_positive[1],
@@ -287,9 +299,13 @@ def _(Diff_negative_1, Diff_negative_2, Diff_negative_positive, plt, sns):
         fill=True,
         alpha=0.25,
     )
-    sns.kdeplot(Diff_negative_1[1], label="Treatment 1", color="orange", fill=True, alpha=0.25)
-    sns.kdeplot(Diff_negative_2[1], label="Treatment 2", color="green", fill=True, alpha=0.25)
-    plt.xlim(-20,20)
+    sns.kdeplot(
+        Diff_negative_1[1], label="Treatment 1", color="orange", fill=True, alpha=0.25
+    )
+    sns.kdeplot(
+        Diff_negative_2[1], label="Treatment 2", color="green", fill=True, alpha=0.25
+    )
+    #plt.xlim(-20, 20)
     plt.legend()
     return
 
@@ -301,3 +317,4 @@ def _():
 
 if __name__ == "__main__":
     app.run()
+

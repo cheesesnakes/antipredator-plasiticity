@@ -75,9 +75,9 @@ def _(bern, beta, expit, np, params, pd):
         return 1 - beta.rvs(a, b, size=1)
 
 
-    def resource(protection):
+    def biomass(protection):
         """
-        Simulate a resource covariate.
+        Simulate a biomass covariate.
         """
 
         points = 100
@@ -99,8 +99,8 @@ def _(bern, beta, expit, np, params, pd):
     predator = np.array(predator).flatten()
     rugosity = [rugosity(p) for p in protection]
     rugosity = np.array(rugosity).flatten()
-    resource = [resource(p) for p in protection]
-    resource = np.array(resource).flatten()
+    biomass = [biomass(p) for p in protection]
+    biomass = np.array(biomass).flatten()
 
     # predictor dataframe
 
@@ -112,12 +112,13 @@ def _(bern, beta, expit, np, params, pd):
             "replicate": replicate,
             "predator": predator,
             "rugosity": rugosity,
-            "resource": resource,
+            "biomass": biomass,
         }
     )
 
     predictor_df
     return (
+        biomass,
         n_ind,
         n_protection,
         n_rep,
@@ -127,7 +128,6 @@ def _(bern, beta, expit, np, params, pd):
         predictor_df,
         protection,
         replicate,
-        resource,
         rugosity,
         treatment,
     )
@@ -151,7 +151,7 @@ def _(plt, predictor_df, sns):
     plt.title("Rugosity")
     plt.legend(title="Protection", labels=["Outside", "Inside"])
     plt.subplot(1, 3, 3)
-    sns.boxplot(data=predictor_df, x="protection", y="resource", hue="protection")
+    sns.boxplot(data=predictor_df, x="protection", y="biomass", hue="protection")
     plt.title("Resource Availability")
     plt.legend(title="Protection", labels=["Outside", "Inside"])
     plt.tight_layout()
@@ -164,7 +164,7 @@ def _(n_ind, np, params, pd, plot_id, predictor_df):
     # unobserved variables
 
 
-    def risk(rugosity, predator, treatment, protection, resource):
+    def risk(rugosity, predator, treatment, protection, biomass):
         """
         Simulate a risk covariate.
         """
@@ -179,7 +179,7 @@ def _(n_ind, np, params, pd, plot_id, predictor_df):
 
         alpha_risk = params["alpha_risk"] * protection  # effect of protection on risk
 
-        eta = alpha_risk + (beta_rugosity * rugosity) + beta_predator + beta_treatment + beta_resource * resource
+        eta = alpha_risk + (beta_rugosity * rugosity) + beta_predator + beta_treatment + beta_resource * biomass
 
         mu = np.random.normal(eta, 0.1)  # individual-level random effect
 
@@ -197,7 +197,7 @@ def _(n_ind, np, params, pd, plot_id, predictor_df):
             predictor_df.loc[predictor_df["plot_id"] == i, "predator"].iloc[0],
             predictor_df.loc[predictor_df["plot_id"] == i, "treatment"].iloc[0],
             predictor_df.loc[predictor_df["plot_id"] == i, "protection"].iloc[0],
-            predictor_df.loc[predictor_df["plot_id"] == i, "resource"].iloc[0],
+            predictor_df.loc[predictor_df["plot_id"] == i, "biomass"].iloc[0],
         )
         for i in plot_ind
     ]

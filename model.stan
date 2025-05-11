@@ -8,12 +8,17 @@ data {
   // Predictor variables
   array[S] int<lower=1, upper=2> predator; // predator presence (0 or 1)
   array[N] int<lower=1, upper=S> plot; // plot number
-  array[S] real<lower=0, upper=1> rugosity; // rugosity (continuous variable)
+  array[S, 3] real<lower=0, upper=1> rugosity_raw; // rugosity (continuous variable)
   array[S] int<lower=1, upper=2> protection; // protection level (0 or 1)
   array[S] int<lower=1, upper=4> treatment; // treatment group (0, 1, 2, or 3)
   array[S] real<lower=0, upper=1> biomass; // biomass availability (continuous variable)
 }
 parameters {
+  // Rugosity
+  
+  array[S] real<lower=0, upper=1> rugosity; // accounting for multiple rugosity measurements
+  array[S] real<lower=0> phi_rug; // standard deviation of rugosity in each plot
+  
   // Top-level coefficients
   real beta_risk; // effect of risk on duration
   
@@ -44,6 +49,7 @@ transformed parameters {
   // Latent variables per observation
   array[N] real risk; // latent risk variable
   
+  // mean risk per plot
   for (s in 1 : S) {
     mu_risk[s] = alpha_risk_protection * (protection[s] - 1)
                  + beta_predator * (predator[s] - 1) + beta_rug * rugosity[s]
@@ -87,12 +93,24 @@ model {
   beta_treatment[3] ~ normal(1, 1);
   beta_treatment[4] ~ normal(2, 1);
   
+  // rugosity priors
+  rugosity ~ beta(2, 2); // beta distribution for rugosity
+  phi_rug ~ gamma(2, 1); // precision of rugosity
+  
   // Latent variables priors
   mu_risk ~ normal(0, 2);
   
   sigma_D ~ normal(0, 0.5) T[1e-6, ]; // truncated normal scale
   
-  z_risk ~ normal(0, 0.5); // latent risk variable
+  z_risk ~ normal(0, 1); // latent risk variable
+  
+  // rugosity
+  for (s in 1 : S) {
+    for (i in 1 : 3) {
+      rugosity_raw[s, i] ~ beta(rugosity[s] * phi_rug[s],
+                                (1 - rugosity[s]) * phi_rug[s]);
+    }
+  }
   
   // Observation model
   

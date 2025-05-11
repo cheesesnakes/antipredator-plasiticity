@@ -66,13 +66,13 @@ def _(bern, beta, expit, np, params, pd):
 
         D_chain_var = params["D_protection_std"][protection]
 
-        a = np.random.normal(0, 1)  # plot level randomness
+        a = np.random.normal(0, 1, size=3)  # plot level randomness, three measurements
 
         a = D_chain_mean + D_chain_var * a
 
         b = D_max - a
 
-        return 1 - beta.rvs(a, b, size=1)
+        return np.array(1 - beta.rvs(a, b, size=3))
 
 
     def biomass(protection):
@@ -97,10 +97,24 @@ def _(bern, beta, expit, np, params, pd):
 
     predator = [predator(p) for p in protection]
     predator = np.array(predator).flatten()
-    rugosity = [rugosity(p) for p in protection]
-    rugosity = np.array(rugosity).flatten()
     biomass = [biomass(p) for p in protection]
     biomass = np.array(biomass).flatten()
+    rugosity = [rugosity(p) for p in protection]
+    rugosity = np.array(rugosity).reshape(40, 3)
+
+    rugosity_df = pd.DataFrame(
+        {
+            "plot_id": plot_id,
+            "sample_1": rugosity[:, 0],
+            "sample_2": rugosity[:, 1],
+            "sample_3": rugosity[:, 2],
+        }
+    )
+
+    rugosity_mean = [
+        np.mean(rugosity_df.loc[rugosity_df["plot_id"] == i, ["sample_1", "sample_2", "sample_3"]].values) for i in plot_id
+    ]
+    rugosity_mean = np.array(rugosity_mean).flatten()
 
     # predictor dataframe
 
@@ -110,13 +124,13 @@ def _(bern, beta, expit, np, params, pd):
             "protection": protection,
             "treatment": treatment,
             "replicate": replicate,
+            "rugosity": rugosity_mean,
             "predator": predator,
-            "rugosity": rugosity,
             "biomass": biomass,
         }
     )
 
-    predictor_df
+    rugosity_df
     return (
         biomass,
         n_ind,
@@ -129,13 +143,22 @@ def _(bern, beta, expit, np, params, pd):
         protection,
         replicate,
         rugosity,
+        rugosity_df,
+        rugosity_mean,
         treatment,
     )
 
 
 @app.cell
 def _(predictor_df):
-    predictor_df.to_csv("outputs/generated_data_predictors.csv", index=False)
+    predictor_df
+    return
+
+
+@app.cell
+def _(predictor_df, rugosity_df):
+    predictor_df.to_csv("outputs/generated_data_predictor.csv", index=False)
+    rugosity_df.to_csv("outputs/generated_data_rugosity.csv", index=False)
     return
 
 
@@ -319,17 +342,26 @@ def _(behaviour, plt, sns):
     plt.subplot(1, 3, 1)
     sns.histplot(data=behaviour, x="foraging", hue="treatment", kde=False)
     plt.title("Foraging")
-    plt.legend(title="Protection", labels=["Negative", "Positive", "Treatment 1", "Treatment 2"])
+    plt.legend(
+        title="Protection",
+        labels=["Negative", "Positive", "Treatment 1", "Treatment 2"],
+    )
     plt.xscale("log")
     plt.subplot(1, 3, 2)
     sns.histplot(data=behaviour, x="vigilance", hue="treatment", kde=False)
     plt.title("Vigilance")
-    plt.legend(title="Protection", labels=["Negative", "Positive", "Treatment 1", "Treatment 2"])
+    plt.legend(
+        title="Protection",
+        labels=["Negative", "Positive", "Treatment 1", "Treatment 2"],
+    )
     plt.xscale("log")
     plt.subplot(1, 3, 3)
     sns.histplot(data=behaviour, x="movement", hue="treatment", kde=False)
     plt.title("Movement")
-    plt.legend(title="Protection", labels=["Negative", "Positive", "Treatment 1", "Treatment 2"])
+    plt.legend(
+        title="Protection",
+        labels=["Negative", "Positive", "Treatment 1", "Treatment 2"],
+    )
     plt.xscale("log")
     plt.tight_layout()
     plt.show()

@@ -173,6 +173,18 @@ rug = (
 
 predictors = predictors.merge(rug, how="left", on="deployment_id")
 
+# raw rugosity data
+rugosity["plot_id"] = (
+    rugosity["deployment_id"].astype(str) + "_" + rugosity["treatment"].astype(str)
+)
+rugosity.drop(
+    columns=["deployment_id", "treatment", "measured_length_cm"], inplace=True
+)
+rugosity = rugosity.pivot(
+    index="plot_id", columns="sample", values="rugosity"
+).reset_index()
+rugosity.rename(columns={1: "sample_1", 2: "sample_2", 3: "sample_3"}, inplace=True)
+
 # calculate benthic cover
 
 benthic_cover["category"].unique()
@@ -421,3 +433,11 @@ print("First 10 rows:\n")
 print(response.head(10))
 print("Summary:\n")
 print(response.describe(include="all"))
+
+# save data
+
+predictors.to_csv("outputs/predictors.csv", index=False)
+rugosity.to_csv("outputs/rugosity_raw.csv", index=False)
+abundance.to_csv("outputs/abundance.csv", index=False)
+abundance_size.to_csv("outputs/abundance_size.csv", index=False)
+response.to_csv("outputs/response.csv", index=False)

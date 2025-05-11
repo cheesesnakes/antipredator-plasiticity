@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 # load data
 
@@ -27,8 +28,7 @@ sizes = pd.read_csv("data/sizes.csv")
 individuals.columns = individuals.columns.str.lower()
 individuals.columns = individuals.columns.str.replace("-", "_")
 
-individuals.rename(columns={"index": "ind_id"}, inplace=True)
-
+individuals
 print("Individuals data")
 print("=====================================")
 print("Columns:\n")
@@ -124,6 +124,8 @@ print(benthic_cover.describe(include="all"))
 rugosity.columns = rugosity.columns.str.lower()
 rugosity.columns = rugosity.columns.str.replace("-", "_")
 
+rugosity["treatment"] = rugosity["treatment"].str.lower().str.replace(" ", "-")
+
 print("Rugosity data")
 print("=====================================")
 print("Columns:\n")
@@ -174,9 +176,7 @@ rug = (
 predictors = predictors.merge(rug, how="left", on="deployment_id")
 
 # raw rugosity data
-rugosity["plot_id"] = (
-    rugosity["deployment_id"].astype(str) + "_" + rugosity["treatment"].astype(str)
-)
+
 rugosity.drop(
     columns=["deployment_id", "treatment", "measured_length_cm"], inplace=True
 )
@@ -289,6 +289,8 @@ abundance = abundance.merge(
     on="plot_id",
 )
 
+individuals
+
 print("Plot level abundance data")
 print("=====================================")
 print("Columns:\n")
@@ -298,13 +300,14 @@ print(abundance.head(10))
 print("Summary:\n")
 print(abundance.describe(include="all"))
 
+print(individuals["size_class"].unique())
 
 abundance_size = (
     individuals[["ind_id", "plot_id", "size_class"]]
     .groupby(["plot_id", "size_class"])
     .size()
     .reset_index(name="n_prey")
-)
+).copy()
 
 abundance_size = abundance_size.merge(
     predators[["plot_id", "predator_id", "size_class"]]
@@ -433,6 +436,67 @@ print("First 10 rows:\n")
 print(response.head(10))
 print("Summary:\n")
 print(response.describe(include="all"))
+
+# make dummy variables for categorical variables
+
+data = [predictors, abundance, abundance_size, response, rugosity]
+
+categoricals = [
+    "deployment_id",
+    "treatment",
+    "plot_id",
+    "location",
+    "protection",
+    "ind_id",
+    "species",
+    "size_class",
+]
+
+order_categoricals = {
+    "deployment_id": np.sort(predictors["deployment_id"].unique()),
+    "treatment": np.sort(predictors["treatment"].unique()),
+    "plot_id": np.sort(predictors["plot_id"].unique()),
+    "location": np.sort(predictors["location"].unique()),
+    "protection": np.sort(predictors["protection"].unique())[::-1],  # reverse order
+    "ind_id": np.sort(individuals["ind_id"].unique()),
+    "species": np.sort(individuals["species"].unique()),
+    "size_class": np.sort(individuals["size_class"].unique()),
+}
+
+
+# convert categorical variables to codes
+
+for name, df in zip(
+    ["predictors", "abundance", "abundance_size", "response", "rugosity"], data
+):
+    found_issue = False
+    for col in df.columns:
+        if col in categoricals:
+            defined = set(order_categoricals[col])
+            observed = set(df[col].dropna().unique())
+            unexpected = observed - defined
+
+            if unexpected:
+                problem_rows = df[df[col].isin(unexpected)][[col]].copy()
+                print(
+                    f"\n⚠️ Warning in '{name}' — unexpected values in column '{col}':\n"
+                )
+                print("Rows with unexpected values:")
+                print(problem_rows)
+                found_issue = True
+                break  # break inner loop
+    if found_issue:
+        break  # break outer loop too
+    else:
+        print(f"All values in '{name}' are as expected\n")
+
+for df in data:
+    for col in df.columns:
+        if col in categoricals:
+            df[col] = pd.Categorical(
+                df[col], categories=order_categoricals[col], ordered=True
+            )
+            df[col] = df[col].cat.codes
 
 # save data
 

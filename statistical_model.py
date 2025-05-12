@@ -154,8 +154,8 @@ def _(az, dirs, model, os, response, stan_data):
             parallel_chains=4,
             threads_per_chain=8,
             output_dir=output_dir,
-            # max_treedepth=15,
-            # adapt_delta=0.99,
+            max_treedepth=15,
+            adapt_delta=0.95,
         )
 
         obs = az.from_dict(
@@ -196,7 +196,7 @@ def _(az, model_data):
 
 @app.cell
 def _(az, model_data):
-    az.plot_trace(model_data, compact=False, var_names=["beta_treatment"], figsize=(16, 24))
+    az.plot_trace(model_data, compact=False, var_names=["beta_treatment"], figsize=(16, 6))
     return
 
 
@@ -220,7 +220,7 @@ def _(az, model_data):
 
 @app.cell
 def _(az, model_data, plt):
-    az.plot_ppc(model_data, kind="kde", data_pairs={"D_obs": "D_pred", "bites_obs": "bites_pred"}, figsize=(10, 6))
+    az.plot_ppc(model_data, kind="cumulative", data_pairs={"D_obs": "D_pred", "bites_obs": "bites_pred"}, figsize=(10, 6))
     plt.tight_layout()
     plt.show()
     return

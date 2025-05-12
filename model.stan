@@ -31,11 +31,11 @@ parameters {
   real beta_risk_bites; // effect of risk on bites
   
   // Risk model coefficients
-  real alpha_risk_protection; // random risk per individual
-  real beta_predator; // effect of predator presence on risk
+  ordered[2] alpha_risk_protection; // random risk per individual
+  ordered[2] beta_predator; // effect of predator presence on risk
   real beta_rug; // effect of rugosity on risk
   ordered[T] beta_treatment; // effect of treatment on risk
-  array[S] real<lower=0> sigma_risk; // standard deviation of risk
+  real<lower=0> sigma_risk; // standard deviation of risk
   real beta_res; // effect of biomass availability on energy
   
   // Observation model
@@ -58,14 +58,14 @@ transformed parameters {
   
   // mean risk per plot
   for (s in 1 : S) {
-    mu_risk[s] = alpha_risk_protection * (protection[s] - 1)
-                 + beta_predator * (predator[s] - 1) + beta_rug * rugosity[s]
+    mu_risk[s] = alpha_risk_protection[protection[s]]
+                 + beta_predator[predator[s]] + beta_rug * rugosity[s]
                  + beta_treatment[treatment[s]] + beta_res * biomass[s];
   }
   
   for (n in 1 : N) {
     // Latent variables
-    risk[n] = mu_risk[plot[n]] + sigma_risk[plot[n]] * z_risk[n];
+    risk[n] = mu_risk[plot[n]] + sigma_risk * z_risk[n];
     
     for (b in 1 : B) {
       // zero-inflation probability
@@ -104,12 +104,22 @@ model {
   // Risk model priors
   beta_rug ~ normal(-1, 1);
   beta_res ~ normal(0, 1);
-  alpha_risk_protection ~ normal(0, 1);
-  beta_predator ~ normal(0, 1);
   
-  beta_treatment ~ normal(0, 1);
+  for (t in 1 : T) {
+    beta_treatment[t] ~ normal(0, 1);
+  }
   
-  z_risk ~ normal(0, 1); // latent risk variable
+  for (p in 1 : 2) {
+    beta_predator[p] ~ normal(0, 1);
+  }
+  for (r in 1 : 2) {
+    alpha_risk_protection[r] ~ normal(0, 1);
+  }
+  
+  for (i in 1 : 3) {
+    z_risk[i] ~ normal(0, 1); // risk latent variable
+  }
+  
   sigma_risk ~ exponential(1);
   
   // rugosity priors
@@ -117,11 +127,9 @@ model {
   phi_rug ~ gamma(2, 2); // precision of rugosity
   
   // Latent variables priors
-  risk ~ normal(0, 2); // latent risk variable
   
   for (b in 1 : B) {
     sigma_D[b] ~ exponential(1); // standard deviation of duration
-    pi[ : , b] ~ beta(1, 1); // zero-inflation probability
   }
   
   // rugosity

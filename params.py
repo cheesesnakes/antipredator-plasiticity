@@ -10,10 +10,10 @@ params = {
     # risk variable
     "beta_risk_resource": -1,
     "beta_risk_rugosity": -1,
-    "beta_risk_predator": 0.5,
+    "beta_risk_predator": [0, 0.5],
     "beta_risk_treatment": [0, 0.5, 1, 2],
-    "alpha_risk": 0.5,
-    "sigma_risk": [0.5, 0.5],
+    "alpha_risk": [0, 0.5],
+    "sigma_risk": 1,
     # time model: foraging, vigilance, movement
     "beta_risk": [-0.5, 0.5, -0.1],
     "beta_risk_bites": -0.5,

@@ -179,19 +179,19 @@ def _(n_ind, np, params, pd, plot_id, predictor_df):
 
         beta_rugosity = params["beta_risk_rugosity"]
 
-        beta_predator = params["beta_risk_predator"] * predator
+        beta_predator = params["beta_risk_predator"][predator]
 
         beta_treatment = params["beta_risk_treatment"][treatment]
 
         beta_resource = params["beta_risk_resource"]
 
-        alpha_risk = params["alpha_risk"] * protection  # effect of protection on risk
+        alpha_risk = params["alpha_risk"][protection]  # effect of protection on risk
 
         eta = alpha_risk + (beta_rugosity * rugosity) + beta_predator + beta_treatment + beta_resource * biomass
 
         mu = np.random.normal(eta, 0.1)  # individual-level random effect
 
-        sigma = np.random.exponential(params["sigma_risk"][protection])  # individual-level randomness
+        sigma = params["sigma_risk"]
 
         return np.random.normal(mu, sigma, size=1)
 
@@ -254,7 +254,7 @@ def _(bern, expit, indiviudals, np, params, pd, plot_ind, risk, unobserved_df):
         Simulate a behavioural response.
         """
 
-        beta_risk = np.random.normal(params["beta_risk"][behaviour], 0.1)
+        beta_risk = params["beta_risk"][behaviour]
 
         mu = beta_risk * risk
 
@@ -277,7 +277,7 @@ def _(bern, expit, indiviudals, np, params, pd, plot_ind, risk, unobserved_df):
         """
 
         if foraging > 0:
-            beta_risk = np.random.normal(params["beta_risk_bites"], 0.1)
+            beta_risk = params["beta_risk_bites"]
 
             mu = beta_risk * risk
 

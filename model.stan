@@ -39,7 +39,7 @@ parameters {
   real beta_res; // effect of biomass availability on energy
   
   // Observation model
-  array[B] real<lower=1e-6, upper=10> sigma_D; // standard deviation of duration, non-zero
+  ordered[B] sigma_D; // standard deviation of duration, non-zero
   
   // Latent variables non-centred
   array[N] real z_risk; // latent risk variable
@@ -116,11 +116,9 @@ model {
     alpha_risk_protection[r] ~ normal(0, 1);
   }
   
-  for (i in 1 : 3) {
-    z_risk[i] ~ normal(0, 1); // risk latent variable
-  }
+  z_risk ~ normal(0, 1); // risk latent variable
   
-  sigma_risk ~ exponential(1);
+  sigma_risk ~ normal(0, 1); // standard deviation of risk
   
   // rugosity priors
   rugosity ~ beta(1, 1); // beta distribution for rugosity
@@ -129,7 +127,8 @@ model {
   // Latent variables priors
   
   for (b in 1 : B) {
-    sigma_D[b] ~ exponential(1); // standard deviation of duration
+    sigma_D[b] ~ normal(0, 1); // standard deviation of duration
+    pi[ : , b] ~ beta(1, 1); // zero-inflation probability
   }
   
   // rugosity
@@ -145,9 +144,9 @@ model {
   for (n in 1 : N) {
     for (b in 1 : B) {
       if (D[n, b] == 0) {
-        target += bernoulli_lpmf(1 | pi[n, b]); // zero-inflation
+        target += bernoulli_lpmf(0 | pi[n, b]); // zero-inflation
       } else {
-        target += bernoulli_lpmf(0 | pi[n, b]); // non-zero inflation
+        target += bernoulli_lpmf(1 | pi[n, b]); // non-zero inflation
         target += lognormal_lpdf(D[n, b] | mu_D[n, b], sigma_D[b]); // duration model
         if (b == 1 && D[n, b] > 0) {
           target += poisson_lpmf(bites[n] | lamba_risk[n]); // bites model
@@ -157,10 +156,10 @@ model {
   }
 }
 generated quantities {
+  // posterior predictive checks
   array[N, B] real D_pred; // predicted durations
   array[N] real bites_pred; // predicted bites
   
-  // posterior predictive check
   for (n in 1 : N) {
     for (b in 1 : B) {
       if (bernoulli_rng(pi[n, b])) {
@@ -173,6 +172,48 @@ generated quantities {
         bites_pred[n] = poisson_rng(lamba_risk[n]); // bites model
       } else {
         bites_pred[n] = 0;
+      }
+    }
+  }
+  // calculate counterfactuals for each treatment
+  array[T, B, N] real D_cf; // counterfactual duration
+  array[T, N] real bites_cf; // counterfactual bites
+  
+  for (t in 1 : T) {
+    for (b in 1 : B) {
+      for (n in 1 : N) {
+        // calculate mean risk
+        real mu_risk_cf = alpha_risk_protection[protection[plot[n]]]
+                          + beta_predator[predator[plot[n]]]
+                          + beta_rug * rugosity[plot[n]] + beta_treatment[t]
+                          + beta_res * biomass[plot[n]];
+        // calculate risk
+        real risk_cf = mu_risk_cf + sigma_risk * z_risk[n];
+        
+        // calculate mean duration
+        
+        real mu_D_cf = beta_risk[b] * risk_cf;
+        
+        // calculate zero-inflation probability
+        
+        real pi_cf = inv_logit(alpha_pi[b] + beta_pi_risk[b] * risk_cf);
+        
+        // calculate counterfactual duration
+        if (bernoulli_rng(pi_cf)) {
+          D_cf[t, b, n] = 0; // zero-inflation
+        } else {
+          D_cf[t, b, n] = lognormal_rng(mu_D_cf, sigma_D[b]);
+        }
+        
+        // calculate counterfactual bites
+        
+        real lamba_risk_cf = exp(beta_risk_bites * risk_cf);
+        
+        if (b == 1 && D_cf[t, b, n] > 0) {
+          bites_cf[t, n] = poisson_rng(lamba_risk_cf); // bites model
+        } else {
+          bites_cf[t, n] = 0;
+        }
       }
     }
   }

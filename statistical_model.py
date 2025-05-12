@@ -11,19 +11,12 @@ def _():
     from cmdstanpy import CmdStanModel
 
     # from cmdstanpy import install_cmdstan
-    from cmdstanpy import CmdStanMCMC
 
     import pandas as pd
     import numpy as np
-
     import arviz as az
     import matplotlib.pyplot as plt
     import seaborn as sns
-
-    from scipy.special import logsumexp
-    from scipy.stats import gamma
-
-    from tqdm import tqdm
     import os
 
     # Install CmdStan if not already installed
@@ -43,7 +36,12 @@ def _():
             "outputs/generated_data_rugosity.csv",
         ]
     else:
-        dirs = ["outputs/predictors.csv", "outputs/response.csv", "outputs/model/data/", "outputs/rugosity_raw.csv"]
+        dirs = [
+            "outputs/predictors.csv",
+            "outputs/response.csv",
+            "outputs/model/data/",
+            "outputs/rugosity_raw.csv",
+        ]
     return CmdStanModel, az, dirs, mo, os, pd, plt
 
 
@@ -102,7 +100,7 @@ def _(CmdStanModel):
 
 @app.cell
 def _(az, dirs, model, os, response, stan_data):
-    run = True
+    run = False
     chains = 4
 
     output_dir = dirs[2]
@@ -133,6 +131,8 @@ def _(az, dirs, model, os, response, stan_data):
             posterior_predictive=[
                 "D_pred",
                 "bites_pred",
+                "D_cf",
+                "bites_cf",
             ],
         )
 
@@ -154,8 +154,8 @@ def _(az, dirs, model, os, response, stan_data):
             parallel_chains=4,
             threads_per_chain=8,
             output_dir=output_dir,
-            max_treedepth=15,
-            adapt_delta=0.95,
+            # max_treedepth=15,
+            # adapt_delta=0.99,
         )
 
         obs = az.from_dict(
@@ -169,6 +169,8 @@ def _(az, dirs, model, os, response, stan_data):
             posterior_predictive=[
                 "D_pred",
                 "bites_pred",
+                "D_cf",
+                "bites_cf",
             ],
         )
         model_data = az.concat(model_data, obs)
@@ -196,7 +198,9 @@ def _(az, model_data):
 
 @app.cell
 def _(az, model_data):
-    az.plot_trace(model_data, compact=False, var_names=["beta_treatment"], figsize=(16, 6))
+    az.plot_trace(
+        model_data, compact=False, var_names=["beta_treatment"], figsize=(16, 6)
+    )
     return
 
 
@@ -208,7 +212,9 @@ def _(az, model_data):
 
 @app.cell
 def _(az, model_data):
-    az.plot_trace(model_data, compact=False, var_names=["beta_predator"], figsize=(16, 6))
+    az.plot_trace(
+        model_data, compact=False, var_names=["beta_predator"], figsize=(16, 6)
+    )
     return
 
 
@@ -220,7 +226,12 @@ def _(az, model_data):
 
 @app.cell
 def _(az, model_data, plt):
-    az.plot_ppc(model_data, kind="cumulative", data_pairs={"D_obs": "D_pred", "bites_obs": "bites_pred"}, figsize=(10, 6))
+    az.plot_ppc(
+        model_data,
+        kind="cumulative",
+        data_pairs={"D_obs": "D_pred", "bites_obs": "bites_pred"},
+        figsize=(10, 6),
+    )
     plt.tight_layout()
     plt.show()
     return
@@ -237,43 +248,38 @@ def _(mo, model_data):
     return
 
 
-@app.cell(disabled=True)
+@app.cell
 def _(az, model_data):
-    D_pred_treatment = az.extract(model_data.posterior_predictive, var_names="D_pred_treatment")
+    D_cf = az.extract(model_data.posterior_predictive, var_names="D_cf")
 
-    D_pred_treatment = D_pred_treatment.values
+    D_cf = D_cf.values
 
-    Diff_negative_positive = D_pred_treatment[1,] - D_pred_treatment[0,]
+    Diff_negative_positive = D_cf[1,] - D_cf[0,]
 
-    Diff_negative_positive = Diff_negative_positive.mean(axis=3)
+    Diff_negative_positive = Diff_negative_positive.mean(axis=2)
 
-    Diff_negative_1 = D_pred_treatment[2,] - D_pred_treatment[0,]
+    Diff_negative_1 = D_cf[2,] - D_cf[0,]
 
-    Diff_negative_1 = Diff_negative_1.mean(axis=3)
+    Diff_negative_1 = Diff_negative_1.mean(axis=2)
 
-    Diff_negative_2 = D_pred_treatment[3,] - D_pred_treatment[0,]
+    Diff_negative_2 = D_cf[3,] - D_cf[0,]
 
-    Diff_negative_2 = Diff_negative_2.mean(axis=3)
+    Diff_negative_2 = Diff_negative_2.mean(axis=2)
     return Diff_negative_1, Diff_negative_2, Diff_negative_positive
 
 
-@app.cell(disabled=True)
+@app.cell
 def _(Diff_negative_1, Diff_negative_2, Diff_negative_positive, az, plt):
     # Combine posteriors
-
-    B = ["Foraging", "Vigilance", "Movement"]
 
     fig, ax1 = plt.subplots(1, 3, figsize=(18, 6))
     ax1 = ax1.flatten()
 
     for b in range(3):
         posterior_data = {
-            "Positive Control (Outside)": Diff_negative_positive[0, :, b],
-            "Treatment 1 (Outside)": Diff_negative_1[0, :, b],
-            "Treatment 2 (Outside)": Diff_negative_2[0, :, b],
-            "Positive Control (Inside)": Diff_negative_positive[1, :, b],
-            "Treatment 1 (Inside)": Diff_negative_1[1, :, b],
-            "Treatment 2 (Inside)": Diff_negative_2[1, :, b],
+            "Positive Control": Diff_negative_positive[b, :],
+            "Treatment 1": Diff_negative_1[b, :],
+            "Treatment 2": Diff_negative_2[b, :],
         }
 
         # Create forest plot

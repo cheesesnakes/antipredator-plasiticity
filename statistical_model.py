@@ -102,7 +102,7 @@ def _(CmdStanModel):
 
 @app.cell
 def _(az, dirs, model, os, response, stan_data):
-    run = False
+    run = True
     chains = 4
 
     output_dir = dirs[2]
@@ -220,7 +220,7 @@ def _(az, model_data):
 
 @app.cell
 def _(az, model_data, plt):
-    az.plot_ppc(model_data, kind="kde", data_pairs={"D_obs": "D_pred","bites_obs": "bites_pred"}, figsize=(10, 6))
+    az.plot_ppc(model_data, kind="kde", data_pairs={"D_obs": "D_pred", "bites_obs": "bites_pred"}, figsize=(10, 6))
     plt.tight_layout()
     plt.show()
     return

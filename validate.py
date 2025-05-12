@@ -14,13 +14,12 @@ model_data = az.from_cmdstan(
     output_dir + "*.csv",
     posterior_predictive=[
         "D_pred",
-        "D_pred_treatment",
-        "mu_risk_treatment",
-        "mu_D_treatment",
+        "bites_pred",
     ],
 )
 
 posterior = model_data.posterior
+
 
 print("Model data loaded successfully.")
 
@@ -50,15 +49,15 @@ def compare_parameters():
 
     # Get the true parameter values from the true_params dictionary.
     true_values = [
-        true_params.get("beta_risk")[0],
-        true_params.get("alpha_pi")[0],
-        true_params.get("beta_pi_risk")[0],
+        true_params.get("beta_risk"),
+        true_params.get("alpha_pi"),
+        true_params.get("beta_pi_risk"),
         true_params.get("alpha_risk"),
         true_params.get("beta_risk_resource"),
         true_params.get("beta_risk_predator"),
         true_params.get("beta_risk_rugosity"),
         true_params.get("beta_risk_treatment"),
-        true_params.get("sigma")[0],
+        true_params.get("sigma"),
     ]
 
     # Dynamically calculate the number of rows and columns
@@ -75,11 +74,11 @@ def compare_parameters():
         if param_name in posterior:
             print(f"Plotting {param_name}")
             samples = posterior[param_name].values
-            if samples.ndim > 2:  # Handle parameters with multiple levels
+            if samples.ndim == 3:  # Handle parameters with multiple levels
                 for level in range(samples.shape[2]):
                     print(f"  Level {level}")
                     sns.histplot(
-                        samples[:, level].flatten(),
+                        samples[:, :, level].flatten(),
                         ax=ax,
                         kde=True,
                         label=f"Level {level + 1}",
@@ -120,7 +119,7 @@ def compare_parameters():
             samples = posterior[param_name].values
             if samples.ndim > 2:  # Handle parameters with multiple levels
                 for level in range(samples.shape[2]):
-                    level_samples = samples[:, level].flatten()
+                    level_samples = samples[:, :, level].flatten()
                     posterior_mean = level_samples.mean()
                     posterior_median = np.median(level_samples)
                     posterior_95_ci = np.percentile(level_samples, [2.5, 97.5])

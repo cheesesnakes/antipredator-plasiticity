@@ -18,8 +18,8 @@ data {
 parameters {
   // Rugosity
   
-  array[S] real<lower=0, upper=1> rugosity; // accounting for multiple rugosity measurements
-  array[S] real<lower=0> phi_rug; // standard deviation of rugosity in each plot
+  array[S] real<lower=1e-6, upper=(1 - 1e-6)> rugosity; // accounting for multiple rugosity measurements
+  array[S] real<lower=1e-6> phi_rug; // standard deviation of rugosity in each plot
   
   // Top-level coefficients for duration
   ordered[B] beta_risk; // effect of risk on duration
@@ -39,7 +39,7 @@ parameters {
   real beta_res; // effect of biomass availability on energy
   
   // Observation model
-  real<lower=1e-6, upper=10> sigma_D; // standard deviation of duration, non-zero
+  array[B] real<lower=1e-6, upper=10> sigma_D; // standard deviation of duration, non-zero
   
   // Latent variables non-centred
   array[N] real z_risk; // latent risk variable
@@ -51,7 +51,7 @@ transformed parameters {
   
   array[N] real lamba_risk; // mean bites
   
-  array[N, B] real pi; // zero-inflation probability
+  array[N, B] real<lower=0, upper=1> pi; // zero-inflation probability
   
   // Latent variables per observation
   array[N] real risk; // latent risk variable
@@ -85,13 +85,24 @@ model {
   
   // Top-level priors
   beta_risk_bites ~ normal(0, 1);
-  beta_risk ~ normal(0, 1);
   
-  beta_pi_risk ~ normal(0, 1);
-  alpha_pi ~ normal(0, 2);
+  // priors for foraging
+  beta_risk[1] ~ normal(-1, 1);
+  beta_pi_risk[1] ~ normal(1, 1);
+  alpha_pi[1] ~ normal(-1, 2);
+  
+  // priors for vigilance
+  beta_risk[2] ~ normal(1, 1);
+  beta_pi_risk[2] ~ normal(-1, 1);
+  alpha_pi[2] ~ normal(-1, 2);
+  
+  // priors for movement
+  beta_risk[3] ~ normal(-1, 1);
+  beta_pi_risk[3] ~ normal(0, 1);
+  alpha_pi[3] ~ normal(-1, 2);
   
   // Risk model priors
-  beta_rug ~ normal(0, 1);
+  beta_rug ~ normal(-1, 1);
   beta_res ~ normal(0, 1);
   alpha_risk_protection ~ normal(0, 1);
   beta_predator ~ normal(0, 1);
@@ -106,7 +117,12 @@ model {
   phi_rug ~ gamma(2, 2); // precision of rugosity
   
   // Latent variables priors
-  sigma_D ~ exponential(1);
+  risk ~ normal(0, 2); // latent risk variable
+  
+  for (b in 1 : B) {
+    sigma_D[b] ~ exponential(1); // standard deviation of duration
+    pi[ : , b] ~ beta(1, 1); // zero-inflation probability
+  }
   
   // rugosity
   for (s in 1 : S) {
@@ -124,7 +140,7 @@ model {
         target += bernoulli_lpmf(1 | pi[n, b]); // zero-inflation
       } else {
         target += bernoulli_lpmf(0 | pi[n, b]); // non-zero inflation
-        target += lognormal_lpdf(D[n, b] | mu_D[n, b], sigma_D); // duration model
+        target += lognormal_lpdf(D[n, b] | mu_D[n, b], sigma_D[b]); // duration model
         if (b == 1 && D[n, b] > 0) {
           target += poisson_lpmf(bites[n] | lamba_risk[n]); // bites model
         }
@@ -142,7 +158,7 @@ generated quantities {
       if (bernoulli_rng(pi[n, b])) {
         D_pred[n, b] = 0; // zero-inflation
       } else {
-        D_pred[n, b] = lognormal_rng(mu_D[n, b], sigma_D);
+        D_pred[n, b] = lognormal_rng(mu_D[n, b], sigma_D[b]);
       }
       
       if (b == 1 && D_pred[n, b] > 0) {

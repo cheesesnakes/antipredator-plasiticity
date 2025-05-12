@@ -460,7 +460,9 @@ categoricals = [
 
 order_categoricals = {
     "deployment_id": np.sort(predictors["deployment_id"].unique()),
-    "treatment": np.sort(predictors["treatment"].unique()),
+    "treatment": np.array(
+        ["negative-control", "positive-control", "barracuda", "grouper"], dtype=object
+    ),
     "plot_id": np.sort(predictors["plot_id"].unique()),
     "location": np.sort(predictors["location"].unique()),
     "protection": np.sort(predictors["protection"].unique())[::-1],  # reverse order
@@ -468,7 +470,6 @@ order_categoricals = {
     "species": np.sort(individuals["species"].unique()),
     "size_class": np.sort(individuals["size_class"].unique()),
 }
-
 
 # convert categorical variables to codes
 

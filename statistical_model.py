@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.12.10"
+__generated_with = "0.13.6"
 app = marimo.App(width="medium")
 
 
@@ -30,8 +30,10 @@ def _():
     # install_cmdstan()
 
     sns.set_theme(style="white", palette="pastel")
+    # ArviZ ships with style sheets!
+    az.style.use("arviz-whitegrid")
 
-    status = "data"
+    status = "test"
 
     if status == "test":
         dirs = [
@@ -42,22 +44,7 @@ def _():
         ]
     else:
         dirs = ["outputs/predictors.csv", "outputs/response.csv", "outputs/model/data/", "outputs/rugosity_raw.csv"]
-    return (
-        CmdStanMCMC,
-        CmdStanModel,
-        az,
-        dirs,
-        gamma,
-        logsumexp,
-        mo,
-        np,
-        os,
-        pd,
-        plt,
-        sns,
-        status,
-        tqdm,
-    )
+    return CmdStanModel, az, dirs, mo, os, pd, plt
 
 
 @app.cell
@@ -93,7 +80,8 @@ def _(predictors, response, rugosity):
         "B": 3,
         "P": predictors["protection"].nunique(),
         "S": predictors["plot_id"].nunique(),
-        "D": response["foraging"].values,
+        "D": response[["foraging", "vigilance", "movement"]].values,
+        "bites": response["bites"].values,
         "predator": predictors["predator"].values + 1,
         "plot": response["plot_id"].values,
         "rugosity_raw": rugosity[["sample_1", "sample_2", "sample_3"]].values,
@@ -114,7 +102,7 @@ def _(CmdStanModel):
 
 @app.cell
 def _(az, dirs, model, os, response, stan_data):
-    run = True
+    run = False
     chains = 4
 
     output_dir = dirs[2]
@@ -133,15 +121,18 @@ def _(az, dirs, model, os, response, stan_data):
     if not run and len(model_files) == chains:
         print("Loading samples from existing files...")
 
-        obs = az.from_dict(observed_data={"D_obs": response["vigilance"].values})
+        obs = az.from_dict(
+            observed_data={
+                "D_obs": response["vigilance"].values,
+                "bites_obs": response["bites"].values,
+            }
+        )
 
         model_data = az.from_cmdstan(
             output_dir + "*.csv",
             posterior_predictive=[
                 "D_pred",
-                "D_pred_treatment",
-                "mu_risk_treatment",
-                "mu_D_treatment",
+                "bites_pred",
             ],
         )
 
@@ -161,39 +152,33 @@ def _(az, dirs, model, os, response, stan_data):
             iter_sampling=1000,
             seed=123,
             parallel_chains=4,
-            threads_per_chain=4,
+            threads_per_chain=8,
             output_dir=output_dir,
             # max_treedepth=15,
             # adapt_delta=0.99,
         )
 
-        obs = az.from_dict(observed_data={"D_obs": response["vigilance"].values})
+        obs = az.from_dict(
+            observed_data={
+                "D_obs": response["vigilance"].values,
+                "bites_obs": response["bites"].values,
+            }
+        )
         model_data = az.from_cmdstanpy(
             fit,
             posterior_predictive=[
                 "D_pred",
-                "D_pred_treatment",
-                "mu_risk_treatment",
-                "mu_D_treatment",
+                "bites_pred",
             ],
         )
         model_data = az.concat(model_data, obs)
-    return (
-        chains,
-        file,
-        filename,
-        fit,
-        model_data,
-        model_files,
-        obs,
-        output_dir,
-        run,
-    )
+    return fit, model_data, run
 
 
 @app.cell
-def _():
-    # fit.diagnose() # if divergence is observed
+def _(fit, mo, run):
+    if run:
+        mo.md(fit.diagnose())  # if divergence is observed
     return
 
 
@@ -235,11 +220,10 @@ def _(az, model_data):
 
 @app.cell
 def _(az, model_data, plt):
-    ax = az.plot_ppc(model_data, kind="kde", data_pairs={"D_obs": "D_pred"}, figsize=(8, 6))
-    plt.xlim(-1, 120)
+    az.plot_ppc(model_data, kind="kde", data_pairs={"D_obs": "D_pred","bites_obs": "bites_pred"}, figsize=(10, 6))
     plt.tight_layout()
     plt.show()
-    return (ax,)
+    return
 
 
 @app.cell
@@ -250,10 +234,10 @@ def _(mo, model_data):
     n_samples = n_chains * n_draw
 
     mo.md(f"Total number of samples = {n_samples}")
-    return n_chains, n_draw, n_samples, posterior
+    return
 
 
-@app.cell
+@app.cell(disabled=True)
 def _(az, model_data):
     D_pred_treatment = az.extract(model_data.posterior_predictive, var_names="D_pred_treatment")
 
@@ -261,49 +245,52 @@ def _(az, model_data):
 
     Diff_negative_positive = D_pred_treatment[1,] - D_pred_treatment[0,]
 
-    Diff_negative_positive = Diff_negative_positive.mean(axis=1)
+    Diff_negative_positive = Diff_negative_positive.mean(axis=3)
 
     Diff_negative_1 = D_pred_treatment[2,] - D_pred_treatment[0,]
 
-    Diff_negative_1 = Diff_negative_1.mean(axis=1)
+    Diff_negative_1 = Diff_negative_1.mean(axis=3)
 
     Diff_negative_2 = D_pred_treatment[3,] - D_pred_treatment[0,]
 
-    Diff_negative_2 = Diff_negative_2.mean(axis=1)
-    return (
-        D_pred_treatment,
-        Diff_negative_1,
-        Diff_negative_2,
-        Diff_negative_positive,
-    )
+    Diff_negative_2 = Diff_negative_2.mean(axis=3)
+    return Diff_negative_1, Diff_negative_2, Diff_negative_positive
 
 
-@app.cell
-def _(Diff_negative_1, Diff_negative_2, Diff_negative_positive, plt, sns):
-    plt.figure(figsize=(16, 6))
-    plt.subplot(1, 2, 1)
-    sns.kdeplot(
-        Diff_negative_positive[0],
-        label="Postive Control",
-        color="blue",
-        fill=True,
-        alpha=0.25,
-    )
-    sns.kdeplot(Diff_negative_1[0], label="Treatment 1", color="orange", fill=True, alpha=0.25)
-    sns.kdeplot(Diff_negative_2[0], label="Treatment 2", color="green", fill=True, alpha=0.25)
-    # plt.xlim(-120, 120)
-    plt.subplot(1, 2, 2)
-    sns.kdeplot(
-        Diff_negative_positive[1],
-        label="Postive Control",
-        color="blue",
-        fill=True,
-        alpha=0.25,
-    )
-    sns.kdeplot(Diff_negative_1[1], label="Treatment 1", color="orange", fill=True, alpha=0.25)
-    sns.kdeplot(Diff_negative_2[1], label="Treatment 2", color="green", fill=True, alpha=0.25)
-    # plt.xlim(-120, 120)
-    plt.legend()
+@app.cell(disabled=True)
+def _(Diff_negative_1, Diff_negative_2, Diff_negative_positive, az, plt):
+    # Combine posteriors
+
+    B = ["Foraging", "Vigilance", "Movement"]
+
+    fig, ax1 = plt.subplots(1, 3, figsize=(18, 6))
+    ax1 = ax1.flatten()
+
+    for b in range(3):
+        posterior_data = {
+            "Positive Control (Outside)": Diff_negative_positive[0, :, b],
+            "Treatment 1 (Outside)": Diff_negative_1[0, :, b],
+            "Treatment 2 (Outside)": Diff_negative_2[0, :, b],
+            "Positive Control (Inside)": Diff_negative_positive[1, :, b],
+            "Treatment 1 (Inside)": Diff_negative_1[1, :, b],
+            "Treatment 2 (Inside)": Diff_negative_2[1, :, b],
+        }
+
+        # Create forest plot
+        az.plot_forest(
+            posterior_data,
+            kind="forestplot",  # Classic forest plot style
+            combined=True,  # Treat each array as one group
+            hdi_prob=0.87,  # 87% HDI shown by default
+            quartiles=True,  # Adds 50% interval inside 87%
+            markersize=8,
+            linewidth=4,
+            colors="black",
+            ax=ax1[b],
+        )
+
+    plt.tight_layout()
+    plt.show()
     return
 
 

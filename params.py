@@ -16,6 +16,7 @@ params = {
     "sigma_risk": [0.5, 0.5],
     # time model: foraging, vigilance, movement
     "beta_risk": [-0.5, 0.5, -0.1],
+    "beta_risk_bites": -0.5,
     "sigma": [1, 1, 1],
     "beta_pi_risk": [0.5, -0.5, 0.5],
     "alpha_pi": [-5, -5, -5],

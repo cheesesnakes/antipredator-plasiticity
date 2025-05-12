@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.12.10"
+__generated_with = "0.13.6"
 app = marimo.App(width="medium")
 
 
@@ -20,7 +20,7 @@ def _():
     from params import params
 
     sns.set_theme(style="white", palette="pastel")
-    return bern, beta, choices, dirichlet, expit, mo, np, params, pd, plt, sns
+    return bern, beta, expit, np, params, pd, plt, sns
 
 
 @app.cell
@@ -131,22 +131,7 @@ def _(bern, beta, expit, np, params, pd):
     )
 
     rugosity_df
-    return (
-        biomass,
-        n_ind,
-        n_protection,
-        n_rep,
-        n_treatment,
-        plot_id,
-        predator,
-        predictor_df,
-        protection,
-        replicate,
-        rugosity,
-        rugosity_df,
-        rugosity_mean,
-        treatment,
-    )
+    return n_ind, plot_id, predictor_df, rugosity_df
 
 
 @app.cell
@@ -260,7 +245,7 @@ def _(plt, sns, unobserved_df):
 
 
 @app.cell
-def _(bern, expit, indiviudals, np, params, pd, plot_ind, unobserved_df):
+def _(bern, expit, indiviudals, np, params, pd, plot_ind, risk, unobserved_df):
     # response variable
 
 
@@ -286,12 +271,31 @@ def _(bern, expit, indiviudals, np, params, pd, plot_ind, unobserved_df):
             return np.random.lognormal(mu, sigma, size=1)
 
 
+    def bites(foraging, risk):
+        """
+        Simulate bite rates
+        """
+
+        if foraging > 0:
+            beta_risk = np.random.normal(params["beta_risk_bites"], 0.1)
+
+            mu = beta_risk * risk
+
+            rate = np.exp(mu)
+
+            return np.random.poisson(rate, size=1)
+        else:
+            return [0]
+
+
     foraging = [total_time(0, row["risk"]) for _, row in unobserved_df.iterrows()]
     foraging = np.array(foraging).flatten()
     vigilance = [total_time(1, row["risk"]) for _, row in unobserved_df.iterrows()]
     vigilance = np.array(vigilance).flatten()
     movement = [total_time(2, row["risk"]) for _, row in unobserved_df.iterrows()]
     movement = np.array(movement).flatten()
+    bites = [bites(f, r) for f, r in zip(foraging, risk)]
+    bites = np.array(bites).flatten()
 
     # response dataframe
     response_df = pd.DataFrame(
@@ -301,11 +305,12 @@ def _(bern, expit, indiviudals, np, params, pd, plot_ind, unobserved_df):
             "foraging": foraging,
             "vigilance": vigilance,
             "movement": movement,
+            "bites": bites,
         }
     )
 
     response_df
-    return foraging, movement, response_df, total_time, vigilance
+    return (response_df,)
 
 
 @app.cell
@@ -316,31 +321,42 @@ def _(response_df):
 
 @app.cell
 def _(plt, predictor_df, response_df, sns):
-    behaviour = response_df.merge(predictor_df, on="plot_id")
+    behaviour_df = response_df.copy().merge(predictor_df, on="plot_id")
 
     plt.figure(figsize=(18, 6))
     plt.subplot(1, 3, 1)
-    sns.histplot(data=behaviour, x="foraging", hue="protection", kde=False)
+    sns.histplot(data=behaviour_df, x="foraging", hue="protection", kde=False)
     plt.title("Foraging")
     plt.legend(title="Protection", labels=["Outside", "Inside"])
     plt.subplot(1, 3, 2)
-    sns.histplot(data=behaviour, x="vigilance", hue="protection", kde=False)
+    sns.histplot(data=behaviour_df, x="vigilance", hue="protection", kde=False)
     plt.title("Vigilance")
     plt.legend(title="Protection", labels=["Outside", "Inside"])
     plt.subplot(1, 3, 3)
-    sns.histplot(data=behaviour, x="movement", hue="protection", kde=False)
+    sns.histplot(data=behaviour_df, x="movement", hue="protection", kde=False)
     plt.title("Movement")
     plt.legend(title="Protection", labels=["Outside", "Inside"])
     plt.tight_layout()
     plt.show()
-    return (behaviour,)
+    return (behaviour_df,)
 
 
 @app.cell
-def _(behaviour, plt, sns):
+def _(behaviour_df, plt, sns):
+    plt.figure(figsize=(10, 6))
+    sns.histplot(data=behaviour_df, x="bites", hue="protection", kde=False)
+    plt.title("Bites")
+    plt.legend(title="Protection", labels=["Outside", "Inside"])
+    plt.tight_layout()
+    plt.show()
+    return
+
+
+@app.cell
+def _(behaviour_df, plt, sns):
     plt.figure(figsize=(18, 6))
     plt.subplot(1, 3, 1)
-    sns.histplot(data=behaviour, x="foraging", hue="treatment", kde=False)
+    sns.histplot(data=behaviour_df, x="foraging", hue="treatment", kde=False)
     plt.title("Foraging")
     plt.legend(
         title="Protection",
@@ -348,7 +364,7 @@ def _(behaviour, plt, sns):
     )
     plt.xscale("log")
     plt.subplot(1, 3, 2)
-    sns.histplot(data=behaviour, x="vigilance", hue="treatment", kde=False)
+    sns.histplot(data=behaviour_df, x="vigilance", hue="treatment", kde=False)
     plt.title("Vigilance")
     plt.legend(
         title="Protection",
@@ -356,7 +372,7 @@ def _(behaviour, plt, sns):
     )
     plt.xscale("log")
     plt.subplot(1, 3, 3)
-    sns.histplot(data=behaviour, x="movement", hue="treatment", kde=False)
+    sns.histplot(data=behaviour_df, x="movement", hue="treatment", kde=False)
     plt.title("Movement")
     plt.legend(
         title="Protection",

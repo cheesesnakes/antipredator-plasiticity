@@ -2,8 +2,10 @@ data {
   int<lower=0> N; // number of observations
   int<lower=0> T; // number of treatments
   int<lower=0> P; // number of protection levels
+  int<lower=0> B; // number of behavioral types
   int<lower=0> S; // number of plots
-  array[N] real<lower=0> D; // observed durations
+  array[N, B] real<lower=0> D; // observed durations
+  array[N] int<lower=0> bites; // number of bites observed
   
   // Predictor variables
   array[S] int<lower=1, upper=2> predator; // predator presence (0 or 1)
@@ -19,11 +21,14 @@ parameters {
   array[S] real<lower=0, upper=1> rugosity; // accounting for multiple rugosity measurements
   array[S] real<lower=0> phi_rug; // standard deviation of rugosity in each plot
   
-  // Top-level coefficients
-  real beta_risk; // effect of risk on duration
+  // Top-level coefficients for duration
+  ordered[B] beta_risk; // effect of risk on duration
   
-  real alpha_pi; // baseline zero-inflation
-  real beta_pi_risk; // effect of risk on zero-inflation
+  ordered[B] alpha_pi; // baseline zero-inflation
+  ordered[B] beta_pi_risk; // effect of risk on zero-inflation
+  
+  // Top-level coefficients for bites
+  real beta_risk_bites; // effect of risk on bites
   
   // Risk model coefficients
   real alpha_risk_protection; // random risk per individual
@@ -42,9 +47,11 @@ parameters {
 transformed parameters {
   array[S] real mu_risk; // mean risk
   
-  array[N] real mu_D; // mean duration
+  array[N, B] real mu_D; // mean duration
   
-  array[N] real pi; // zero-inflation probability
+  array[N] real lamba_risk; // mean bites
+  
+  array[N, B] real pi; // zero-inflation probability
   
   // Latent variables per observation
   array[N] real risk; // latent risk variable
@@ -60,18 +67,24 @@ transformed parameters {
     // Latent variables
     risk[n] = mu_risk[plot[n]] + sigma_risk[plot[n]] * z_risk[n];
     
-    // Zero-inflation probability
-    pi[n] = inv_logit(alpha_pi + beta_pi_risk * risk[n]);
+    for (b in 1 : B) {
+      // zero-inflation probability
+      pi[n, b] = inv_logit(alpha_pi[b] + beta_pi_risk[b] * risk[n]);
+      
+      // Mean duration
+      mu_D[n, b] = beta_risk[b] * risk[n];
+    }
     
-    // Duration model parameters
+    // Mean bites
     
-    mu_D[n] = beta_risk * risk[n];
+    lamba_risk[n] = exp(beta_risk_bites * risk[n]);
   }
 }
 model {
   // Priors
   
   // Top-level priors
+  beta_risk_bites ~ normal(0, 1);
   beta_risk ~ normal(0, 1);
   
   beta_pi_risk ~ normal(0, 1);
@@ -106,53 +119,36 @@ model {
   // Observation model
   
   for (n in 1 : N) {
-    if (D[n] == 0) {
-      target += bernoulli_lpmf(1 | pi[n]); // zero-inflation
-    } else {
-      target += bernoulli_lpmf(0 | pi[n]); // non-zero inflation
-      target += lognormal_lpdf(D[n] | mu_D[n], sigma_D); // duration model
+    for (b in 1 : B) {
+      if (D[n, b] == 0) {
+        target += bernoulli_lpmf(1 | pi[n, b]); // zero-inflation
+      } else {
+        target += bernoulli_lpmf(0 | pi[n, b]); // non-zero inflation
+        target += lognormal_lpdf(D[n, b] | mu_D[n, b], sigma_D); // duration model
+        if (b == 1 && D[n, b] > 0) {
+          target += poisson_lpmf(bites[n] | lamba_risk[n]); // bites model
+        }
+      }
     }
   }
 }
 generated quantities {
-  array[N] real D_pred; // predicted durations
-  // For treatment-specific predictions per observation (N-scale)
-  array[T, N] real mu_risk_treatment;
-  array[T, N] real mu_D_treatment;
-  array[T, P, N] real D_pred_treatment;
+  array[N, B] real D_pred; // predicted durations
+  array[N] real bites_pred; // predicted bites
   
   // posterior predictive check
   for (n in 1 : N) {
-    if (bernoulli_rng(pi[n])) {
-      D_pred[n] = 0; // zero-inflation
-    } else {
-      D_pred[n] = lognormal_rng(mu_D[n], sigma_D);
-    }
-  }
-  
-  // Posterior predictive per treatment × observation
-  for (t in 1 : T) {
-    for (p in 1 : P) {
-      for (n in 1 : N) {
-        int s = plot[n]; // plot index for observation n
-        
-        // 1️⃣ Compute mu_risk for this treatment & obs
-        mu_risk_treatment[t, n] = alpha_risk_protection * (protection[s] - 1)
-                                  + beta_predator * (predator[s] - 1)
-                                  + beta_rug * rugosity[s]
-                                  + beta_treatment[t] + beta_res * biomass[s]
-                                  + sigma_risk[s] * z_risk[n];
-        // 3️⃣ Compute mean duration (log scale) for this treatment & obs
-        mu_D_treatment[t, n] = beta_risk * mu_risk_treatment[t, n];
-        
-        // 4️⃣ Predict new duration:
-        if (bernoulli_rng(inv_logit(alpha_pi
-                                    + beta_pi_risk * mu_risk_treatment[t, n]))) {
-          D_pred_treatment[t, p, n] = 0;
-        } else {
-          D_pred_treatment[t, p, n] = lognormal_rng(mu_D_treatment[t, n],
-                                                    sigma_D);
-        }
+    for (b in 1 : B) {
+      if (bernoulli_rng(pi[n, b])) {
+        D_pred[n, b] = 0; // zero-inflation
+      } else {
+        D_pred[n, b] = lognormal_rng(mu_D[n, b], sigma_D);
+      }
+      
+      if (b == 1 && D_pred[n, b] > 0) {
+        bites_pred[n] = poisson_rng(lamba_risk[n]); // bites model
+      } else {
+        bites_pred[n] = 0;
       }
     }
   }

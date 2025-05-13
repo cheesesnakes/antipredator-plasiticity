@@ -39,7 +39,7 @@ parameters {
   real beta_res; // effect of biomass availability on energy
   
   // Observation model
-  ordered[B] sigma_D; // standard deviation of duration, non-zero
+  vector<lower=0>[B] sigma_D; // standard deviation of duration, non-zero
   
   // Latent variables non-centred
   array[N] real z_risk; // latent risk variable
@@ -118,7 +118,7 @@ model {
   
   z_risk ~ normal(0, 1); // risk latent variable
   
-  sigma_risk ~ normal(0, 1); // standard deviation of risk
+  sigma_risk ~ normal(0, 1) T[1e-6, ]; // standard deviation of risk
   
   // rugosity priors
   rugosity ~ beta(1, 1); // beta distribution for rugosity
@@ -127,7 +127,7 @@ model {
   // Latent variables priors
   
   for (b in 1 : B) {
-    sigma_D[b] ~ normal(0, 1) T[0, ]; // standard deviation of duration
+    sigma_D[b] ~ normal(0, 1) T[1e-6, ]; // standard deviation of duration
     pi[ : , b] ~ beta(1, 1); // zero-inflation probability
   }
   
@@ -186,22 +186,24 @@ generated quantities {
   array[T, N] real bites_cf; // counterfactual bites
   
   for (t in 1 : T) {
-    for (b in 1 : B) {
-      for (n in 1 : N) {
-        // calculate mean risk
-        real mu_risk_cf = alpha_risk_protection[protection[plot[n]]]
-                          + beta_predator[predator[plot[n]]]
-                          + beta_rug * rugosity[plot[n]] + beta_treatment[t]
-                          + beta_res * biomass[plot[n]];
-        // calculate risk
-        real risk_cf = mu_risk_cf + sigma_risk * z_risk[n];
-        
+    for (n in 1 : N) {
+      // calculate mean risk
+      real mu_risk_cf = alpha_risk_protection[protection[plot[n]]]
+                        + beta_predator[predator[plot[n]]]
+                        + beta_rug * rugosity[plot[n]] + beta_treatment[t]
+                        + beta_res * biomass[plot[n]];
+      // calculate risk
+      real risk_cf = mu_risk_cf + sigma_risk * z_risk[n];
+      
+      // calculate counterfactual bites
+      bites_cf[t, n] = exp(beta_risk_bites * risk_cf);
+      
+      // other behavioral types
+      for (b in 1 : B) {
         // calculate mean duration
-        
         real mu_D_cf = beta_risk[b] * risk_cf;
         
         // calculate zero-inflation probability
-        
         real pi_cf = inv_logit(alpha_pi[b] + beta_pi_risk[b] * risk_cf);
         
         // calculate counterfactual duration
@@ -210,15 +212,42 @@ generated quantities {
         } else {
           D_cf[t, b, n] = lognormal_rng(mu_D_cf, sigma_D[b]);
         }
+      }
+    }
+  }
+  
+  // calculate counterfactuals for each treatment at each protection level
+  array[T, P, B, N] real D_cf_prot; // counterfactual duration
+  array[T, P, N] real bites_cf_prot; // counterfactual bites
+  
+  for (t in 1 : T) {
+    for (p in 1 : P) {
+      for (n in 1 : N) {
+        // calculate mean risk
+        real mu_risk_cf = alpha_risk_protection[p]
+                          + beta_predator[predator[plot[n]]]
+                          + beta_rug * rugosity[plot[n]] + beta_treatment[t]
+                          + beta_res * biomass[plot[n]];
+        // calculate risk
+        real risk_cf = mu_risk_cf + sigma_risk * z_risk[n];
         
-        // calculate counterfactual bites
+        // calculate counterfactual bite rate
+        bites_cf_prot[t, p, n] = exp(beta_risk_bites * risk_cf);
         
-        real lamba_risk_cf = exp(beta_risk_bites * risk_cf);
-        
-        if (b == 1 && D_cf[t, b, n] > 0) {
-          bites_cf[t, n] = poisson_rng(lamba_risk_cf); // bites model
-        } else {
-          bites_cf[t, n] = 0;
+        // other behavioral types
+        for (b in 1 : B) {
+          // calculate mean duration
+          real mu_D_cf = beta_risk[b] * risk_cf;
+          
+          // calculate zero-inflation probability
+          real pi_cf = inv_logit(alpha_pi[b] + beta_pi_risk[b] * risk_cf);
+          
+          // calculate counterfactual duration
+          if (bernoulli_rng(pi_cf)) {
+            D_cf_prot[t, p, b, n] = 0; // zero-inflation
+          } else {
+            D_cf_prot[t, p, b, n] = lognormal_rng(mu_D_cf, sigma_D[b]);
+          }
         }
       }
     }

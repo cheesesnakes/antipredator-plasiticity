@@ -9,10 +9,8 @@ def _():
     import marimo as mo
     import numpy as np
     from scipy.stats import bernoulli as bern
-    from scipy.stats import dirichlet
     from scipy.stats import beta
     from scipy.special import expit
-    from random import choices
     import matplotlib.pyplot as plt
     import seaborn as sns
     import pandas as pd
@@ -36,24 +34,26 @@ def _(bern, beta, expit, np, params, pd):
 
     plot_id = list(range(1, (n_protection * n_treatment * n_rep) + 1))
     protection = [p for i in range((n_treatment * n_rep)) for p in range(n_protection)]
-    treatment = [t for t in range(n_treatment) for i in range(n_rep) for p in range(n_protection)]
+    treatment = [
+        t for t in range(n_treatment) for i in range(n_rep) for p in range(n_protection)
+    ]
     replicate = [r for r in range(n_rep) for i in range(n_treatment * n_protection)]
 
     # covariates
-
 
     def predator(protection):
         """
         Simulate a predator covariate.
         """
-        alpha = np.random.normal(params["alpha_predator"][protection], 0.1)  # plot-level random effect
+        alpha = np.random.normal(
+            params["alpha_predator"][protection], 0.1
+        )  # plot-level random effect
 
         # link
 
         p = expit(alpha)
 
         return bern.rvs(p, size=1)
-
 
     def rugosity(protection):
         """
@@ -74,7 +74,6 @@ def _(bern, beta, expit, np, params, pd):
 
         return np.array(1 - beta.rvs(a, b, size=3))
 
-
     def biomass(protection):
         """
         Simulate a biomass covariate.
@@ -94,7 +93,6 @@ def _(bern, beta, expit, np, params, pd):
 
         return beta.rvs(a, b, size=1)
 
-
     predator = [predator(p) for p in protection]
     predator = np.array(predator).flatten()
     biomass = [biomass(p) for p in protection]
@@ -112,7 +110,12 @@ def _(bern, beta, expit, np, params, pd):
     )
 
     rugosity_mean = [
-        np.mean(rugosity_df.loc[rugosity_df["plot_id"] == i, ["sample_1", "sample_2", "sample_3"]].values) for i in plot_id
+        np.mean(
+            rugosity_df.loc[
+                rugosity_df["plot_id"] == i, ["sample_1", "sample_2", "sample_3"]
+            ].values
+        )
+        for i in plot_id
     ]
     rugosity_mean = np.array(rugosity_mean).flatten()
 
@@ -171,7 +174,6 @@ def _(plt, predictor_df, sns):
 def _(n_ind, np, params, pd, plot_id, predictor_df):
     # unobserved variables
 
-
     def risk(rugosity, predator, treatment, protection, biomass):
         """
         Simulate a risk covariate.
@@ -187,14 +189,19 @@ def _(n_ind, np, params, pd, plot_id, predictor_df):
 
         alpha_risk = params["alpha_risk"][protection]  # effect of protection on risk
 
-        eta = alpha_risk + (beta_rugosity * rugosity) + beta_predator + beta_treatment + beta_resource * biomass
+        eta = (
+            alpha_risk
+            + (beta_rugosity * rugosity)
+            + beta_predator
+            + beta_treatment
+            + beta_resource * biomass
+        )
 
         mu = np.random.normal(eta, 0.1)  # individual-level random effect
 
         sigma = params["sigma_risk"]
 
         return np.random.normal(mu, sigma, size=1)
-
 
     indiviudals = list(range(1, (len(plot_id) * n_ind) + 1))
     plot_ind = [plot for i in range(n_ind) for plot in plot_id]
@@ -248,7 +255,6 @@ def _(plt, sns, unobserved_df):
 def _(bern, expit, indiviudals, np, params, pd, plot_ind, risk, unobserved_df):
     # response variable
 
-
     def total_time(behaviour, risk):
         """
         Simulate a behavioural response.
@@ -261,7 +267,9 @@ def _(bern, expit, indiviudals, np, params, pd, plot_ind, risk, unobserved_df):
         sigma = params["sigma"][behaviour]
 
         # zero inflation
-        pi_0 = expit(params["alpha_pi"][behaviour] + params["beta_pi_risk"][behaviour] * risk)
+        pi_0 = expit(
+            params["alpha_pi"][behaviour] + params["beta_pi_risk"][behaviour] * risk
+        )
 
         zero = bern.rvs(pi_0)
 
@@ -269,7 +277,6 @@ def _(bern, expit, indiviudals, np, params, pd, plot_ind, risk, unobserved_df):
             return [0]
         else:
             return np.random.lognormal(mu, sigma, size=1)
-
 
     def bites(foraging, risk):
         """
@@ -286,7 +293,6 @@ def _(bern, expit, indiviudals, np, params, pd, plot_ind, risk, unobserved_df):
             return np.random.poisson(rate, size=1)
         else:
             return [0]
-
 
     foraging = [total_time(0, row["risk"]) for _, row in unobserved_df.iterrows()]
     foraging = np.array(foraging).flatten()

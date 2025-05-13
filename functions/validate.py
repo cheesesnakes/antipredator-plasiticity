@@ -1,21 +1,17 @@
-import arviz as az
 from params import params as true_params
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+from functions.model import load_model
+
 output_dir = "outputs/model/generated/"
 
 # Load model data from CmdStan CSV outputs
 
-print("Loading model data from CmdStan CSV outputs...")
-
-model_data = az.from_cmdstan(
-    output_dir + "*.csv",
-    posterior_predictive=[
-        "D_pred",
-        "bites_pred",
-    ],
+model_data = load_model(
+    response=None,
+    output_dir=output_dir,
 )
 
 posterior = model_data.posterior

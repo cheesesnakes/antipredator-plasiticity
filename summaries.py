@@ -22,7 +22,7 @@
 
 import marimo
 
-__generated_with = "0.12.10"
+__generated_with = "0.13.6"
 app = marimo.App(
     width="medium",
     app_title="Plasticity in anti-predator behaviour of coral reef fish in the Andaman Islands",
@@ -52,23 +52,19 @@ def _():
     import matplotlib.pyplot as plt
 
     # load data
-    from cleaning import abundance, abundance_size, predictors, response, sites, plots, individuals
-    # set plot theme
-
-    sns.set_theme(style="white", context="notebook", palette="Set1", font_scale=1.5)
-    return (
+    from cleaning import (
         abundance,
         abundance_size,
-        individuals,
-        os,
-        pd,
-        plots,
-        plt,
         predictors,
         response,
         sites,
-        sns,
+        plots,
+        individuals,
     )
+    # set plot theme
+
+    sns.set_theme(style="white", context="notebook", palette="Set1", font_scale=1.5)
+    return abundance, individuals, plots, plt, predictors, response, sites, sns
 
 
 @app.cell
@@ -100,7 +96,7 @@ def _(individuals, mo, plots, sites):
 
 @app.cell
 def _(mo, treatments):
-    mo.md(f"Treatments: {treatments}")
+    mo.md(f"""Treatments: {treatments}""")
     return
 
 
@@ -112,7 +108,7 @@ def _(mo):
 
 @app.cell
 def _(mo, predictors):
-    mo.md(f"Depth:\n\nmean = {predictors['depth_avg'].mean():.2f} m, SD = {predictors['depth_avg'].std():.2f} m")
+    mo.md(f"""Depth:\n\nmean = {predictors["depth_avg"].mean():.2f} m, SD = {predictors["depth_avg"].std():.2f} m""")
     return
 
 
@@ -125,9 +121,7 @@ def _(plt, predictors, sns):
 
 @app.cell
 def _(mo, predictors):
-    mo.md(
-        f"Mean Rugosity:\n\nmean = {predictors['rugosity_mean'].mean():.2f}, SD = {predictors['rugosity_mean'].std():.2f}"
-    )
+    mo.md(f"""Mean Rugosity:\n\nmean = {predictors["rugosity_mean"].mean():.2f}, SD = {predictors["rugosity_mean"].std():.2f}""")
     return
 
 
@@ -140,9 +134,7 @@ def _(plt, predictors, sns):
 
 @app.cell
 def _(mo, predictors):
-    mo.md(
-        f"Variation in Rugosity:\n\nmean = {predictors['rugosity_std'].mean():.2f}, SD = {predictors['rugosity_std'].std():.2f}"
-    )
+    mo.md(f"""Variation in Rugosity:\n\nmean = {predictors["rugosity_std"].mean():.2f}, SD = {predictors["rugosity_std"].std():.2f}""")
     return
 
 
@@ -155,7 +147,7 @@ def _(plt, predictors, sns):
 
 @app.cell
 def _(mo, predictors):
-    mo.md(f"Biomas Cover:\n\nmean = {predictors['biomass'].mean():.2f}, SD = {predictors['biomass'].std():.2f}")
+    mo.md(f"""Biomas Cover:\n\nmean = {predictors["biomass"].mean():.2f}, SD = {predictors["biomass"].std():.2f}""")
     return
 
 
@@ -168,7 +160,7 @@ def _(plt, predictors, sns):
 
 @app.cell
 def _(mo, predictors):
-    mo.md(f"Coral Cover:\n\nmean = {predictors['coral'].mean():.2f}, SD = {predictors['coral'].std():.2f}")
+    mo.md(f"""Coral Cover:\n\nmean = {predictors["coral"].mean():.2f}, SD = {predictors["coral"].std():.2f}""")
     return
 
 
@@ -181,7 +173,7 @@ def _(plt, predictors, sns):
 
 @app.cell
 def _(mo, predictors):
-    mo.md(f"Sponge Cover:\n\nmean = {predictors['sponge'].mean():.2f}, SD = {predictors['sponge'].std():.2f}")
+    mo.md(f"""Sponge Cover:\n\nmean = {predictors["sponge"].mean():.2f}, SD = {predictors["sponge"].std():.2f}""")
     return
 
 
@@ -189,6 +181,16 @@ def _(mo, predictors):
 def _(plt, predictors, sns):
     sns.histplot(predictors["sponge"], binwidth=0.01, kde=True)
     plt.xlabel("Sponge Cover")
+    return
+
+
+@app.cell
+def _(plt, predictors, sns):
+    sns.pairplot(predictors.drop(columns=["deployment_id", "location", "plot_id", "treatment"]), diag_kind="kde")
+
+    plt.savefig("figures/predictor_pairplot.png", dpi=300, bbox_inches="tight")
+
+    plt.show()
     return
 
 
@@ -206,9 +208,7 @@ def _(mo):
 
 @app.cell
 def _(abundance, mo):
-    mo.md(
-        f"Abundance of individuals in plots: \n\nmean = {abundance['n_prey'].mean():.2f}, SD = {abundance['n_prey'].std():.2f}"
-    )
+    mo.md(f"""Abundance of individuals in plots: \n\nmean = {abundance["n_prey"].mean():.2f}, SD = {abundance["n_prey"].std():.2f}""")
     return
 
 
@@ -221,9 +221,7 @@ def _(abundance, plt, sns):
 
 @app.cell
 def _(abundance, mo):
-    mo.md(
-        f"Abundance of predators in plots: \n\nmean = {abundance['n_predators'].mean():.2f}, SD = {abundance['n_predators'].std():.2f}"
-    )
+    mo.md(f"""Abundance of predators in plots: \n\nmean = {abundance["n_predators"].mean():.2f}, SD = {abundance["n_predators"].std():.2f}""")
     return
 
 
@@ -236,9 +234,7 @@ def _(abundance, plt, sns):
 
 @app.cell
 def _(abundance, mo):
-    mo.md(
-        f"Species richness in plots: \n\nmean = {abundance['n_species'].mean():.2f}, SD = {abundance['n_species'].std():.2f}"
-    )
+    mo.md(f"""Species richness in plots: \n\nmean = {abundance["n_species"].mean():.2f}, SD = {abundance["n_species"].std():.2f}""")
     return
 
 
@@ -298,29 +294,29 @@ def _(mo):
 
 
 @app.cell
-def _(response, sns):
-    response["treatment"] = response["plot_id"].str.split("_").str[1]
-    response["treatment"] = response["treatment"].str.replace("positive-control", "positive")
-    response["treatment"] = response["treatment"].str.replace("negative-control", "negative")
-    response["treatment"] = response["treatment"].str.replace("barracuda", "baracuda")
-
+def _(plt, response, sns):
     sns.pairplot(
-        response[["treatment", "foraging", "vigilance", "movement", "bite_count"]],
+        response[["foraging", "vigilance", "movement", "bites"]],
         diag_kind="kde",
-        hue="treatment",
     )
+
+    plt.savefig("figures/response_pairplot.png", dpi=300, bbox_inches="tight")
+
+    plt.show()
     return
 
 
 @app.cell
 def _(mo, response):
     mo.md(
-        f"Number of other behavioural observed\n\n\
-        Predator Avoidance: {response['predator_avoidance_count'].sum()}\n\n\
-        Aggression: {response['conspecific_aggression_count'].sum()}\n\n\
-        Escape from Agression: {response['escape_from_aggression_count'].sum()}\n\n\
-        Escape from predator: {response['escape_from_predator_count'].sum()}\n\n\
-        Agression against predator: {response['aggression_against_predator_count'].sum()}\n\n"
+        f"""
+    Number of other behavioural observed\n\n\
+        Predator Avoidance: {response["predator_avoidance_count"].sum()}\n\n\
+        Aggression: {response["conspecific_aggression_count"].sum()}\n\n\
+        Escape from Agression: {response["escape_from_aggression_count"].sum()}\n\n\
+        Escape from predator: {response["escape_from_predator_count"].sum()}\n\n\
+        Agression against predator: {response["aggression_against_predator_count"].sum()}\n\n
+    """
     )
     return
 

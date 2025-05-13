@@ -25,6 +25,7 @@ def load_data(model="test"):
             "outputs/generated_data_response.csv",
             "outputs/model/generated/",
             "outputs/generated_data_rugosity.csv",
+            "figures/generative/",
         ]
     else:
         dirs = [
@@ -32,6 +33,7 @@ def load_data(model="test"):
             "outputs/response.csv",
             "outputs/model/data/",
             "outputs/rugosity_raw.csv",
+            "figures/",
         ]
 
     return dirs
@@ -48,7 +50,7 @@ def prep_stan(predictors, response, rugosity):
         "P": predictors["protection"].nunique(),
         "S": predictors["plot_id"].nunique(),
         "D": response[["foraging", "vigilance", "movement"]].values,
-        "bites": response["bites"].values,
+        "bites": response["bites"].astype("int").values,
         "predator": predictors["predator"].values + 1,
         "plot": response["plot_id"].values,
         "rugosity_raw": rugosity[["sample_1", "sample_2", "sample_3"]].values,
@@ -146,7 +148,7 @@ def run_model(output_dir, stan_data, response, chains=4):
     return model_data
 
 
-def diagnostic_plots(model_data):
+def diagnostic_plots(model_data, directory="figures/generative/"):
     # traceplot
     print("Creating traceplot...")
     az.plot_trace(
@@ -156,7 +158,7 @@ def diagnostic_plots(model_data):
         figsize=(16, 24),
     )
 
-    plt.savefig("figures/generative/traceplot.png", dpi=300)
+    plt.savefig(f"{directory}/traceplot.png", dpi=300)
 
     # posterior predictive check
     print("Creating posterior predictive check...")
@@ -166,10 +168,10 @@ def diagnostic_plots(model_data):
         data_pairs={"D_obs": "D_pred", "bites_obs": "bites_pred"},
         figsize=(10, 6),
     )
-    plt.savefig("figures/generative/ppc.png", dpi=300)
+    plt.savefig(f"{directory}/ppc.png", dpi=300)
 
 
-def counterfactual_treatments(model_data):
+def counterfactual_treatments(model_data, directory="figures/generative/"):
     print("Computing counterfactual treatments...")
     # counterfactual analysis
 
@@ -251,11 +253,11 @@ def counterfactual_treatments(model_data):
     plt.ylabel("Effect Size")
     plt.xlabel("Treatment")
 
-    plt.savefig("figures/generative/counterfactual_treatment.png", dpi=300)
+    plt.savefig(f"{directory}/counterfactual_treatment.png", dpi=300)
 
 
 # counterfactual treatment x protection
-def counterfactual_treatments_protection(model_data):
+def counterfactual_treatments_protection(model_data, directory="figures/generative/"):
     print("Computing counterfactual treatments by protection...")
 
     D_cf_prot = az.extract(
@@ -370,14 +372,14 @@ def counterfactual_treatments_protection(model_data):
     plt.tight_layout()
     plt.subplots_adjust(wspace=0.3)
 
-    plt.savefig("figures/generative/counterfactual_treatment_protection.png", dpi=300)
+    plt.savefig(f"{directory}/counterfactual_treatment_protection.png", dpi=300)
 
 
-def main(run=False, chains=4):
+def main(model="test", run=False, chains=4):
     # load data
 
     print("Loading data...")
-    dirs = load_data(model="test")
+    dirs = load_data(model=model)
     predictors = pd.read_csv(dirs[0])
     response = pd.read_csv(dirs[1])
     rugosity = pd.read_csv(dirs[3])
@@ -411,18 +413,18 @@ def main(run=False, chains=4):
     # diagnostic plots
 
     if run:
-        diagnostic_plots(model_data)
+        diagnostic_plots(model_data, directory=dirs[4])
 
     # counterfactual treatments
 
-    counterfactual_treatments(model_data)
+    counterfactual_treatments(model_data, directory=dirs[4])
 
     # counterfactual treatments by protection
 
-    counterfactual_treatments_protection(model_data)
+    counterfactual_treatments_protection(model_data, directory=dirs[4])
 
     return 0
 
 
 if __name__ == "__main__":
-    main(run=False, chains=4)
+    main(model="data", run=True, chains=4)

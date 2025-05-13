@@ -508,6 +508,7 @@ for df in data:
             if col == "plot_id":
                 df[col] += 1  # > 0
 
+response.rename(columns={"bite_count": "bites"}, inplace=True)
 # save data
 
 predictors.to_csv("outputs/predictors.csv", index=False)

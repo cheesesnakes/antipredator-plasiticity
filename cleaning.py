@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import os
 
 # Clean individual level data
 
@@ -568,6 +569,9 @@ def set_order(df, categoricals, order_categoricals):
 
 
 def clean_data():
+    if not os.path.exists("outputs"):
+        os.makedirs("outputs")
+
     individuals = clean_individuals()
     observations = clean_observations()
     predators = clean_predators()

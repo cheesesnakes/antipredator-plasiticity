@@ -2,22 +2,9 @@ from params import params as true_params
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import os
 
 from functions.model import load_model
-
-output_dir = "outputs/model/generated/"
-
-# Load model data from CmdStan CSV outputs
-
-model_data = load_model(
-    response=None,
-    output_dir=output_dir,
-)
-
-posterior = model_data.posterior
-
-
-print("Model data loaded successfully.")
 
 
 def compare_parameters():
@@ -29,6 +16,25 @@ def compare_parameters():
     posterior:  The Stan `posterior` object.
     true_params: A dictionary containing the true parameter values.
     """
+
+    output_dir = "outputs/model/generated/"
+
+    # Load model data from CmdStan CSV outputs
+
+    model_data = load_model(
+        response=None,
+        output_dir=output_dir,
+    )
+
+    posterior = model_data.posterior
+
+    print("Model data loaded successfully.")
+
+    if not os.path.exists("figures/"):
+        os.makedirs("figures/")
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     # Parameters to compare (adjust to match your Stan model and params.py)
     param_names = [

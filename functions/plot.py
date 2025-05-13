@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import os
 
 # set the plot style
 sns.set_theme(style="white", palette="pastel")
@@ -12,6 +13,9 @@ az.style.use("arviz-whitegrid")
 
 
 def diagnostic_plots(model_data, directory="figures/generative/"):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
     # traceplot
     print("Creating traceplot...")
     az.plot_trace(
@@ -38,6 +42,9 @@ def diagnostic_plots(model_data, directory="figures/generative/"):
 
 
 def counterfactual_treatments(model_data, directory="figures/generative/"):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
     print("Computing counterfactual treatments...")
     # counterfactual analysis
 
@@ -126,6 +133,8 @@ def counterfactual_treatments(model_data, directory="figures/generative/"):
 
 
 def counterfactual_treatments_protection(model_data, directory="figures/generative/"):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     print("Computing counterfactual treatments by protection...")
 
     D_cf_prot = az.extract(

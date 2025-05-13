@@ -127,7 +127,7 @@ model {
   // Latent variables priors
   
   for (b in 1 : B) {
-    sigma_D[b] ~ normal(0, 1); // standard deviation of duration
+    sigma_D[b] ~ normal(0, 1) T[0, ]; // standard deviation of duration
     pi[ : , b] ~ beta(1, 1); // zero-inflation probability
   }
   
@@ -144,9 +144,9 @@ model {
   for (n in 1 : N) {
     for (b in 1 : B) {
       if (D[n, b] == 0) {
-        target += bernoulli_lpmf(0 | pi[n, b]); // zero-inflation
+        target += bernoulli_lpmf(1 | pi[n, b]); // zero-inflation
       } else {
-        target += bernoulli_lpmf(1 | pi[n, b]); // non-zero inflation
+        target += bernoulli_lpmf(0 | pi[n, b]); // non-zero inflation
         target += lognormal_lpdf(D[n, b] | mu_D[n, b], sigma_D[b]); // duration model
         if (b == 1 && D[n, b] > 0) {
           target += poisson_lpmf(bites[n] | lamba_risk[n]); // bites model
@@ -161,16 +161,22 @@ generated quantities {
   array[N] real bites_pred; // predicted bites
   
   for (n in 1 : N) {
+    real risk_draw = risk[n]; // risk from current posterior draw
+    real lambda = exp(beta_risk_bites * risk_draw);
+    
     for (b in 1 : B) {
-      if (bernoulli_rng(pi[n, b])) {
-        D_pred[n, b] = 0; // zero-inflation
+      real mu = beta_risk[b] * risk_draw;
+      real pi_draw = inv_logit(alpha_pi[b] + beta_pi_risk[b] * risk_draw);
+      
+      if (bernoulli_rng(pi_draw)) {
+        D_pred[n, b] = 0;
       } else {
-        D_pred[n, b] = lognormal_rng(mu_D[n, b], sigma_D[b]);
+        D_pred[n, b] = lognormal_rng(mu, sigma_D[b]);
       }
       
       if (b == 1 && D_pred[n, b] > 0) {
-        bites_pred[n] = poisson_rng(lamba_risk[n]); // bites model
-      } else {
+        bites_pred[n] = poisson_rng(lambda);
+      } else if (b == 1) {
         bites_pred[n] = 0;
       }
     }

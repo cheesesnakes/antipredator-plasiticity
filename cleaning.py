@@ -531,119 +531,154 @@ def create_response(individuals, observations, behaviours, samples):
 def clean_guilds(response):
     """
     Cleans the guild data by filling in missing values based on genus and family.
+
+    Args:
+        response (pd.DataFrame): The input DataFrame containing species data.
+
+    Returns:
+        pd.DataFrame: The cleaned and imputed DataFrame with relative guild memberships.
     """
     print("Cleaning guilds...")
 
+    print("Cleaning guilds...")
+
+    # Load and preprocess traits data
     traits = pd.read_csv("data/traits.csv")
 
     traits.columns = traits.columns.str.lower()
-
-    traits.columns
-
-    traits = traits[["sl.no", "family", "genus", "species", "feeding.guild"]]
-
+    traits = traits[["sl.no", "family", "genus", "species", "feeding.guild"]].copy()
     traits.columns = ["sl_no", "family", "genus", "species", "guild"]
 
-    traits["species"] = traits["genus"] + " " + traits["species"]
+    # Create a reliable mapping from genus to family from existing data
+    family_map = (
+        traits[["genus", "family"]][traits["family"] != ""]
+        .dropna()
+        .drop_duplicates()
+        .set_index("genus")["family"]
+    )
 
-    # filter species that are in the response data
+    # Create a reliable mapping from genus to guild using mode
+    genus_guild_map = (
+        traits[["genus", "guild"]][traits["guild"] != ""]
+        .groupby(["genus", "guild"])
+        .size()
+        .reset_index(name="count")
+    )
 
-    traits = traits[traits["species"].isin(response["species"].unique())]
+    genus_guild_map = (
+        genus_guild_map.loc[genus_guild_map.groupby("genus")["count"].idxmax()]
+        .set_index("genus")["guild"]
+        .to_dict()
+    )
 
-    # complete family where missing based on genus
+    # create a reliable mapping from family to guild using mode
 
-    def genus_to_family(genus):
-        phylo = traits[["family", "genus"]].dropna().drop_duplicates()
-        return phylo.set_index("genus")["family"].get(genus, "")
+    family_guild_map = (
+        traits[["family", "guild"]][traits["guild"] != ""]
+        .groupby(["family", "guild"])
+        .size()
+        .reset_index(name="count")
+    )
 
-    traits.loc[traits["family"] == "", "family"] = traits["genus"].map(genus_to_family)
+    family_guild_map = (
+        family_guild_map.loc[family_guild_map.groupby("family")["count"].idxmax()]
+        .set_index("family")["guild"]
+        .to_dict()
+    )
 
-    # complete guild based on genus using mode
+    # Combine genus and species to create a consistent 'species' column
+    traits["genus"] = traits["genus"].str.strip()
+    traits["species"] = traits["genus"].fillna("") + " " + traits["species"].fillna("")
+    traits["species"] = traits["species"].str.strip()
 
-    def genus_to_guild(genus):
-        guild = traits[traits["genus"] == genus]["guild"]
+    # Identify and add missing species from 'response' to 'traits'
+    # Only consider species not already present in traits and not 'Unknown'
+    response["species"] = response["species"].str.strip()
+    missing_species_in_traits = response[~response["species"].isin(traits["species"])]
+    missing_species_in_traits = missing_species_in_traits[
+        missing_species_in_traits["species"] != "Unknown"
+    ].copy()
 
-        if not guild.empty:
-            mode = guild.mode()
-            if not mode.empty:
-                mode = mode[0]
-                return mode
+    if not missing_species_in_traits.empty:
+        # Create a DataFrame for these missing species with placeholder columns
+        new_species_df = pd.DataFrame(
+            {
+                "species": missing_species_in_traits["species"].unique(),
+                "family": "",
+                "guild": "",
+                "sl_no": np.nan,
+            }
+        )
 
-        return ""
+        new_species_df["genus"] = new_species_df["species"].str.split(" ", n=1).str[0]
 
-    traits.loc[traits["guild"] == "", "guild"] = traits["genus"].map(genus_to_guild)
+        traits = pd.concat([traits, new_species_df], ignore_index=True)
 
-    # map family to guild using mode
-    def family_to_guild(family):
-        guild = traits[traits["family"] == family]["guild"]
+    # --- Imputation Logic ---
 
-        if not guild.empty:
-            mode = guild.mode()
-            if not mode.empty:
-                mode = mode[0]
-                return mode
+    # 1. Complete family where missing based on genus
 
-        return ""
+    for index, row in traits.iterrows():
+        if row["family"] == "":
+            if row["genus"] in family_map:
+                traits.at[index, "family"] = family_map[row["genus"]]
+            else:
+                # If genus is not in the map, set family to "Unknown"
+                traits.at[index, "family"] = ""
 
-    traits.loc[traits["guild"] == "", "guild"] = traits["family"].map(family_to_guild)
+    # 2. Complete guild based on genus using mode
 
+    for index, row in traits.iterrows():
+        if row["guild"] == "" or row["guild"] == "Unknown":
+            if row["genus"] in genus_guild_map:
+                traits.at[index, "guild"] = genus_guild_map[row["genus"]]
+            else:
+                # If genus is not in the map, set guild to "Unknown"
+                traits.at[index, "guild"] = "Unknown"
+
+    # 3. Complete guild based on family using mode (for remaining blanks)
+
+    for index, row in traits.iterrows():
+        if row["guild"] == "" or row["guild"] == "Unknown":
+            if row["family"] in family_guild_map:
+                traits.at[index, "guild"] = family_guild_map[row["family"]]
+            else:
+                # If family is not in the map, set guild to "Unknown"
+                traits.at[index, "guild"] = "Unknown"
+
+    # Drop unnecessary columns
     traits.drop(columns=["sl_no", "family", "genus"], inplace=True)
 
-    # split multiple guilds into separate rows
+    # Split multiple guilds into separate rows and clean
+    traits["guild"] = traits["guild"].fillna("").astype(str)  # Ensure guild is string
     traits = traits.assign(guild=traits["guild"].str.split(",")).explode("guild")
     traits["guild"] = traits["guild"].str.strip()
     traits["guild"] = traits["guild"].str.capitalize()
 
-    # determine relative guild membership
+    # Rename blanks and 'Unknown' (from initial data or failed imputation) to "Unknown"
+    traits["guild"].replace("", "Unknown", inplace=True)
 
+    # Determine relative guild membership (pivot and normalize)
     traits["value"] = 1
-    traits = traits.groupby(["species", "guild"]).sum().reset_index()
-    traits["value"] = traits["value"] / traits.groupby("species")["value"].transform(
-        "sum"
-    )
-    traits = traits.pivot_table(
+
+    # Group by species and guild, sum the values, then calculate proportion
+    traits_grouped = traits.groupby(["species", "guild"])["value"].sum().reset_index()
+    traits_grouped["value"] = traits_grouped["value"] / traits_grouped.groupby(
+        "species"
+    )["value"].transform("sum")
+
+    # filter species in response
+
+    traits_grouped = traits_grouped[
+        traits_grouped["species"].isin(response["species"])
+    ].reset_index()
+
+    # Pivot to get guilds as columns
+    traits_pivot = traits_grouped.pivot_table(
         index="species", columns="guild", values="value", fill_value=0
     ).reset_index()
 
-    return traits
-
-
-# make dummy variables for categorical variables
-
-
-def check_data(df, name, categoricals, order_categoricals):
-    found_issue = False
-    for col in df.columns:
-        if col in categoricals:
-            defined = set(order_categoricals[col])
-            observed = set(df[col].dropna().unique())
-            unexpected = observed - defined
-
-            if unexpected:
-                problem_rows = df[df[col].isin(unexpected)][[col]].copy()
-                print(
-                    f"\n⚠️ Warning in '{name}' — unexpected values in column '{col}':\n"
-                )
-                print("Rows with unexpected values:")
-                print(problem_rows)
-                found_issue = True
-                break  # break inner loop
-    if found_issue:
-        return
-    else:
-        return print(f"All values in '{name}' are as expected\n")
-
-
-def set_order(df, categoricals, order_categoricals):
-    for col in df.columns:
-        if col in categoricals:
-            df[col] = pd.Categorical(
-                df[col], categories=order_categoricals[col], ordered=True
-            )
-            df[col] = df[col].cat.codes
-
-            if col == "plot_id":
-                df[col] += 1  # > 0
+    return traits_pivot
 
 
 # main function
@@ -657,7 +692,7 @@ def clean_data():
     observations = clean_observations()
     predators = clean_predators()
     sites = clean_sites()
-    clean_plots()
+    plots = clean_plots()
     benthic_classes = clean_benthic_cover()
     rug, rugosity = clean_rugosity()
     behaviours = metadata()
@@ -668,49 +703,25 @@ def clean_data():
     response = create_response(individuals, observations, behaviours, samples)
     guilds = clean_guilds(response)
 
-    categoricals = [
-        "deployment_id",
-        "treatment",
-        "plot_id",
-        "location",
-        "protection",
-        "ind_id",
-        "species",
-        "size_class",
-    ]
+    print("Data cleaning complete\n")
 
-    order_categoricals = {
-        "deployment_id": np.sort(predictors["deployment_id"].unique()),
-        "treatment": np.array(
-            ["negative-control", "positive-control", "barracuda", "grouper"],
-            dtype=object,
-        ),
-        "plot_id": np.sort(predictors["plot_id"].unique()),
-        "location": np.sort(predictors["location"].unique()),
-        "protection": np.sort(predictors["protection"].unique())[::-1],  # reverse order
-        "ind_id": np.sort(individuals["ind_id"].unique()),
-        "species": np.sort(individuals["species"].unique()),
-        "size_class": np.sort(individuals["size_class"].unique()),
+    return {
+        "individuals": individuals,
+        "observations": observations,
+        "predators": predators,
+        "sites": sites,
+        "plots": plots,
+        "benthic_classes": benthic_classes,
+        "rugosity": rugosity,
+        "abundance": abundance,
+        "abundance_size": abundance_size,
+        "predictors": predictors,
+        "response": response,
+        "guilds": guilds,
     }
-
-    data = [predictors, abundance, abundance_size, response, rugosity, guilds]
-
-    for name, df in zip(
-        ["predictors", "abundance", "abundance_size", "response", "rugosity", "guilds"],
-        data,
-    ):
-        check_data(df, name, categoricals, order_categoricals)
-        set_order(df, categoricals, order_categoricals)
-
-        # save data
-        df.to_csv(f"outputs/data/{name}.csv", index=False)
-
-    print("Data cleaning and standardisation complete\n")
-
-    return 0
 
 
 if __name__ == "__main__":
     state = clean_data()
-    if state != 0:
+    if state == 1:
         print("Data cleaning failed")

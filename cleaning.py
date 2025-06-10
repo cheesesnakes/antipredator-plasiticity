@@ -231,7 +231,7 @@ def clean_rugosity():
 
     D_max = 190  # length of the chain used
 
-    rugosity["rugosity"] = rugosity["measured_length_cm"] / D_max
+    rugosity["rugosity"] = 1 - (rugosity["measured_length_cm"] / D_max)
 
     rugosity["plot_id"] = (
         rugosity["deployment_id"].astype(str)
@@ -259,9 +259,7 @@ def clean_rugosity():
 
     rugosity.rename(columns={1: "sample_1", 2: "sample_2", 3: "sample_3"}, inplace=True)
 
-    rugosity.to_csv("outputs/rugosity_raw.csv", index=False)
-
-    return rug
+    return rug, rugosity
 
 
 ## Metadata
@@ -315,7 +313,7 @@ def create_predictors(sites, rug, benthic_classes, abundance):
     print("Summary:\n")
     print(predictors.describe(include="all"))
 
-    predictors.to_csv("outputs/predictors.csv", index=False)
+    predictors.to_csv("outputs/data/predictors.csv", index=False)
     return predictors
 
 
@@ -371,7 +369,7 @@ def calc_abn(individuals, predators):
     print("Summary:\n")
     print(abundance.describe(include="all"))
 
-    abundance.to_csv("outputs/abundance.csv", index=False)
+    abundance.to_csv("outputs/data/abundance.csv", index=False)
 
     return abundance
 
@@ -404,7 +402,7 @@ def calc_abn_size(individuals, predators):
     print("Summary:\n")
     print(abundance_size.describe(include="all"))
 
-    abundance_size.to_csv("outputs/abundance_size.csv", index=False)
+    abundance_size.to_csv("outputs/data/abundance_size.csv", index=False)
     return abundance_size
 
 
@@ -522,9 +520,92 @@ def create_response(individuals, observations, behaviours, samples):
     print("Summary:\n")
     print(response.describe(include="all"))
 
-    response.to_csv("outputs/response.csv", index=False)
+    response.to_csv("outputs/data/response.csv", index=False)
 
     return response
+
+
+# clean trait data
+
+
+def clean_guilds(response):
+    """
+    Cleans the guild data by filling in missing values based on genus and family.
+    """
+    print("Cleaning guilds...")
+
+    traits = pd.read_csv("data/traits.csv")
+
+    traits.columns = traits.columns.str.lower()
+
+    traits.columns
+
+    traits = traits[["sl.no", "family", "genus", "species", "feeding.guild"]]
+
+    traits.columns = ["sl_no", "family", "genus", "species", "guild"]
+
+    traits["species"] = traits["genus"] + " " + traits["species"]
+
+    # filter species that are in the response data
+
+    traits = traits[traits["species"].isin(response["species"].unique())]
+
+    # complete family where missing based on genus
+
+    def genus_to_family(genus):
+        phylo = traits[["family", "genus"]].dropna().drop_duplicates()
+        return phylo.set_index("genus")["family"].get(genus, "")
+
+    traits.loc[traits["family"] == "", "family"] = traits["genus"].map(genus_to_family)
+
+    # complete guild based on genus using mode
+
+    def genus_to_guild(genus):
+        guild = traits[traits["genus"] == genus]["guild"]
+
+        if not guild.empty:
+            mode = guild.mode()
+            if not mode.empty:
+                mode = mode[0]
+                return mode
+
+        return ""
+
+    traits.loc[traits["guild"] == "", "guild"] = traits["genus"].map(genus_to_guild)
+
+    # map family to guild using mode
+    def family_to_guild(family):
+        guild = traits[traits["family"] == family]["guild"]
+
+        if not guild.empty:
+            mode = guild.mode()
+            if not mode.empty:
+                mode = mode[0]
+                return mode
+
+        return ""
+
+    traits.loc[traits["guild"] == "", "guild"] = traits["family"].map(family_to_guild)
+
+    traits.drop(columns=["sl_no", "family", "genus"], inplace=True)
+
+    # split multiple guilds into separate rows
+    traits = traits.assign(guild=traits["guild"].str.split(",")).explode("guild")
+    traits["guild"] = traits["guild"].str.strip()
+    traits["guild"] = traits["guild"].str.capitalize()
+
+    # determine relative guild membership
+
+    traits["value"] = 1
+    traits = traits.groupby(["species", "guild"]).sum().reset_index()
+    traits["value"] = traits["value"] / traits.groupby("species")["value"].transform(
+        "sum"
+    )
+    traits = traits.pivot_table(
+        index="species", columns="guild", values="value", fill_value=0
+    ).reset_index()
+
+    return traits
 
 
 # make dummy variables for categorical variables
@@ -578,13 +659,14 @@ def clean_data():
     sites = clean_sites()
     clean_plots()
     benthic_classes = clean_benthic_cover()
-    rug = clean_rugosity()
+    rug, rugosity = clean_rugosity()
     behaviours = metadata()
     abundance = calc_abn(individuals, predators)
     abundance_size = calc_abn_size(individuals, predators)
     predictors = create_predictors(sites, rug, benthic_classes, abundance)
     samples = clean_samples()
     response = create_response(individuals, observations, behaviours, samples)
+    guilds = clean_guilds(response)
 
     categoricals = [
         "deployment_id",
@@ -611,16 +693,17 @@ def clean_data():
         "size_class": np.sort(individuals["size_class"].unique()),
     }
 
-    data = [predictors, abundance, abundance_size, response, rug]
+    data = [predictors, abundance, abundance_size, response, rugosity, guilds]
 
     for name, df in zip(
-        ["predictors", "abundance", "abundance_size", "response", "rugosity"], data
+        ["predictors", "abundance", "abundance_size", "response", "rugosity", "guilds"],
+        data,
     ):
         check_data(df, name, categoricals, order_categoricals)
         set_order(df, categoricals, order_categoricals)
 
         # save data
-        df.to_csv(f"outputs/{name}.csv", index=False)
+        df.to_csv(f"outputs/data/{name}.csv", index=False)
 
     print("Data cleaning and standardisation complete\n")
 
@@ -628,4 +711,6 @@ def clean_data():
 
 
 if __name__ == "__main__":
-    clean_data()
+    state = clean_data()
+    if state != 0:
+        print("Data cleaning failed")

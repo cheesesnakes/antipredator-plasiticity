@@ -54,7 +54,7 @@ def run_model(output_dir, stan_data, response, chains=4):
         threads_per_chain=8,
         output_dir=output_dir,
         # max_treedepth=15,
-        adapt_delta=0.99,
+        # adapt_delta=0.99,
     )
 
     print("Model run complete.")

@@ -2,6 +2,64 @@ import os
 import arviz as az
 from cmdstanpy import CmdStanModel
 
+# load the data
+
+
+def load_data(model="test"):
+    if model == "test":
+        dirs = [
+            "outputs/simulation/predictors.csv",
+            "outputs/simulation/response.csv",
+            "outputs/simulation/rugosity.csv",
+            "outputs/simulation/guilds.csv",
+            "outputs/model/generated/",
+            "figures/generative/",
+        ]
+    else:
+        dirs = [
+            "outputs/data/predictors.csv",
+            "outputs/data/response.csv",
+            "outputs/data/rugosity.csv",
+            "outputs/data/guilds.csv",
+            "outputs/model/data/",
+            "figures/",
+        ]
+
+    return dirs
+
+
+# Prepare Stan data
+
+
+def prep_stan(predictors, response, rugosity, traits):
+    stan_data = {
+        "N": len(response),
+        "T": len(predictors["treatment"].unique()),
+        "P": predictors["protection"].nunique(),
+        "S": predictors["plot_id"].nunique(),
+        "C": max(response["size_class"]) + 1,
+        "G": len(traits.columns) - 1,
+        "K": response["species"].nunique(),
+        "B": 3,
+        "D": response[["foraging", "vigilance", "movement"]].values,
+        "bites": response["bites"].astype("int").values,
+        "plot": response["plot_id"].values,
+        "species": response["species"].values + 1,
+        "protection": predictors["protection"].values + 1,
+        "predator": predictors["predator"].values + 1,
+        "rugosity_raw": rugosity[["sample_1", "sample_2", "sample_3"]].values,
+        "biomass": predictors["biomass"].values,
+        "treatment": predictors["treatment"].values + 1,
+        "size": response["size_class"].values + 1,
+        "guild": traits[traits.columns[1:]].values,
+        "group": response["group"].values + 1,
+    }
+
+    return stan_data
+
+
+# load the model
+
 
 def load_model(response, output_dir):
     print("Loading samples from existing files...")

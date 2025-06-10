@@ -55,6 +55,11 @@ def set_order(df, categoricals, order_categoricals):
             if col == "plot_id":
                 df[col] += 1  # > 0
 
+            if (df[col] < 0).any():
+                print(f"Column '{col}' contains categories not in order_categoricals.")
+
+    return df
+
 
 # main function
 
@@ -99,7 +104,7 @@ def standardise_data():
         "location": np.sort(predictors["location"].unique()),
         "protection": np.sort(predictors["protection"].unique())[::-1],  # reverse order
         "ind_id": np.sort(individuals["ind_id"].unique()),
-        "species": np.sort(individuals["species"].unique()),
+        "species": np.sort(response["species"].unique()),
         "size_class": np.sort(individuals["size_class"].unique()),
     }
 
@@ -110,7 +115,7 @@ def standardise_data():
         data,
     ):
         check_data(df, name, categoricals, order_categoricals)
-        set_order(df, categoricals, order_categoricals)
+        df = set_order(df, categoricals, order_categoricals)
 
         # save data
         df.to_csv(f"outputs/data/{name}.csv", index=False)

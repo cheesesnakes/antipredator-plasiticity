@@ -13,6 +13,12 @@ def clean_individuals():
     individuals.columns = individuals.columns.str.lower()
     individuals.columns = individuals.columns.str.replace("-", "_")
 
+    individuals["group"] = pd.Categorical(
+        individuals["group"], categories=["no", "yes"], ordered=True
+    )
+    individuals["group"] = individuals["group"].cat.codes
+    individuals.loc[individuals["group"] < 0, "group"] = 0
+
     print("Individuals data")
     print("=====================================")
     print("Columns:\n")
@@ -498,7 +504,9 @@ def transform_behaviours(observations, behaviours, samples):
 
 
 def create_response(individuals, observations, behaviours, samples):
-    response = individuals[["plot_id", "ind_id", "species", "size_class"]].copy()
+    response = individuals[
+        ["plot_id", "ind_id", "species", "group", "size_class"]
+    ].copy()
 
     # add behavioural observations
 
@@ -594,9 +602,8 @@ def clean_guilds(response):
     # Identify and add missing species from 'response' to 'traits'
     # Only consider species not already present in traits and not 'Unknown'
     response["species"] = response["species"].str.strip()
-    missing_species_in_traits = response[~response["species"].isin(traits["species"])]
-    missing_species_in_traits = missing_species_in_traits[
-        missing_species_in_traits["species"] != "Unknown"
+    missing_species_in_traits = response[
+        ~response["species"].isin(traits["species"])
     ].copy()
 
     if not missing_species_in_traits.empty:

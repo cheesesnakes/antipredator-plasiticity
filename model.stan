@@ -27,7 +27,7 @@ data {
   // individual-level predictors
   array[N] int<lower=1, upper=C> size; // size class of each observation
   array[N] int<lower=1, upper=2> group; // group membership (0 or 1)
-  array[K, G] int<lower=0, upper=1> guild; // guild of each observation
+  array[K, G] real<lower=0, upper=1> guild; // guild of each observation
 }
 parameters {
   // Parameters to estimate rugosity

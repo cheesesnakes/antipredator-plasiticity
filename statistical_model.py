@@ -2,8 +2,7 @@
 import pandas as pd
 import os
 
-from functions.data import load_data, prep_stan
-from functions.model import load_model, run_model
+from functions.model import load_model, run_model, load_data, prep_stan
 from functions.plot import (
     diagnostic_plots,
     counterfactual_treatments,
@@ -22,14 +21,15 @@ def main(model="test", run=False, chains=4):
     dirs = load_data(model=model)
     predictors = pd.read_csv(dirs[0])
     response = pd.read_csv(dirs[1])
-    rugosity = pd.read_csv(dirs[3])
+    rugosity = pd.read_csv(dirs[2])
+    traits = pd.read_csv(dirs[3])
 
     # prepare data
-    stan_data = prep_stan(predictors, response, rugosity)
+    stan_data = prep_stan(predictors, response, rugosity, traits)
 
     # run model or load existing model
 
-    output_dir = dirs[2]
+    output_dir = dirs[4]
 
     print("Checking for existing model files...")
 
@@ -54,7 +54,8 @@ def main(model="test", run=False, chains=4):
 
     if run:
         diagnostic_plots(model_data, directory=dirs[4])
-        compare_parameters()
+        if model == "test":
+            compare_parameters()
 
     # counterfactual treatments
 

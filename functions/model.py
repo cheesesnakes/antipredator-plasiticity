@@ -69,17 +69,15 @@ def load_model(response, output_dir):
         posterior_predictive=[
             "D_pred",
             "bites_pred",
-            "D_cf",
-            "bites_cf",
-            "D_cf_prot",
-            "bites_cf_prot",
+            "D_pred_protection",
+            "bites_pred_protection",
         ],
     )
 
     if response is not None:
         obs = az.from_dict(
             observed_data={
-                "D_obs": response["vigilance"].values,
+                "D_obs": response[["foraging", "vigilance", "movement"]].values,
                 "bites_obs": response["bites"].values,
             }
         )
@@ -126,7 +124,7 @@ def run_model(output_dir, stan_data, response, chains=4):
 
     obs = az.from_dict(
         observed_data={
-            "D_obs": response["vigilance"].values,
+            "D_obs": response[["foraging", "vigilance", "movement"]].values,
             "bites_obs": response["bites"].values,
         }
     )
@@ -136,10 +134,8 @@ def run_model(output_dir, stan_data, response, chains=4):
         posterior_predictive=[
             "D_pred",
             "bites_pred",
-            "D_cf",
-            "bites_cf",
-            "D_cf_prot",
-            "bites_cf_prot",
+            "D_pred_protection",
+            "bites_pred_protection",
         ],
     )
 

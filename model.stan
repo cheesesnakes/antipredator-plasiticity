@@ -226,27 +226,29 @@ generated quantities {
       for (n in 1 : N) {
         real rug_std = mean(rugosity_std);
         real bio_std = mean(biomass_std);
+        int group_std = 1;
+        int predator_std = 1;
+
         for (b in 1 : B) {
           real mu_cf = alpha_D[plot[n], b] + theta_D[treatment[plot[n]], b]
                        + beta_D[p, b] + alpha_pi[plot[n], b]
                        + theta_pi[treatment[plot[n]], b]
                        + protection[plot[n]] * beta_pi[p, b]
                        + gamma_D[b] * rug_std + zeta_D[b] * bio_std
-                       + eta_D[1, b]
-                       + // assuming predator present
-                       omega_D[size[n], b]
+                       + eta_D[predator_std, b]
+                       + omega_D[size[n], b]
                        + dot_product(epsilon_D[ : , b], guild[species[n]])
-                       + delta_D[group[n], b];
-          
+                       + delta_D[group_std, b];
+
           real pi_cf = inv_logit(alpha_pi[plot[n], b]
                                  + theta_pi[treatment[plot[n]], b]
                                  + beta_pi[p, b] + gamma_pi[b] * rug_std
-                                 + zeta_pi[b] * bio_std + eta_pi[1, b]
+                                 + zeta_pi[b] * bio_std + eta_pi[predator_std, b]
                                  + omega_pi[size[n], b]
                                  + dot_product(epsilon_pi[ : , b],
                                                guild[species[n]])
-                                 + delta_pi[group[n], b]);
-          
+                                 + delta_pi[group_std, b]);
+
           if (bernoulli_rng(pi_cf)) {
             D_pred_protection[p, t, n, b] = 0;
           } else {
@@ -256,11 +258,11 @@ generated quantities {
         
         real lambda_cf = exp(alpha_bites[plot[n]] + theta_bites[t]
                              + beta_bites[p] + gamma_bites * rug_std
-                             + zeta_bites * bio_std + eta_bites[1]
+                             + zeta_bites * bio_std + eta_bites[predator_std]
                              + omega_bites[size[n]]
                              + dot_product(epsilon_bites, guild[species[n]])
-                             + delta_bites[group[n]]);
-        
+                             + delta_bites[group_std]);
+
         bites_pred_protection[p, t, n] = lambda_cf;
       }
     }

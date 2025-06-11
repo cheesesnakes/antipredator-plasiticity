@@ -19,15 +19,6 @@ def clean_individuals():
     individuals["group"] = individuals["group"].cat.codes
     individuals.loc[individuals["group"] < 0, "group"] = 0
 
-    print("Individuals data")
-    print("=====================================")
-    print("Columns:\n")
-    print(individuals.columns)
-    print("First 10 rows:\n")
-    print(individuals.head(10))
-    print("Summary:\n")
-    print(individuals.describe(include="all"))
-
     return individuals
 
 
@@ -44,15 +35,6 @@ def clean_observations():
 
     observations.rename(columns={"individual": "ind_id"}, inplace=True)
 
-    print("Observations data")
-    print("=====================================")
-    print("Columns:\n")
-    print(observations.columns)
-    print("First 10 rows:\n")
-    print(observations.head(10))
-    print("Summary:\n")
-    print(observations.describe(include="all"))
-
     return observations
 
 
@@ -63,15 +45,6 @@ def clean_predators():
     predators.columns = predators.columns.str.replace("-", "_")
 
     predators.rename(columns={"index": "predator_id"}, inplace=True)
-
-    print("Predators data")
-    print("=====================================")
-    print("Columns:\n")
-    print(predators.columns)
-    print("First 10 rows:\n")
-    print(predators.head(10))
-    print("Summary:\n")
-    print(predators.describe(include="all"))
 
     return predators
 
@@ -90,13 +63,6 @@ def clean_sites():
     sites.columns = sites.columns.str.lower()
     sites.columns = sites.columns.str.replace("-", "_")
 
-    print("Sites data")
-    print("=====================================")
-    print("Columns:\n")
-    print(sites.columns)
-    print("First 10 rows:\n")
-    print(sites.head(10))
-
     return sites
 
 
@@ -104,16 +70,6 @@ def clean_plots():
     plots = pd.read_csv("data/plots.csv")
 
     plots.rename(columns={"index": "plot_id"}, inplace=True)
-
-    print("Plots data")
-    print("=====================================")
-    print("Columns:\n")
-    print(plots.columns)
-    print("First 10 rows:\n")
-    print(plots.head(10))
-    print("Summary:\n")
-    print(plots.describe(include="all"))
-
     return plots
 
 
@@ -127,15 +83,6 @@ def clean_samples():
     samples = pd.read_csv("data/samples.csv")
     samples.rename(columns={"plot": "plot_id", "sample": "sample_id"}, inplace=True)
 
-    print("Samples data")
-    print("=====================================")
-    print("Columns:\n")
-    print(samples.columns)
-    print("First 10 rows:\n")
-    print(samples.head(10))
-    print("Summary:\n")
-    print(samples.describe(include="all"))
-
     return samples
 
 
@@ -146,15 +93,6 @@ def clean_benthic_cover():
     benthic_cover["name"] = benthic_cover["name"].str.replace(r"_Q\d_", "_", regex=True)
 
     benthic_cover.rename(columns={"name": "plot_id"}, inplace=True)
-
-    print("Benthic cover data")
-    print("=====================================")
-    print("Columns:\n")
-    print(benthic_cover.columns)
-    print("First 10 rows:\n")
-    print(benthic_cover.head(10))
-    print("Summary:\n")
-    print(benthic_cover.describe(include="all"))
 
     # calculate benthic cover
 
@@ -224,15 +162,6 @@ def clean_rugosity():
 
     rugosity["treatment"] = rugosity["treatment"].str.lower().str.replace(" ", "-")
 
-    print("Rugosity data")
-    print("=====================================")
-    print("Columns:\n")
-    print(rugosity.columns)
-    print("First 10 rows:\n")
-    print(rugosity.head(10))
-    print("Summary:\n")
-    print(rugosity.describe(include="all"))
-
     # calculate rugosity index
 
     D_max = 190  # length of the chain used
@@ -275,13 +204,7 @@ def metadata():
     ## metadata
 
     behaviours = pd.read_csv("data/behaviours.csv")
-    sizes = pd.read_csv("data/sizes.csv")
-
-    print(r"""Ethogram with descriptions of observed behaviour:\n""")
-    print(behaviours)
-
-    print(r"""Size classes used to classify fish size:\n""")
-    print(sizes)
+    #    sizes = pd.read_csv("data/sizes.csv")
 
     return behaviours
 
@@ -289,6 +212,7 @@ def metadata():
 # Data cleaning and standardisation
 print("Cleaned and standardised data")
 print("=====================================")
+print("\n\n")
 
 ## Predictors
 
@@ -312,12 +236,9 @@ def create_predictors(sites, rug, benthic_classes, abundance):
 
     print("Predictors data")
     print("=====================================")
-    print("Columns:\n")
-    print(predictors.columns)
+
     print("First 10 rows:\n")
     print(predictors.head(10))
-    print("Summary:\n")
-    print(predictors.describe(include="all"))
 
     predictors.to_csv("outputs/data/predictors.csv", index=False)
     return predictors
@@ -366,23 +287,12 @@ def calc_abn(individuals, predators):
         on="plot_id",
     )
 
-    print("Plot level abundance data")
-    print("=====================================")
-    print("Columns:\n")
-    print(abundance.columns)
-    print("First 10 rows:\n")
-    print(abundance.head(10))
-    print("Summary:\n")
-    print(abundance.describe(include="all"))
-
     abundance.to_csv("outputs/data/abundance.csv", index=False)
 
     return abundance
 
 
 def calc_abn_size(individuals, predators):
-    print(individuals["size_class"].unique())
-
     abundance_size = (
         individuals[["ind_id", "plot_id", "size_class"]]
         .groupby(["plot_id", "size_class"])
@@ -398,15 +308,6 @@ def calc_abn_size(individuals, predators):
         how="left",
         on=["plot_id", "size_class"],
     )
-
-    print("Abundance by size class data")
-    print("=====================================")
-    print("Columns:\n")
-    print(abundance_size.columns)
-    print("First 10 rows:\n")
-    print(abundance_size.head(10))
-    print("Summary:\n")
-    print(abundance_size.describe(include="all"))
 
     abundance_size.to_csv("outputs/data/abundance_size.csv", index=False)
     return abundance_size
@@ -519,14 +420,11 @@ def create_response(individuals, observations, behaviours, samples):
     response.rename(columns={"feeding": "foraging", "moving": "movement"}, inplace=True)
     response.rename(columns={"bite_count": "bites"}, inplace=True)
 
+    print("\n\n")
     print("Behavioural response data")
     print("=====================================")
-    print("Columns:\n")
-    print(response.columns)
     print("First 10 rows:\n")
     print(response.head(10))
-    print("Summary:\n")
-    print(response.describe(include="all"))
 
     response.to_csv("outputs/data/response.csv", index=False)
 
@@ -546,9 +444,6 @@ def clean_guilds(response):
     Returns:
         pd.DataFrame: The cleaned and imputed DataFrame with relative guild memberships.
     """
-    print("Cleaning guilds...")
-
-    print("Cleaning guilds...")
 
     # Load and preprocess traits data
     traits = pd.read_csv("data/traits.csv")
@@ -663,7 +558,7 @@ def clean_guilds(response):
     traits["guild"] = traits["guild"].str.capitalize()
 
     # Rename blanks and 'Unknown' (from initial data or failed imputation) to "Unknown"
-    traits["guild"].replace("", "Unknown", inplace=True)
+    traits["guilds"] = traits["guild"].replace("", "Unknown")
 
     # Determine relative guild membership (pivot and normalize)
     traits["value"] = 1
@@ -688,6 +583,24 @@ def clean_guilds(response):
     return traits_pivot
 
 
+def ind_traits(individuals, guilds):
+    """
+    Create a table with individual id, species, size class, and foraging guild.
+    Foraging guild is assigned as the guild with the highest value for each species.
+    """
+    # Find the dominant guild for each species
+    guilds_long = guilds.set_index("species").stack().reset_index()
+    guilds_long.columns = ["species", "guild", "value"]
+    dominant_guild = guilds_long.loc[guilds_long.groupby("species")["value"].idxmax()]
+    dominant_guild = dominant_guild[["species", "guild"]]
+
+    # Merge with individuals
+    table = individuals[["ind_id", "species", "size_class"]].copy()
+    table = table.merge(dominant_guild, how="left", on="species")
+
+    table.to_csv("outputs/data/individual_traits.csv", index=False)
+
+
 # main function
 
 
@@ -709,6 +622,8 @@ def clean_data():
     samples = clean_samples()
     response = create_response(individuals, observations, behaviours, samples)
     guilds = clean_guilds(response)
+
+    ind_traits(individuals, guilds)
 
     print("Data cleaning complete\n")
 

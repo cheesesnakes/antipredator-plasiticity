@@ -7,6 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "arviz>=0.21.0",
     "cmdstanpy>=1.2.5",
+    "dataframe-image>=0.2.7",
     "ipython>=9.3.0",
     "marimo>=0.13.6",
     "numpy>=2.2.4",
@@ -16,6 +17,7 @@ dependencies = [
     "python-lsp-server>=1.12.2",
     "scipy>=1.15.2",
     "seaborn>=0.13.2",
+    "selenium>=4.33.0",
 ]
 
 [tool.marimo.save]

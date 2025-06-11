@@ -17,6 +17,7 @@ from cleaning import (
 import os
 import numpy as np
 import pandas as pd
+import json
 
 # make dummy variables for categorical variables
 
@@ -61,12 +62,30 @@ def set_order(df, categoricals, order_categoricals):
     return df
 
 
+def get_order_categoricals(predictors, individuals, response):
+    return {
+        "deployment_id": np.sort(predictors["deployment_id"].unique()),
+        "treatment": np.array(
+            ["negative-control", "positive-control", "barracuda", "grouper"],
+            dtype=object,
+        ),
+        "plot_id": np.sort(predictors["plot_id"].unique()),
+        "location": np.sort(predictors["location"].unique()),
+        "protection": np.sort(predictors["protection"].unique())[::-1],  # reverse order
+        "ind_id": np.sort(individuals["ind_id"].unique()),
+        "species": np.sort(response["species"].unique()),
+        "size_class": np.sort(individuals["size_class"].unique()),
+    }
+
+
 # main function
 
 
 def standardise_data():
     if not os.path.exists("outputs"):
         os.makedirs("outputs")
+    if not os.path.exists("outputs/data"):
+        os.makedirs("outputs/data")
 
     individuals = clean_individuals()
     observations = clean_observations()
@@ -94,19 +113,15 @@ def standardise_data():
         "size_class",
     ]
 
-    order_categoricals = {
-        "deployment_id": np.sort(predictors["deployment_id"].unique()),
-        "treatment": np.array(
-            ["negative-control", "positive-control", "barracuda", "grouper"],
-            dtype=object,
-        ),
-        "plot_id": np.sort(predictors["plot_id"].unique()),
-        "location": np.sort(predictors["location"].unique()),
-        "protection": np.sort(predictors["protection"].unique())[::-1],  # reverse order
-        "ind_id": np.sort(individuals["ind_id"].unique()),
-        "species": np.sort(response["species"].unique()),
-        "size_class": np.sort(individuals["size_class"].unique()),
+    order_categoricals = get_order_categoricals(predictors, individuals, response)
+
+    # Save order_categoricals as JSON
+    order_categoricals_serializable = {
+        k: v.tolist() if isinstance(v, np.ndarray) else list(v)
+        for k, v in order_categoricals.items()
     }
+    with open("outputs/data/order_categoricals.json", "w") as f:
+        json.dump(order_categoricals_serializable, f, indent=2)
 
     data = [predictors, abundance, abundance_size, response, rugosity, guilds]
 

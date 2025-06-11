@@ -1,23 +1,24 @@
 # from cmdstanpy import install_cmdstan
 import pandas as pd
 import os
-
 from functions.model import load_model, run_model, load_data, prep_stan
-from functions.plot import (
-    diagnostic_plots,
-    counterfactual_treatments,
-    counterfactual_treatments_protection,
+from functions.analysis import (
+    diagnostics,
+    counterfactual,
 )
 from functions.validate import compare_parameters
-
-# Install CmdStan if not already installed
-# install_cmdstan()
+from standardise import standardise_data
 
 
 def main(model="test", run=False, chains=4):
     # load data
 
     print("Loading data...")
+
+    if model == "data":
+        standardise_data()
+        print("Standardising data...")
+
     dirs = load_data(model=model)
     predictors = pd.read_csv(dirs[0])
     response = pd.read_csv(dirs[1])
@@ -53,20 +54,16 @@ def main(model="test", run=False, chains=4):
     # diagnostic plots
 
     if run:
-        diagnostic_plots(model_data, directory=dirs[4])
+        diagnostics(model_data, directory=dirs[5])
         if model == "test":
             compare_parameters()
 
     # counterfactual treatments
 
-    counterfactual_treatments(model_data, directory=dirs[4])
-
-    # counterfactual treatments by protection
-
-    counterfactual_treatments_protection(model_data, directory=dirs[4])
+    counterfactual(model_data, directory=dirs[5])
 
     return 0
 
 
 if __name__ == "__main__":
-    main(model="data", run=True, chains=4)
+    main(model="data", run=False, chains=4)

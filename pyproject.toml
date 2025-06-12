@@ -8,6 +8,7 @@ dependencies = [
     "arviz>=0.21.0",
     "cmdstanpy>=1.2.5",
     "dataframe-image>=0.2.7",
+    "df2img>=0.2.21",
     "ipython>=9.3.0",
     "marimo>=0.13.6",
     "numpy>=2.2.4",

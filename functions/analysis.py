@@ -180,8 +180,12 @@ def effects_treatment(response, directory="figures/"):
         hue="Treatment",
         data=df_effect,
         palette="pastel",
-        width=0.6,
+        width=0.5,
+        gap=0.1,
+        whis=(5, 95),
+        showfliers=False,
     )
+
     plt.axhline(0, color="black", linestyle="--", linewidth=1)
     plt.ylabel("Effect size (log-fold change)")
     plt.xlabel("Behaviour")
@@ -346,10 +350,12 @@ def response_protection(response, directory="figures/"):
         palette="pastel",
         height=4,
         aspect=1.2,
-        col_wrap=2,
-        width=0.8,
+        width=0.5,
         sharey=False,
         legend="full",
+        whis=(5, 95),
+        showfliers=False,
+        gap=0.1,
     )
 
     # Add horizontal line at y = 0 to each facet
@@ -358,7 +364,7 @@ def response_protection(response, directory="figures/"):
 
     # Set titles and labels
     g.set_titles("{col_name}")
-    g.set_axis_labels("Treatment", "Response (log-fold change)")
+    g.set_axis_labels("Treatment", "Log-fold change")
 
     # Adjust legend
     g._legend.set_title("Protection Level")
@@ -553,27 +559,28 @@ def response_size(response, directory="figures/"):
     plt.figure(figsize=(10, 6))
     # Create the faceted violin plot
     g = sns.catplot(
-        x="Treatment",
+        x="size_class",
         y="Response",
         hue="Protection Level",
         col="Behaviour",
-        row="size_class",
+        row="Treatment",
         kind="box",
         data=df_response_size,
         palette="pastel",
         height=4,
         aspect=1.2,
-        col_wrap=2,
-        width=0.8,
-        sharey=False,
+        width=0.5,
         legend="full",
+        showfliers=False,
+        whis=(5, 95),
+        gap=0.1,
     )
     # Add horizontal line at y = 0 to each facet
     for ax in g.axes.flat:
         ax.axhline(0, color="black", linestyle="--", linewidth=1)
     # Set titles and labels
-    g.set_titles("{col_name} ({row_name})")
-    g.set_axis_labels("Treatment", "Response (log-fold change)")
+    g.set_titles("{row_name} | {col_name}")
+    g.set_axis_labels("Size Class", "Log-fold change")
     # Adjust legend
     g._legend.set_title("Protection Level")
     # Save figure
@@ -765,27 +772,28 @@ def response_guild(response, directory="figures/"):
     plt.figure(figsize=(10, 6))
     # Create the faceted box plot
     g = sns.catplot(
-        x="Treatment",
+        x="guild",
         y="Response",
         hue="Protection Level",
         col="Behaviour",
-        row="guild",
+        row="Treatment",
         kind="box",
         data=df_response_guild,
         palette="pastel",
         height=4,
         aspect=1.2,
-        col_wrap=2,
-        width=0.8,
-        sharey=False,
+        width=0.5,
         legend="full",
+        gap=0.1,
+        whis=(5, 95),
+        showfliers=False,
     )
     # Add horizontal line at y = 0 to each facet
     for ax in g.axes.flat:
         ax.axhline(0, color="black", linestyle="--", linewidth=1)
     # Set titles and labels
-    g.set_titles("{col_name} ({row_name})")
-    g.set_axis_labels("Treatment", "Response (log-fold change)")
+    g.set_titles("{row_name} | {col_name}")
+    g.set_axis_labels("Foraging Guild", "Log-fold change")
     # Adjust legend
     g._legend.set_title("Protection Level")
     # Save figure
@@ -821,12 +829,12 @@ def counterfactual(model_data, directory="figures/counterfactual/"):
     # plot the counterfactual predictions
     print("\nCalculating effects of treatment on behaviour...\n")
 
-    # effects_treatment(response, directory=directory)
+    effects_treatment(response, directory=directory)
 
     # plot the difference in response across protection levels
     print("\nCalculating difference in response across protection levels...\n")
 
-    # response_protection(response, directory=directory)
+    response_protection(response, directory=directory)
 
     # plot the difference in response across size classes
     print("\nCalculating difference in response across size classes...\n")
@@ -839,3 +847,6 @@ def counterfactual(model_data, directory="figures/counterfactual/"):
     print("\nDone.\n")
 
     return 0
+
+# summarise model coefficients
+

@@ -13,8 +13,6 @@ i_am("functions/summary_tables.R")
 
 parameters <- read.csv(here("outputs/parameter_summary.csv"))
 
-colnames(parameters)
-
 parameters <- parameters %>%
     mutate(
         Behaviour = case_when(
@@ -59,7 +57,5 @@ parameters_table <- flextable(parameters) %>%
     merge_v(~ Parameter + Level + Behaviour + Model) %>%
     set_table_properties(layout = "fixed", width = 0.9) %>%
     theme_box()
-
-print(parameters_table)
 
 save_as_docx(parameters_table, path = here("outputs/parameter_summary.docx"))

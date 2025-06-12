@@ -8,6 +8,7 @@ from functions.analysis import (
 )
 from functions.validate import compare_parameters
 from standardise import standardise_data
+from model_summary import parameter_summary
 
 
 def main(model="test", run=False, chains=4):
@@ -61,6 +62,9 @@ def main(model="test", run=False, chains=4):
     # counterfactual treatments
 
     counterfactual(model_data, directory=dirs[5])
+
+    # model summary
+    parameter_summary(model_data, output_dir)
 
     return 0
 

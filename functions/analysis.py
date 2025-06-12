@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import os
-import dataframe_image as dfi
 import json
 
 # set the plot style
@@ -102,24 +101,9 @@ def effects_treatment(response, directory="figures/"):
         inplace=True,
     )
 
-    # Format the summary table using pandas.style
-    styled_summary = (
-        summary_effect.style.set_caption("Effect size log-fold change")
-        .format(precision=3)
-        .set_table_styles(
-            [
-                {
-                    "selector": "caption",
-                    "props": [("caption-side", "top"), ("font-weight", "bold")],
-                }
-            ]
-        )
-        .set_properties(**{"text-align": "center"})
-        .hide(axis="index")  # hides the row index
-    )
+    # save as csv
 
-    # Save styled summary as image
-    dfi.export(styled_summary, f"{directory}/summary_effects_treatments.png")
+    summary_effect.to_csv("outputs/analysis/summary_effects_treatment.csv", index=False)
 
     # --- Compare Effects Table ---
 
@@ -148,25 +132,10 @@ def effects_treatment(response, directory="figures/"):
         .reset_index()
     )
 
-    styled_compare = (
-        compare_effects.style.set_caption(
-            "Posterior probability of treatment effect comparisons"
-        )
-        .format(precision=3)
-        .set_table_styles(
-            [
-                {
-                    "selector": "caption",
-                    "props": [("caption-side", "top"), ("font-weight", "bold")],
-                }
-            ]
-        )
-        .set_properties(**{"text-align": "center"})
-        .hide(axis="index")
+    # save as csv
+    compare_effects.to_csv(
+        "outputs/analysis/compare_effects_treatment.csv", index=False
     )
-
-    # Save styled comparison table as image
-    dfi.export(styled_compare, f"{directory}/compare_effects_treatments.png")
 
     # plot the effect size
 
@@ -267,23 +236,11 @@ def response_protection(response, directory="figures/"):
         columns={"p5": "5th", "p25": "25th", "p75": "75th", "p95": "95th"},
         inplace=True,
     )
-    # Format the summary table using pandas.style
-    styled_summary_response = (
-        summary_response.style.set_caption("Response log-fold change")
-        .format(precision=3)
-        .set_table_styles(
-            [
-                {
-                    "selector": "caption",
-                    "props": [("caption-side", "top"), ("font-weight", "bold")],
-                }
-            ]
-        )
-        .set_properties(**{"text-align": "center"})
-        .hide(axis="index")  # hides the row index
+
+    # save as csv
+    summary_response.to_csv(
+        "outputs/analysis/summary_response_protection.csv", index=False
     )
-    # Save styled summary as image
-    dfi.export(styled_summary_response, f"{directory}/summary_response_protection.png")
 
     # --- Compare Responses Table ---
     compare_response = df_response.pivot_table(
@@ -314,25 +271,10 @@ def response_protection(response, directory="figures/"):
         .reset_index()
     )
 
-    styled_compare_response = (
-        compare_response.style.set_caption(
-            "Posterior probability of response comparisons"
-        )
-        .format(precision=3)
-        .set_table_styles(
-            [
-                {
-                    "selector": "caption",
-                    "props": [("caption-side", "top"), ("font-weight", "bold")],
-                }
-            ]
-        )
-        .set_properties(**{"text-align": "center"})
-        .hide(axis="index")
+    # save as csv
+    compare_response.to_csv(
+        "outputs/analysis/compare_response_protection.csv", index=False
     )
-
-    # Save styled comparison table as image
-    dfi.export(styled_compare_response, f"{directory}/compare_response_protection.png")
 
     # plot the difference in response across protection levels
     print("\nPlotting difference in response across protection levels...\n")
@@ -478,27 +420,10 @@ def response_size(response, directory="figures/"):
         columns={"p5": "5th", "p25": "25th", "p75": "75th", "p95": "95th"},
         inplace=True,
     )
-    # Format the summary table using pandas.style
-    styled_summary_response_size = (
-        summary_response_size.head(100)  # Limit to first 100 rows
-        .style.set_caption("Response log-fold change by size class")
-        .format(precision=3)
-        .set_table_styles(
-            [
-                {
-                    "selector": "caption",
-                    "props": [("caption-side", "top"), ("font-weight", "bold")],
-                }
-            ]
-        )
-        .set_properties(**{"text-align": "center"})
-        .hide(axis="index")  # hides the row index
-    )
 
-    # Save styled summary as image
-    dfi.export(
-        styled_summary_response_size,
-        f"{directory}/summary_response_size.png",
+    # save as csv
+    summary_response_size.to_csv(
+        "outputs/analysis/summary_response_size.csv", index=False
     )
 
     # --- Compare Responses Table ---
@@ -530,28 +455,9 @@ def response_size(response, directory="figures/"):
         .reset_index()
     )
 
-    styled_compare_response_size = (
-        compare_response_size.head(100)  # Limit to first 100 rows
-        .style.set_caption(
-            "Posterior probability of response comparisons by size class"
-        )
-        .format(precision=3)
-        .set_table_styles(
-            [
-                {
-                    "selector": "caption",
-                    "props": [("caption-side", "top"), ("font-weight", "bold")],
-                }
-            ]
-        )
-        .set_properties(**{"text-align": "center"})
-        .hide(axis="index")
-    )
-
-    # Save styled comparison table as image
-    dfi.export(
-        styled_compare_response_size,
-        f"{directory}/compare_response_size.png",
+    # save as csv
+    compare_response_size.to_csv(
+        "outputs/analysis/compare_response_size.csv", index=False
     )
 
     # plot the difference in response across size classes
@@ -692,27 +598,9 @@ def response_guild(response, directory="figures/"):
         inplace=True,
     )
 
-    # Format the summary table using pandas.style
-    styled_summary_response_guild = (
-        summary_response_guild.head(100)
-        .style.set_caption("Response log-fold change by guild")
-        .format(precision=3)
-        .set_table_styles(
-            [
-                {
-                    "selector": "caption",
-                    "props": [("caption-side", "top"), ("font-weight", "bold")],
-                }
-            ]
-        )
-        .set_properties(**{"text-align": "center"})
-        .hide(axis="index")
-    )
-
-    # Save styled summary as image
-    dfi.export(
-        styled_summary_response_guild,
-        f"{directory}/summary_response_guild.png",
+    # save as csv
+    summary_response_guild.to_csv(
+        "outputs/analysis/summary_response_guild.csv", index=False
     )
 
     # --- Compare Responses Table ---
@@ -744,27 +632,9 @@ def response_guild(response, directory="figures/"):
         .reset_index()
     )
 
-    styled_compare_response_guild = (
-        compare_response_guild.style.set_caption(
-            "Posterior probability of response comparisons by guild"
-        )
-        .format(precision=3)
-        .set_table_styles(
-            [
-                {
-                    "selector": "caption",
-                    "props": [("caption-side", "top"), ("font-weight", "bold")],
-                }
-            ]
-        )
-        .set_properties(**{"text-align": "center"})
-        .hide(axis="index")
-    )
-
-    # Save styled comparison table as image
-    dfi.export(
-        styled_compare_response_guild,
-        f"{directory}/compare_response_guild.png",
+    # save as csv
+    compare_response_guild.to_csv(
+        "outputs/analysis/compare_response_guild.csv", index=False
     )
 
     # plot the difference in response across guilds
@@ -847,6 +717,3 @@ def counterfactual(model_data, directory="figures/counterfactual/"):
     print("\nDone.\n")
 
     return 0
-
-# summarise model coefficients
-

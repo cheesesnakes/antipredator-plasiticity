@@ -12,7 +12,8 @@ outputs/
 .vscode/
 
 # Virtual environments
-.venv
+.venv/
+renv/
 
 # compiled stan model
 model

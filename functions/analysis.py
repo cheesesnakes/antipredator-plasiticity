@@ -5,6 +5,7 @@ import pandas as pd
 import seaborn as sns
 import os
 import json
+from rpy2 import robjects as ro
 
 # set the plot style
 sns.set_theme(style="white", palette="pastel")
@@ -713,6 +714,16 @@ def counterfactual(model_data, directory="figures/counterfactual/"):
     # plot the difference in response across guilds
     print("\nCalculating difference in response across guilds...\n")
     response_guild(response, directory=directory)
+
+    # save tables
+
+    print("\nSaving summary tables...\n")
+
+    ro.r(
+        """
+        source("functions/analysis_tables.R")
+        """
+    )
 
     print("\nDone.\n")
 

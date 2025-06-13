@@ -43,38 +43,10 @@ def diagnostics(model_data, directory="figures/generative/"):
 # Effect of treatment on behaviour
 
 
-def effects_treatment(response, directory="figures/"):
-    # Calculate effect size as log-fold change
-    effect_treatment = np.stack(
-        [
-            response[:, 3, :] - response[:, 0, :],
-            response[:, 2, :] - response[:, 0, :],
-            response[:, 1, :] - response[:, 0, :],
-        ],
-        axis=1,
-    )
-
-    # calculate mean across individuals and protection levels
-    effect_treatment = np.mean(effect_treatment, axis=0)
-    effect_treatment = np.mean(effect_treatment, axis=1)
-
-    # create a DataFrame for plotting
-    df_effect = pd.DataFrame(
-        {
-            "Treatment": np.repeat(
-                ["Grouper", "Barracuda", "Positive Control"], 4 * 4000
-            ),
-            "Behaviour": np.tile(
-                np.repeat(["Foraging", "Vigilance", "Movement", "Bites"], 4000), 3
-            ),
-            "Draw": np.tile(np.arange(4000), 3 * 4),
-            "effect": effect_treatment.flatten(),
-        }
-    )
-
+def effects_treatment(df_effect, directory="figures/"):
     # Summarise the effect size
     summary_effect = (
-        df_effect.groupby(["Treatment", "Behaviour"])["effect"]
+        df_effect.groupby(["Treatment", "Behaviour"])["Effect Size"]
         .agg(
             Mean="mean",
             Median="median",
@@ -88,7 +60,7 @@ def effects_treatment(response, directory="figures/"):
 
     # Calculate P(> 0)
     test_effects = (
-        df_effect.groupby(["Treatment", "Behaviour"])["effect"]
+        df_effect.groupby(["Treatment", "Behaviour"])["Effect Size"]
         .apply(lambda x: np.mean(x > 0))
         .reset_index(name="P(> 0)")
     )
@@ -109,9 +81,9 @@ def effects_treatment(response, directory="figures/"):
     # --- Compare Effects Table ---
 
     compare_effects = df_effect.pivot_table(
-        index=["Draw", "Behaviour"],
+        index=["sample", "Behaviour"],
         columns="Treatment",
-        values="effect",
+        values="Effect Size",
         aggfunc="mean",
     ).reset_index()
 
@@ -146,7 +118,7 @@ def effects_treatment(response, directory="figures/"):
     # make ridgeplot
     sns.boxplot(
         x="Behaviour",
-        y="effect",
+        y="Effect Size",
         hue="Treatment",
         data=df_effect,
         palette="pastel",
@@ -159,7 +131,9 @@ def effects_treatment(response, directory="figures/"):
     plt.axhline(0, color="black", linestyle="--", linewidth=1)
     plt.ylabel("Effect size (log-fold change)")
     plt.xlabel("Behaviour")
-    plt.legend(title="Treatment", loc="upper right")
+    plt.legend(
+        title="Treatment", loc="upper center", bbox_to_anchor=(0.5, 1.05), ncol=3
+    )
     plt.savefig(f"{directory}/effects_treatment.png", dpi=300)
     plt.close()
 
@@ -167,48 +141,10 @@ def effects_treatment(response, directory="figures/"):
 # difference in response across protection levels
 
 
-def response_protection(response, directory="figures/"):
-    # Calculate log-fold change across treatments
-    response_diff = np.stack(
-        [
-            response[:, 3, :] - response[:, 0, :],
-            response[:, 2, :] - response[:, 0, :],
-            response[:, 1, :] - response[:, 0, :],
-        ],
-        axis=1,
-    )
-
-    # calculate mean across individuals and protection levels
-    response_diff = np.mean(response_diff, axis=2)
-
-    # Ensure correct shape assumption
-
-    try:
-        assert response_diff.shape == (2, 3, 4, 4000)
-    except AssertionError:
-        print("Warning: response_diff shape is not as expected.")
-        print(f"Expected shape: (2, 3, 4, 4000), but got {response_diff.shape}")
-
-    # Label axes
-    protection_levels = ["Outside PA", "Inside PA"]
-    treatments = ["Grouper", "Barracuda", "Positive Control"]
-    behaviours = ["Foraging", "Vigilance", "Movement", "Bites"]
-    n_draws = 4000
-
-    # Create DataFrame
-    df_response = pd.DataFrame(
-        {
-            "Protection Level": np.repeat(protection_levels, 3 * 4 * n_draws),
-            "Treatment": np.tile(np.repeat(treatments, 4 * n_draws), 2),
-            "Behaviour": np.tile(np.repeat(behaviours, n_draws), 2 * 3),
-            "Draw": np.tile(np.arange(n_draws), 2 * 3 * 4),
-            "Response": response_diff.flatten(),
-        }
-    )
-
+def response_protection(df_effect, directory="figures/"):
     # Summarise the response
     summary_response = (
-        df_response.groupby(["Treatment", "Protection Level", "Behaviour"])["Response"]
+        df_effect.groupby(["Treatment", "Protection", "Behaviour"])["Effect Size"]
         .agg(
             Mean="mean",
             Median="median",
@@ -222,14 +158,14 @@ def response_protection(response, directory="figures/"):
 
     # Calculate P(> 0)
     test_response = (
-        df_response.groupby(["Treatment", "Protection Level", "Behaviour"])["Response"]
+        df_effect.groupby(["Treatment", "Protection", "Behaviour"])["Effect Size"]
         .apply(lambda x: np.mean(x > 0))
         .reset_index(name="P(> 0)")
     )
 
     # Merge summaries
     summary_response = summary_response.merge(
-        test_response, on=["Treatment", "Protection Level", "Behaviour"]
+        test_response, on=["Treatment", "Protection", "Behaviour"]
     )
 
     # Reorder and rename columns for readability
@@ -244,10 +180,10 @@ def response_protection(response, directory="figures/"):
     )
 
     # --- Compare Responses Table ---
-    compare_response = df_response.pivot_table(
-        index=["Draw", "Behaviour"],
-        columns=["Protection Level", "Treatment"],
-        values="Response",
+    compare_response = df_effect.pivot_table(
+        index=["sample", "Behaviour"],
+        columns=["Protection", "Treatment"],
+        values="Effect Size",
         aggfunc="mean",
     ).reset_index()
 
@@ -285,11 +221,11 @@ def response_protection(response, directory="figures/"):
     # Create the faceted violin plot
     g = sns.catplot(
         x="Treatment",
-        y="Response",
-        hue="Protection Level",
+        y="Effect Size",
+        hue="Protection",
         col="Behaviour",
         kind="box",
-        data=df_response,
+        data=df_effect,
         palette="pastel",
         height=4,
         aspect=1.2,
@@ -310,7 +246,14 @@ def response_protection(response, directory="figures/"):
     g.set_axis_labels("Treatment", "Log-fold change")
 
     # Adjust legend
-    g._legend.set_title("Protection Level")
+    g._legend.set_title("Protection")
+
+    # legend outside the plot on top
+    g._legend.set_bbox_to_anchor((0.5, 1.05))
+    g._legend.set_loc("upper center")
+    g._legend.set_ncol(2)
+    g._legend.set_frame_on(False)
+    g._legend.set_title("Protection")
 
     # Save figure
     g.figure.savefig(
@@ -322,21 +265,7 @@ def response_protection(response, directory="figures/"):
 
 
 # response to treatments across size classes
-def response_size(response, directory="figures/"):
-    # Calculate log-fold change across treatments
-    response_size = np.stack(
-        [
-            response[:, 3, :] - response[:, 0, :],
-            response[:, 2, :] - response[:, 0, :],
-            response[:, 1, :] - response[:, 0, :],
-        ],
-        axis=1,
-    )
-    assert response_size.shape == (2, 3, 432, 4, 4000), (
-        "response_size shape is not as expected. Expected (2, 3, 432, 4, 4000), but got",
-        response_size.shape,
-    )
-
+def response_size(df_effect, directory="figures/"):
     # load individual traits
 
     individual_traits = pd.read_csv("outputs/data/individual_traits.csv", index_col=0)
@@ -353,44 +282,18 @@ def response_size(response, directory="figures/"):
         ordered=True,
     )
     individual_traits["ind_id"] = individual_traits["ind_id"].cat.codes
-
-    n_prot, n_treat, n_ind, n_behav, n_draw = response_size.shape
-
-    df_response_size = pd.DataFrame(
-        {
-            "Protection Level": np.repeat(
-                ["Outside PA", "Inside PA"], n_treat * n_ind * n_behav * n_draw
-            ),
-            "Treatment": np.tile(
-                np.repeat(
-                    ["Grouper", "Barracuda", "Positive Control"],
-                    n_ind * n_behav * n_draw,
-                ),
-                n_prot,
-            ),
-            "ind_id": np.tile(
-                np.repeat(individual_traits["ind_id"], n_behav * n_draw),
-                n_prot * n_treat,
-            ),
-            "Behaviour": np.tile(
-                np.repeat(["Foraging", "Vigilance", "Movement", "Bites"], n_draw),
-                n_prot * n_treat * n_ind,
-            ),
-            "Draw": np.tile(np.arange(n_draw), n_prot * n_treat * n_ind * n_behav),
-            "Response": response_size.flatten(),
-        }
-    )
+    individual_traits.rename(columns={"ind_id": "Individuals"}, inplace=True)
 
     # Merge with individual traits
-    df_response_size = df_response_size.merge(
-        individual_traits[["ind_id", "size_class"]], on="ind_id", how="left"
+    df_effect = df_effect.merge(
+        individual_traits[["Individuals", "size_class"]], on="Individuals", how="left"
     )
 
     # Summarise the response size
     summary_response_size = (
-        df_response_size.groupby(
-            ["Treatment", "Protection Level", "Behaviour", "size_class"]
-        )["Response"]
+        df_effect.groupby(["Treatment", "Protection", "Behaviour", "size_class"])[
+            "Effect Size"
+        ]
         .agg(
             Mean="mean",
             Median="median",
@@ -403,9 +306,9 @@ def response_size(response, directory="figures/"):
     )
     # Calculate P(> 0)
     test_response_size = (
-        df_response_size.groupby(
-            ["Treatment", "Protection Level", "Behaviour", "size_class"]
-        )["Response"]
+        df_effect.groupby(["Treatment", "Protection", "Behaviour", "size_class"])[
+            "Effect Size"
+        ]
         .apply(lambda x: np.mean(x > 0))
         .reset_index(name="P(> 0)")
     )
@@ -413,7 +316,7 @@ def response_size(response, directory="figures/"):
     # Merge summaries
     summary_response_size = summary_response_size.merge(
         test_response_size,
-        on=["Treatment", "Protection Level", "Behaviour", "size_class"],
+        on=["Treatment", "Protection", "Behaviour", "size_class"],
     )
 
     # Reorder and rename columns for readability
@@ -428,10 +331,10 @@ def response_size(response, directory="figures/"):
     )
 
     # --- Compare Responses Table ---
-    compare_response_size = df_response_size.pivot_table(
-        index=["Draw", "Behaviour", "size_class"],
-        columns=["Protection Level", "Treatment"],
-        values="Response",
+    compare_response_size = df_effect.pivot_table(
+        index=["sample", "Behaviour", "size_class"],
+        columns=["Protection", "Treatment"],
+        values="Effect Size",
         aggfunc="mean",
     ).reset_index()
 
@@ -467,12 +370,12 @@ def response_size(response, directory="figures/"):
     # Create the faceted violin plot
     g = sns.catplot(
         x="size_class",
-        y="Response",
-        hue="Protection Level",
+        y="Effect Size",
+        hue="Protection",
         col="Behaviour",
         row="Treatment",
         kind="box",
-        data=df_response_size,
+        data=df_effect,
         palette="pastel",
         height=4,
         aspect=1.2,
@@ -489,7 +392,13 @@ def response_size(response, directory="figures/"):
     g.set_titles("{row_name} | {col_name}")
     g.set_axis_labels("Size Class", "Log-fold change")
     # Adjust legend
-    g._legend.set_title("Protection Level")
+    g._legend.set_title("Protection")
+    # legend outside the plot on top
+    g._legend.set_bbox_to_anchor((0.5, 1.05))
+    g._legend.set_loc("upper center")
+    g._legend.set_ncol(2)
+    g._legend.set_frame_on(False)
+    g._legend.set_title("Protection")
     # Save figure
     g.figure.savefig(f"{directory}/response_size.png", dpi=300, bbox_inches="tight")
     # Close to prevent display in non-interactive environments
@@ -499,21 +408,7 @@ def response_size(response, directory="figures/"):
 # response to treatments across guilds
 
 
-def response_guild(response, directory="figures/"):
-    # Calculate log-fold change across treatments
-    response_guild = np.stack(
-        [
-            response[:, 3, :] - response[:, 0, :],
-            response[:, 2, :] - response[:, 0, :],
-            response[:, 1, :] - response[:, 0, :],
-        ],
-        axis=1,
-    )
-    assert response_guild.shape == (2, 3, 432, 4, 4000), (
-        "response_guild shape is not as expected. Expected (2, 3, 432, 4, 4000), but got",
-        response_guild.shape,
-    )
-
+def response_guild(df_effect, directory="figures/"):
     # load individual traits
     individual_traits = pd.read_csv("outputs/data/individual_traits.csv", index_col=0)
     if "ind_id" not in individual_traits.columns:
@@ -529,44 +424,18 @@ def response_guild(response, directory="figures/"):
         ordered=True,
     )
     individual_traits["ind_id"] = individual_traits["ind_id"].cat.codes
-
-    n_prot, n_treat, n_ind, n_behav, n_draw = response_guild.shape
-
-    df_response_guild = pd.DataFrame(
-        {
-            "Protection Level": np.repeat(
-                ["Outside PA", "Inside PA"], n_treat * n_ind * n_behav * n_draw
-            ),
-            "Treatment": np.tile(
-                np.repeat(
-                    ["Grouper", "Barracuda", "Positive Control"],
-                    n_ind * n_behav * n_draw,
-                ),
-                n_prot,
-            ),
-            "ind_id": np.tile(
-                np.repeat(individual_traits["ind_id"], n_behav * n_draw),
-                n_prot * n_treat,
-            ),
-            "Behaviour": np.tile(
-                np.repeat(["Foraging", "Vigilance", "Movement", "Bites"], n_draw),
-                n_prot * n_treat * n_ind,
-            ),
-            "Draw": np.tile(np.arange(n_draw), n_prot * n_treat * n_ind * n_behav),
-            "Response": response_guild.flatten(),
-        }
-    )
+    individual_traits.rename(columns={"ind_id": "Individuals"}, inplace=True)
 
     # Merge with individual traits to get guild info
-    df_response_guild = df_response_guild.merge(
-        individual_traits[["ind_id", "guild"]], on="ind_id", how="left"
+    df_effect = df_effect.merge(
+        individual_traits[["Individuals", "guild"]], on="Individuals", how="left"
     )
 
     # Summarise the response by guild
     summary_response_guild = (
-        df_response_guild.groupby(
-            ["Treatment", "Protection Level", "Behaviour", "guild"]
-        )["Response"]
+        df_effect.groupby(["Treatment", "Protection", "Behaviour", "guild"])[
+            "Effect Size"
+        ]
         .agg(
             Mean="mean",
             Median="median",
@@ -580,9 +449,9 @@ def response_guild(response, directory="figures/"):
 
     # Calculate P(> 0)
     test_response_guild = (
-        df_response_guild.groupby(
-            ["Treatment", "Protection Level", "Behaviour", "guild"]
-        )["Response"]
+        df_effect.groupby(["Treatment", "Protection", "Behaviour", "guild"])[
+            "Effect Size"
+        ]
         .apply(lambda x: np.mean(x > 0))
         .reset_index(name="P(> 0)")
     )
@@ -590,7 +459,7 @@ def response_guild(response, directory="figures/"):
     # Merge summaries
     summary_response_guild = summary_response_guild.merge(
         test_response_guild,
-        on=["Treatment", "Protection Level", "Behaviour", "guild"],
+        on=["Treatment", "Protection", "Behaviour", "guild"],
     )
 
     # Reorder and rename columns for readability
@@ -605,10 +474,10 @@ def response_guild(response, directory="figures/"):
     )
 
     # --- Compare Responses Table ---
-    compare_response_guild = df_response_guild.pivot_table(
-        index=["Draw", "Behaviour", "guild"],
-        columns=["Protection Level", "Treatment"],
-        values="Response",
+    compare_response_guild = df_effect.pivot_table(
+        index=["sample", "Behaviour", "guild"],
+        columns=["Protection", "Treatment"],
+        values="Effect Size",
         aggfunc="mean",
     ).reset_index()
 
@@ -644,12 +513,12 @@ def response_guild(response, directory="figures/"):
     # Create the faceted box plot
     g = sns.catplot(
         x="guild",
-        y="Response",
-        hue="Protection Level",
+        y="Effect Size",
+        hue="Protection",
         col="Behaviour",
         row="Treatment",
         kind="box",
-        data=df_response_guild,
+        data=df_effect,
         palette="pastel",
         height=4,
         aspect=1.2,
@@ -666,11 +535,103 @@ def response_guild(response, directory="figures/"):
     g.set_titles("{row_name} | {col_name}")
     g.set_axis_labels("Foraging Guild", "Log-fold change")
     # Adjust legend
-    g._legend.set_title("Protection Level")
+    g._legend.set_title("Protection")
+    # legend outside the plot on top
+    g._legend.set_bbox_to_anchor((0.5, 1.05))
+    g._legend.set_loc("upper center")
+    g._legend.set_ncol(2)
+    g._legend.set_frame_on(False)
+    g._legend.set_title("Protection")
     # Save figure
     g.figure.savefig(f"{directory}/response_guild.png", dpi=300, bbox_inches="tight")
     # Close to prevent display in non-interactive environments
     plt.close()
+
+
+def clean_effects(model_data):
+    def extract_df(predictive, var, dims, behaviour=None):
+        df = (
+            az.extract(predictive, var_names=[var])
+            .rename(**{f"{var}_dim_{i}": dim for i, dim in enumerate(dims)})
+            .to_dataframe()
+        )
+        df.drop(columns=["chain", "draw"], inplace=True)
+        df.reset_index(inplace=True)
+        df["sample"] = (df["draw"] + 1) * (df["chain"] + 1)
+        df.drop(columns=["chain", "draw"], inplace=True)
+        df.rename(columns={var: "Response"}, inplace=True)
+        df["Response"] = np.log(df["Response"] + 1)
+        if behaviour is not None:
+            df["Behaviour"] = behaviour
+        return df
+
+    def map_categories(df):
+        df["Protection"] = (
+            df["Protection"].astype(str).map({"0": "Outside PA", "1": "Inside PA"})
+        )
+        df["Treatment"] = (
+            df["Treatment"]
+            .astype(str)
+            .map(
+                {
+                    "0": "Negative Control",
+                    "1": "Positive Control",
+                    "2": "Barracuda",
+                    "3": "Grouper",
+                }
+            )
+        )
+        df["Individuals"] += 1
+        if "Behaviour" in df:
+            if df["Behaviour"].dtype == "int64":
+                df["Behaviour"] = (
+                    df["Behaviour"]
+                    .astype(str)
+                    .map({"0": "Foraging", "1": "Vigilance", "2": "Movement"})
+                )
+        return df
+
+    D_df = extract_df(
+        model_data.posterior_predictive,
+        "D_pred_protection",
+        ["Protection", "Treatment", "Individuals", "Behaviour"],
+    )
+    D_df = map_categories(D_df)
+
+    bites_df = extract_df(
+        model_data.posterior_predictive,
+        "bites_pred_protection",
+        ["Protection", "Treatment", "Individuals"],
+        behaviour="Bite Rate",
+    )
+    bites_df = map_categories(bites_df)
+
+    response_df = pd.concat([D_df, bites_df], ignore_index=True)
+
+    del D_df, bites_df
+
+    response_df = response_df.pivot_table(
+        index=["sample", "Protection", "Individuals", "Behaviour"],
+        columns="Treatment",
+        values="Response",
+    ).reset_index()
+
+    for col in ["Positive Control", "Barracuda", "Grouper"]:
+        response_df[col] -= response_df["Negative Control"]
+    response_df.drop(columns=["Negative Control"], inplace=True)
+
+    response_df = response_df.melt(
+        id_vars=["sample", "Protection", "Individuals", "Behaviour"],
+        value_vars=[
+            "Positive Control",
+            "Barracuda",
+            "Grouper",
+        ],
+        var_name="Treatment",
+        value_name="Effect Size",
+    ).reset_index()
+
+    return response_df
 
 
 # Counterfactual analysis function
@@ -682,20 +643,12 @@ def counterfactual(model_data, directory="figures/counterfactual/"):
 
     # counterfactual predictions
 
-    print("Creating counterfactual predictions...")
+    print("Creating counterfactual predictions...\n")
 
-    D = az.extract(
-        model_data.posterior_predictive, var_names=["D_pred_protection"]
-    ).values
-    bites = az.extract(
-        model_data.posterior_predictive, var_names=["bites_pred_protection"]
-    ).values
+    response = clean_effects(model_data)
 
-    response = np.concatenate((D, bites[:, :, :, np.newaxis, :]), axis=3)
-
-    response = np.log(response + 1)
-
-    del D, bites
+    print("Cleaned response data shape:", response.shape)
+    print("Response data columns:", response.columns.tolist())
 
     # plot the counterfactual predictions
     print("\nCalculating effects of treatment on behaviour...\n")

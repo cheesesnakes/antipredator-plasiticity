@@ -128,8 +128,8 @@ save_as_docx(table, path = here("outputs", "summary_effects_treatment.docx"))
 df <- read.csv(here(folder, "summary_response_guild.csv"))
 
 table <- df %>%
-    select(Treatment, guild, Behaviour, Protection.Level, everything()) %>%
-    arrange(Treatment, guild, Behaviour, Protection.Level) %>%
+    select(Treatment, guild, Behaviour, Protection, everything()) %>%
+    arrange(Treatment, guild, Behaviour, Protection) %>%
     mutate_if(is.numeric, round, 3) %>%
     flextable() %>%
     set_table_properties(width = 0.9, layout = "fixed") %>%
@@ -140,7 +140,7 @@ table <- df %>%
     merge_v(~ Treatment + guild + Behaviour) %>%
     set_header_labels(
         Treatment = "Treatment",
-        Protection.Level = "Protection Level",
+        Protection = "Protection Level",
         guild = "Guild",
         Behaviour = "Behaviour",
         X5th = "5th Percentile",
@@ -157,8 +157,8 @@ save_as_docx(table, path = here("outputs", "summary_response_guild.docx"))
 df <- read.csv(here(folder, "summary_response_protection.csv"))
 
 table <- df %>%
-    select(Treatment, Behaviour, Protection.Level, everything()) %>%
-    arrange(Treatment, Behaviour, Protection.Level) %>%
+    select(Treatment, Behaviour, Protection, everything()) %>%
+    arrange(Treatment, Behaviour, Protection) %>%
     mutate_if(is.numeric, round, 3) %>%
     flextable() %>%
     set_table_properties(width = 0.9, layout = "fixed") %>%
@@ -166,10 +166,10 @@ table <- df %>%
     # center the text
     align(align = "center", part = "all") %>%
     theme_box() %>%
-    merge_v(~ Treatment + Behaviour + Protection.Level) %>%
+    merge_v(~ Treatment + Behaviour + Protection) %>%
     set_header_labels(
         Treatment = "Treatment",
-        Protection.Level = "Protection Level",
+        Protection = "Protection Level",
         Behaviour = "Behaviour",
         X5th = "5th Percentile",
         X25th = "25th Percentile",
@@ -199,7 +199,7 @@ table <- df %>%
         Treatment = "Treatment",
         size_class = "Size Class",
         Behaviour = "Behaviour",
-        Protection.Level = "Protection Level",
+        Protection = "Protection Level",
         X5th = "5th Percentile",
         X25th = "25th Percentile",
         X75th = "75th Percentile",

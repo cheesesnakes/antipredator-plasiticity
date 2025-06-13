@@ -54,7 +54,7 @@ def main(model="test", run=False, chains=4):
 
     # diagnostic plots
 
-    if run:
+    if run and not len(model_files) == chains:
         diagnostics(model_data, directory=dirs[5])
         if model == "test":
             compare_parameters()

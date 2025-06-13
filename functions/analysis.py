@@ -40,13 +40,89 @@ def diagnostics(model_data, directory="figures/generative/"):
     plt.savefig(f"{directory}/ppc.png", dpi=300)
 
 
-# Effect of treatment on behaviour
+# plotting helper function
 
 
-def effects_treatment(df_effect, directory="figures/"):
-    # Summarise the effect size
-    summary_effect = (
-        df_effect.groupby(["Treatment", "Behaviour"])["Effect Size"]
+def plot_effect_size(
+    df,
+    directory,
+    filename="effects_treatment.png",
+    columns=None,
+    rows=None,
+    hue="Treatment",
+    x="Behaviour",
+):
+    print("\nPlotting...\n")
+
+    # Common plotting kwargs
+    plot_kwargs = {
+        "palette": "pastel",
+        "markers": "s",
+        "linestyles": "none",
+        "dodge": 0.3,
+        "markersize": 10,
+        "capsize": 0.05,
+        "errorbar": lambda x: (x.quantile(0.11), x.quantile(0.89)),
+    }
+
+    if columns is None and rows is None:
+        # Single plot using pointplot
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.pointplot(
+            x=x,
+            y="Effect Size",
+            hue=hue,
+            data=df,
+            ax=ax,
+            **plot_kwargs,
+        )
+
+        ax.axhline(0, color="black", linestyle="--", linewidth=1)
+        ax.set_xlabel("Behaviour", fontsize=14)
+        ax.set_ylabel("Log-fold change (89% HDI)", fontsize=14)
+        ax.legend(title="Treatment", fontsize=12, title_fontsize=14)
+
+        fig.savefig(f"{directory}/{filename}", dpi=300, bbox_inches="tight")
+        plt.close(fig)
+
+    else:
+        # Faceted plot using catplot
+        g = sns.catplot(
+            x=x,
+            y="Effect Size",
+            hue=hue,
+            col=columns,
+            row=rows,
+            data=df,
+            kind="point",
+            height=6,
+            aspect=1.2,
+            **plot_kwargs,
+        )
+
+        # Add horizontal lines to each facet
+        for ax in g.axes.flatten():
+            ax.axhline(0, color="black", linestyle="--", linewidth=1)
+
+        g.set_axis_labels("Behaviour", "Log-fold change (89% HDI)")
+        g._legend.set_title("Treatment")
+
+        g.savefig(f"{directory}/{filename}", dpi=300, bbox_inches="tight")
+
+        plt.close()
+
+
+# summary helper function
+
+
+def summary_effects(df_effect, vars=["Treatment", "Behaviour"]):
+    """
+    Summarise the effect size for a given DataFrame.
+    If vars is None, summarises all variables.
+    """
+
+    summary = (
+        df_effect.groupby(vars)["Effect Size"]
         .agg(
             Mean="mean",
             Median="median",
@@ -58,21 +134,58 @@ def effects_treatment(df_effect, directory="figures/"):
         .reset_index()
     )
 
-    # Calculate P(> 0)
-    test_effects = (
-        df_effect.groupby(["Treatment", "Behaviour"])["Effect Size"]
+    test = (
+        df_effect.groupby(vars)["Effect Size"]
         .apply(lambda x: np.mean(x > 0))
         .reset_index(name="P(> 0)")
     )
 
     # Merge summaries
-    summary_effect = summary_effect.merge(test_effects, on=["Treatment", "Behaviour"])
+    summary = summary.merge(test, on=vars)
 
     # Reorder and rename columns for readability
-    summary_effect.rename(
+    summary.rename(
         columns={"p5": "5th", "p25": "25th", "p75": "75th", "p95": "95th"},
         inplace=True,
     )
+
+    return summary
+
+
+# Compare effects helper function
+def compare_effects(df_effect, index=[], vars=[]):
+    """
+    Compare the effects for a given DataFrame.
+    If vars is empty, compares across all specified groupings.
+    """
+
+    # Pivot the data so each Treatment is a column
+    compare = df_effect.pivot_table(
+        index=["sample", "Behaviour"] + index,
+        columns=["Treatment"],
+        values="Effect Size",
+        aggfunc="mean",
+    ).reset_index()
+
+    compare["Grouper > Barracuda"] = np.mean(compare["Grouper"] > compare["Barracuda"])
+
+    compare["Grouper > Positive Control"] = np.mean(
+        compare["Grouper"] > compare["Positive Control"]
+    )
+
+    compare["Barracuda > Positive Control"] = np.mean(
+        compare["Barracuda"] > compare["Positive Control"]
+    )
+
+    return compare
+
+
+# Effect of treatment on behaviour
+
+
+def effects_treatment(df_effect, directory="figures/"):
+    # Summarise the effect size
+    summary_effect = summary_effects(df_effect, vars=["Treatment", "Behaviour"])
 
     # save as csv
 
@@ -80,62 +193,14 @@ def effects_treatment(df_effect, directory="figures/"):
 
     # --- Compare Effects Table ---
 
-    compare_effects = df_effect.pivot_table(
-        index=["sample", "Behaviour"],
-        columns="Treatment",
-        values="Effect Size",
-        aggfunc="mean",
-    ).reset_index()
-
-    compare_effects = (
-        compare_effects.groupby("Behaviour")
-        .apply(
-            lambda x: pd.Series(
-                {
-                    "Grouper > Barracuda": np.mean(x["Grouper"] > x["Barracuda"]),
-                    "Grouper > Positive Control": np.mean(
-                        x["Grouper"] > x["Positive Control"]
-                    ),
-                    "Barracuda > Positive Control": np.mean(
-                        x["Barracuda"] > x["Positive Control"]
-                    ),
-                }
-            )
-        )
-        .reset_index()
-    )
+    comparison = compare_effects(df_effect, vars=[])
 
     # save as csv
-    compare_effects.to_csv(
-        "outputs/analysis/compare_effects_treatment.csv", index=False
-    )
+    comparison.to_csv("outputs/analysis/compare_effects_treatment.csv", index=False)
 
     # plot the effect size
 
-    print("\nPlotting effect size...\n")
-    plt.figure(figsize=(10, 6))
-
-    # make ridgeplot
-    sns.boxplot(
-        x="Behaviour",
-        y="Effect Size",
-        hue="Treatment",
-        data=df_effect,
-        palette="pastel",
-        width=0.5,
-        gap=0.1,
-        whis=(5, 95),
-        showfliers=False,
-    )
-
-    plt.axhline(0, color="black", linestyle="--", linewidth=1)
-    plt.ylabel("Effect size (log-fold change)")
-    plt.xlabel("Behaviour")
-    plt.legend(
-        title="Treatment", loc="upper center", bbox_to_anchor=(0.5, 1.05), ncol=3
-    )
-    plt.savefig(f"{directory}/effects_treatment.png", dpi=300)
-    plt.close()
+    plot_effect_size(df_effect, directory)
 
 
 # difference in response across protection levels
@@ -143,35 +208,8 @@ def effects_treatment(df_effect, directory="figures/"):
 
 def response_protection(df_effect, directory="figures/"):
     # Summarise the response
-    summary_response = (
-        df_effect.groupby(["Treatment", "Protection", "Behaviour"])["Effect Size"]
-        .agg(
-            Mean="mean",
-            Median="median",
-            p5=lambda x: x.quantile(0.05),
-            p25=lambda x: x.quantile(0.25),
-            p75=lambda x: x.quantile(0.75),
-            p95=lambda x: x.quantile(0.95),
-        )
-        .reset_index()
-    )
-
-    # Calculate P(> 0)
-    test_response = (
-        df_effect.groupby(["Treatment", "Protection", "Behaviour"])["Effect Size"]
-        .apply(lambda x: np.mean(x > 0))
-        .reset_index(name="P(> 0)")
-    )
-
-    # Merge summaries
-    summary_response = summary_response.merge(
-        test_response, on=["Treatment", "Protection", "Behaviour"]
-    )
-
-    # Reorder and rename columns for readability
-    summary_response.rename(
-        columns={"p5": "5th", "p25": "25th", "p75": "75th", "p95": "95th"},
-        inplace=True,
+    summary_response = summary_effects(
+        df_effect, vars=["Treatment", "Protection", "Behaviour"]
     )
 
     # save as csv
@@ -180,33 +218,8 @@ def response_protection(df_effect, directory="figures/"):
     )
 
     # --- Compare Responses Table ---
-    compare_response = df_effect.pivot_table(
-        index=["sample", "Behaviour"],
-        columns=["Protection", "Treatment"],
-        values="Effect Size",
-        aggfunc="mean",
-    ).reset_index()
 
-    compare_response = (
-        compare_response.groupby("Behaviour")
-        .apply(
-            lambda x: pd.Series(
-                {
-                    "Outside PA > Inside PA (Grouper)": np.mean(
-                        x["Outside PA"]["Grouper"] > x["Inside PA"]["Grouper"]
-                    ),
-                    "Outside PA > Inside PA (Barracuda)": np.mean(
-                        x["Outside PA"]["Barracuda"] > x["Inside PA"]["Barracuda"]
-                    ),
-                    "Outside PA > Inside PA (Positive Control)": np.mean(
-                        x["Outside PA"]["Positive Control"]
-                        > x["Inside PA"]["Positive Control"]
-                    ),
-                }
-            )
-        )
-        .reset_index()
-    )
+    compare_response = compare_effects(df_effect, index=["Protection"])
 
     # save as csv
     compare_response.to_csv(
@@ -214,54 +227,14 @@ def response_protection(df_effect, directory="figures/"):
     )
 
     # plot the difference in response across protection levels
-    print("\nPlotting difference in response across protection levels...\n")
 
-    plt.figure(figsize=(10, 6))
-
-    # Create the faceted violin plot
-    g = sns.catplot(
-        x="Treatment",
-        y="Effect Size",
+    plot_effect_size(
+        df_effect,
+        directory,
+        filename="response_protection.png",
+        columns="Treatment",
         hue="Protection",
-        col="Behaviour",
-        kind="box",
-        data=df_effect,
-        palette="pastel",
-        height=4,
-        aspect=1.2,
-        width=0.5,
-        sharey=False,
-        legend="full",
-        whis=(5, 95),
-        showfliers=False,
-        gap=0.1,
     )
-
-    # Add horizontal line at y = 0 to each facet
-    for ax in g.axes.flat:
-        ax.axhline(0, color="black", linestyle="--", linewidth=1)
-
-    # Set titles and labels
-    g.set_titles("{col_name}")
-    g.set_axis_labels("Treatment", "Log-fold change")
-
-    # Adjust legend
-    g._legend.set_title("Protection")
-
-    # legend outside the plot on top
-    g._legend.set_bbox_to_anchor((0.5, 1.05))
-    g._legend.set_loc("upper center")
-    g._legend.set_ncol(2)
-    g._legend.set_frame_on(False)
-    g._legend.set_title("Protection")
-
-    # Save figure
-    g.figure.savefig(
-        f"{directory}/response_protection.png", dpi=300, bbox_inches="tight"
-    )
-
-    # Close to prevent display in non-interactive environments
-    plt.close()
 
 
 # response to treatments across size classes
@@ -290,39 +263,8 @@ def response_size(df_effect, directory="figures/"):
     )
 
     # Summarise the response size
-    summary_response_size = (
-        df_effect.groupby(["Treatment", "Protection", "Behaviour", "size_class"])[
-            "Effect Size"
-        ]
-        .agg(
-            Mean="mean",
-            Median="median",
-            p5=lambda x: x.quantile(0.05),
-            p25=lambda x: x.quantile(0.25),
-            p75=lambda x: x.quantile(0.75),
-            p95=lambda x: x.quantile(0.95),
-        )
-        .reset_index()
-    )
-    # Calculate P(> 0)
-    test_response_size = (
-        df_effect.groupby(["Treatment", "Protection", "Behaviour", "size_class"])[
-            "Effect Size"
-        ]
-        .apply(lambda x: np.mean(x > 0))
-        .reset_index(name="P(> 0)")
-    )
-
-    # Merge summaries
-    summary_response_size = summary_response_size.merge(
-        test_response_size,
-        on=["Treatment", "Protection", "Behaviour", "size_class"],
-    )
-
-    # Reorder and rename columns for readability
-    summary_response_size.rename(
-        columns={"p5": "5th", "p25": "25th", "p75": "75th", "p95": "95th"},
-        inplace=True,
+    summary_response_size = summary_effects(
+        df_effect, vars=["Treatment", "Protection", "Behaviour", "size_class"]
     )
 
     # save as csv
@@ -331,32 +273,8 @@ def response_size(df_effect, directory="figures/"):
     )
 
     # --- Compare Responses Table ---
-    compare_response_size = df_effect.pivot_table(
-        index=["sample", "Behaviour", "size_class"],
-        columns=["Protection", "Treatment"],
-        values="Effect Size",
-        aggfunc="mean",
-    ).reset_index()
-
-    compare_response_size = (
-        compare_response_size.groupby(["Behaviour", "size_class"])
-        .apply(
-            lambda x: pd.Series(
-                {
-                    "Outside PA > Inside PA (Grouper)": np.mean(
-                        x["Outside PA"]["Grouper"] > x["Inside PA"]["Grouper"]
-                    ),
-                    "Outside PA > Inside PA (Barracuda)": np.mean(
-                        x["Outside PA"]["Barracuda"] > x["Inside PA"]["Barracuda"]
-                    ),
-                    "Outside PA > Inside PA (Positive Control)": np.mean(
-                        x["Outside PA"]["Positive Control"]
-                        > x["Inside PA"]["Positive Control"]
-                    ),
-                }
-            )
-        )
-        .reset_index()
+    compare_response_size = compare_effects(
+        df_effect, index=["size_class", "Protection"]
     )
 
     # save as csv
@@ -365,44 +283,16 @@ def response_size(df_effect, directory="figures/"):
     )
 
     # plot the difference in response across size classes
-    print("\nPlotting difference in response across size classes...\n")
-    plt.figure(figsize=(10, 6))
-    # Create the faceted violin plot
-    g = sns.catplot(
+
+    plot_effect_size(
+        df_effect,
+        directory,
+        filename="response_size.png",
+        columns="Treatment",
+        rows="Behaviour",
         x="size_class",
-        y="Effect Size",
         hue="Protection",
-        col="Behaviour",
-        row="Treatment",
-        kind="box",
-        data=df_effect,
-        palette="pastel",
-        height=4,
-        aspect=1.2,
-        width=0.5,
-        legend="full",
-        showfliers=False,
-        whis=(5, 95),
-        gap=0.1,
     )
-    # Add horizontal line at y = 0 to each facet
-    for ax in g.axes.flat:
-        ax.axhline(0, color="black", linestyle="--", linewidth=1)
-    # Set titles and labels
-    g.set_titles("{row_name} | {col_name}")
-    g.set_axis_labels("Size Class", "Log-fold change")
-    # Adjust legend
-    g._legend.set_title("Protection")
-    # legend outside the plot on top
-    g._legend.set_bbox_to_anchor((0.5, 1.05))
-    g._legend.set_loc("upper center")
-    g._legend.set_ncol(2)
-    g._legend.set_frame_on(False)
-    g._legend.set_title("Protection")
-    # Save figure
-    g.figure.savefig(f"{directory}/response_size.png", dpi=300, bbox_inches="tight")
-    # Close to prevent display in non-interactive environments
-    plt.close()
 
 
 # response to treatments across guilds
@@ -432,40 +322,8 @@ def response_guild(df_effect, directory="figures/"):
     )
 
     # Summarise the response by guild
-    summary_response_guild = (
-        df_effect.groupby(["Treatment", "Protection", "Behaviour", "guild"])[
-            "Effect Size"
-        ]
-        .agg(
-            Mean="mean",
-            Median="median",
-            p5=lambda x: x.quantile(0.05),
-            p25=lambda x: x.quantile(0.25),
-            p75=lambda x: x.quantile(0.75),
-            p95=lambda x: x.quantile(0.95),
-        )
-        .reset_index()
-    )
-
-    # Calculate P(> 0)
-    test_response_guild = (
-        df_effect.groupby(["Treatment", "Protection", "Behaviour", "guild"])[
-            "Effect Size"
-        ]
-        .apply(lambda x: np.mean(x > 0))
-        .reset_index(name="P(> 0)")
-    )
-
-    # Merge summaries
-    summary_response_guild = summary_response_guild.merge(
-        test_response_guild,
-        on=["Treatment", "Protection", "Behaviour", "guild"],
-    )
-
-    # Reorder and rename columns for readability
-    summary_response_guild.rename(
-        columns={"p5": "5th", "p25": "25th", "p75": "75th", "p95": "95th"},
-        inplace=True,
+    summary_response_guild = summary_effects(
+        df_effect, vars=["Treatment", "Protection", "Behaviour", "guild"]
     )
 
     # save as csv
@@ -474,33 +332,7 @@ def response_guild(df_effect, directory="figures/"):
     )
 
     # --- Compare Responses Table ---
-    compare_response_guild = df_effect.pivot_table(
-        index=["sample", "Behaviour", "guild"],
-        columns=["Protection", "Treatment"],
-        values="Effect Size",
-        aggfunc="mean",
-    ).reset_index()
-
-    compare_response_guild = (
-        compare_response_guild.groupby(["Behaviour", "guild"])
-        .apply(
-            lambda x: pd.Series(
-                {
-                    "Outside PA > Inside PA (Grouper)": np.mean(
-                        x["Outside PA"]["Grouper"] > x["Inside PA"]["Grouper"]
-                    ),
-                    "Outside PA > Inside PA (Barracuda)": np.mean(
-                        x["Outside PA"]["Barracuda"] > x["Inside PA"]["Barracuda"]
-                    ),
-                    "Outside PA > Inside PA (Positive Control)": np.mean(
-                        x["Outside PA"]["Positive Control"]
-                        > x["Inside PA"]["Positive Control"]
-                    ),
-                }
-            )
-        )
-        .reset_index()
-    )
+    compare_response_guild = compare_effects(df_effect, index=["guild", "Protection"])
 
     # save as csv
     compare_response_guild.to_csv(
@@ -508,44 +340,16 @@ def response_guild(df_effect, directory="figures/"):
     )
 
     # plot the difference in response across guilds
-    print("\nPlotting difference in response across guilds...\n")
-    plt.figure(figsize=(10, 6))
-    # Create the faceted box plot
-    g = sns.catplot(
+
+    plot_effect_size(
+        df_effect,
+        directory,
+        filename="response_guild.png",
+        columns="Treatment",
+        rows="Behaviour",
         x="guild",
-        y="Effect Size",
         hue="Protection",
-        col="Behaviour",
-        row="Treatment",
-        kind="box",
-        data=df_effect,
-        palette="pastel",
-        height=4,
-        aspect=1.2,
-        width=0.5,
-        legend="full",
-        gap=0.1,
-        whis=(5, 95),
-        showfliers=False,
     )
-    # Add horizontal line at y = 0 to each facet
-    for ax in g.axes.flat:
-        ax.axhline(0, color="black", linestyle="--", linewidth=1)
-    # Set titles and labels
-    g.set_titles("{row_name} | {col_name}")
-    g.set_axis_labels("Foraging Guild", "Log-fold change")
-    # Adjust legend
-    g._legend.set_title("Protection")
-    # legend outside the plot on top
-    g._legend.set_bbox_to_anchor((0.5, 1.05))
-    g._legend.set_loc("upper center")
-    g._legend.set_ncol(2)
-    g._legend.set_frame_on(False)
-    g._legend.set_title("Protection")
-    # Save figure
-    g.figure.savefig(f"{directory}/response_guild.png", dpi=300, bbox_inches="tight")
-    # Close to prevent display in non-interactive environments
-    plt.close()
 
 
 def clean_effects(model_data):
@@ -631,6 +435,8 @@ def clean_effects(model_data):
         value_name="Effect Size",
     ).reset_index()
 
+    response_df.to_csv("outputs/effects.csv", index=False)
+
     return response_df
 
 
@@ -645,7 +451,10 @@ def counterfactual(model_data, directory="figures/counterfactual/"):
 
     print("Creating counterfactual predictions...\n")
 
-    response = clean_effects(model_data)
+    if not os.path.exists("outputs/effects.csv"):
+        response = clean_effects(model_data)
+    else:
+        response = pd.read_csv("outputs/effects.csv")
 
     print("Cleaned response data shape:", response.shape)
     print("Response data columns:", response.columns.tolist())
@@ -657,7 +466,6 @@ def counterfactual(model_data, directory="figures/counterfactual/"):
 
     # plot the difference in response across protection levels
     print("\nCalculating difference in response across protection levels...\n")
-
     response_protection(response, directory=directory)
 
     # plot the difference in response across size classes
@@ -674,8 +482,8 @@ def counterfactual(model_data, directory="figures/counterfactual/"):
 
     ro.r(
         """
-        source("functions/analysis_tables.R")
-        """
+       source("functions/analysis_tables.R")
+       """
     )
 
     print("\nDone.\n")

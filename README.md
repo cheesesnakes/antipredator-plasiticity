@@ -99,8 +99,8 @@ Since the 1950s, mechanization and increased demand have drastically increased m
 ### `params.py`
 - **Description**: Parameters for the generative model.
 
-### `statistical_model.py`
-- **Description**: Python script to run the stan models.
+### `run.py`
+- **Description**: Python script to run the stan models, make figures and summary tables.
 
 ### `validate.py`
 - **Description**: Validation of the statistical model.
@@ -108,11 +108,14 @@ Since the 1950s, mechanization and increased demand have drastically increased m
 ### `model.stan`
 - **Description**: Bayesian multilevel heirarchial model.
 
+### `functions/`
+- **Description**: Contains utility functions used in the analysis scripts.
+
 ## Usage
 
 1. Clone the repository:  
    ```bash
-   git clone ...
+   git clone https://github.com/cheesesnakes/antipredator-plasiticity.git
    ```
 2. Install dependencies using uv (install uv if not already installed):  
 
@@ -120,6 +123,10 @@ Since the 1950s, mechanization and increased demand have drastically increased m
    uv sync
    ```
 3. Run scripts for data processing, analysis, and visualization.
+  ```bash
+  uv run summaries.py
+  uv run statistical_model.py
+  ```
 
 ## License
 

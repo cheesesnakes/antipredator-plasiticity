@@ -50,6 +50,7 @@ def _():
     import seaborn as sns
     import os
     import matplotlib.pyplot as plt
+    from rpy2 import robjects as ro
 
     # load data
     from cleaning import clean_data
@@ -59,7 +60,7 @@ def _():
     # set plot theme
 
     sns.set_theme(style="white", context="notebook", palette="Set1", font_scale=1.5)
-    return data, plt, sns
+    return data, plt, ro, sns
 
 
 @app.cell
@@ -247,7 +248,7 @@ def _(mo):
 
 
 @app.cell
-def _(data, mo):
+def _(data, mo, ro):
     species = data["response"].groupby("species").size().reset_index(name="abundance")
 
     species = species.sort_values("abundance", ascending=False)
@@ -261,7 +262,11 @@ def _(data, mo):
     )
 
     species.to_csv("outputs/species_list.csv", index=False)
-
+    ro.r(
+            """
+           source("functions/species_table.R")
+           """
+        )
     mo.md(f"Number of observed species: {len(species)}")
     return (species,)
 

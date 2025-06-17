@@ -70,4 +70,4 @@ def main(model="test", run=False, chains=4):
 
 
 if __name__ == "__main__":
-    main(model="data", run=False, chains=4)
+    main(model="data", run=True, chains=4)

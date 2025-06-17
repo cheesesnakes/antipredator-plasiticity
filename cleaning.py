@@ -420,6 +420,8 @@ def create_response(individuals, observations, behaviours, samples):
     response.rename(columns={"feeding": "foraging", "moving": "movement"}, inplace=True)
     response.rename(columns={"bite_count": "bites"}, inplace=True)
 
+    response.loc[response["species"] == "", "species"] = "Unknown"
+
     print("\n\n")
     print("Behavioural response data")
     print("=====================================")

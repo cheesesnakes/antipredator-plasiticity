@@ -73,7 +73,7 @@ def get_order_categoricals(predictors, individuals, response):
         "location": np.sort(predictors["location"].unique()),
         "protection": np.sort(predictors["protection"].unique())[::-1],  # reverse order
         "ind_id": np.sort(individuals["ind_id"].unique()),
-        "species": np.sort(response["species"].unique()),
+        "species": np.sort(response["species"].fillna("Unknown").astype(str).unique()),
         "size_class": np.sort(individuals["size_class"].unique()),
     }
 

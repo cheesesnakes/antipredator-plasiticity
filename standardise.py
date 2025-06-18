@@ -6,6 +6,7 @@ from cleaning import (
     clean_plots,
     clean_benthic_cover,
     clean_rugosity,
+    ind_traits,
     metadata,
     calc_abn,
     calc_abn_size,
@@ -102,6 +103,11 @@ def standardise_data():
     response = create_response(individuals, observations, behaviours, samples)
     guilds = clean_guilds(response)
 
+    # Export individual traits
+
+    ind_traits(individuals, guilds)
+
+    # Define categorical variables and their order
     categoricals = [
         "deployment_id",
         "treatment",

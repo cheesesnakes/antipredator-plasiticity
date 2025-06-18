@@ -40,7 +40,13 @@ def parameter_summary():
         "zeta": None,
         "eta": ["Absent", "Present"],
         "omega": order_categories["size_class"],
-        "epsilon": ["Herbivore", "Invertivore", "Piscivore", "Unknown"],
+        "epsilon": [
+            "Corallivore",
+            "Herbivore",
+            "Invertivore",
+            "Piscivore",
+            "Unknown",
+        ],
         "delta": ["Grouping", "Solitary"],
         "theta": order_categories["treatment"],
         "sigma": None,
@@ -71,7 +77,6 @@ def parameter_summary():
                 # Add second dimension for specific models
                 if model in ["ZI", "Duration"]:
                     dims[f"{dim_prefix}1"] = ["Foraging", "Vigilance", "Movement"]
-
             # Assign named coordinates to the posterior variable
             model_data = model_data.assign_coords(dims)
 

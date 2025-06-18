@@ -64,6 +64,7 @@ def main(model="test", run=False, chains=4):
     counterfactual(model_data, directory=dirs[5])
 
     # model summary
+
     parameter_summary()
 
     return 0

@@ -325,7 +325,7 @@ Sl.No,Class,Order,Family,Genus,Species,Common.Name,X.M.F.Both.,Length..cm.,Heigh
 325,Actinopterygii,Carangiformes,Carangidae,Selar,crumenophthalmus,Bigeye scad,Both,17.9,4.37,"Shrimps, benthic invertebrates, forams, zooplanktons, fish larvae",Invertivore,"Coastal reefs, lagoons",Benthic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=7&ID=387&what=species&TotRec=17
 326,Actinopterygii,Carangiformes,Carangidae,Decapterus,russelli,Indian scad,Both,32.7,6.64,Planktonic invertebrates,Invertivore,"Near surface lagoons, seaward reefs",Benthopelagic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=2&ID=374&what=species&TotRec=11
 327,Actinopterygii,Carangiformes,Carangidae,Decapterus,macarellus,Mackerel scad,Both,29.2,5.05,Zooplankton,Invertivore,"Coastal, lagoons, outer reefs",Pelagic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=4&ID=993&what=species&TotRec=8
-328,Actinopterygii,Carangiformes,Carangidae,Chanos,chanos,Milkfish,Both,37.5,7.98,"Cyanobacteria, soft algae, small benthic invertebrates, and even pelagic fish eggs, larvae",Omnivore,"Near surface lagoons, seaward reefs",Pelagic (?),https://www.fishbase.se/photos/PicturesSummary.php?StartRow=1&ID=80&what=species&TotRec=13
+328,Actinopterygii,Carangiformes,Carangidae,Chanos,chanos,Milkfish,Both,37.5,7.98,"Cyanobacteria, soft algae, small benthic invertebrates, and even pelagic fish eggs, larvae","Herbivore, Invertivore","Near surface lagoons, seaward reefs",Pelagic (?),https://www.fishbase.se/photos/PicturesSummary.php?StartRow=1&ID=80&what=species&TotRec=13
 329,Actinopterygii,Carangiformes,Sphyraenidae,Sphyraena,flavicauda,Yellowtail barracuda,Both,42,4.92,Unknown,Piscivore,"Coastal reefs, lagoons, outer slopes",Benthic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=7&ID=7937&what=species&TotRec=11
 330,Actinopterygii,Carangiformes,Sphyraenidae,Sphyraena,helleri,Heller's barracuda,Both,63,7.36,Unknown,Piscivore,"Coastal, lagoon, outer reefs",Benthic (?),https://www.fishbase.se/photos/PicturesSummary.php?ID=6649&what=species
 331,Actinopterygii,Carangiformes,Sphyraenidae,Sphyraena,forsteri,Bigeye barracuda,Both,41.5,4.84,"Fishes, shrimps, squid","Invertivore, piscivore","Reefs, outer reef slopes",Benthic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=2&ID=5734&what=species&TotRec=9
@@ -347,15 +347,15 @@ Sl.No,Class,Order,Family,Genus,Species,Common.Name,X.M.F.Both.,Length..cm.,Heigh
 347,Actinopterygii,Centrarchiformes,Kyphosidae,Kyphosus,cornelii,Western buffalo bream,Both,NA,NA,Unknown,"Piscivore, herbivore","Rock reefs, coral reefs",Benthic,https://www.fishbase.se/photos/PicturesSummary.php?ID=13024&what=species
 348,Actinopterygii,Centrarchiformes,Microcanthidae,Microcanthus,strigatus,Stripey,Both,16.3,7.7,"Algae, crustaceans","Herbivore, invertivore","Lagoons, rock areas, shallow coral reefs",Benthopelagic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=1&ID=7804&what=species&TotRec=6
 349,Actinopterygii,Mugiliformes,Mugilidae,Crenimugil,crenilabis,Fringelip mullet,Both,18.7,4.01,"Algae, microscopic animals","Herbivore, invertivore","Coral reefs, coastal waters",Benthic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=3&ID=5653&what=species&TotRec=8
-350,Actinopterygii,Mugiliformes,Mugilidae,Valamugil,engeli,Kanda,Both,13.5,2.82,Unknown,Omnivore,"Sandy, muddy reef flats, near coral reefs",Benthopelagic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=2&ID=5658&what=species&TotRec=4
-351,Actinopterygii,Mugiliformes,Mugilidae,Valamugil,seheli,Bluespot mullet,Both,30.2,6.15,"Algae, diatoms",Omnivore,"Coastal waters, estuaries",Benthic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=0&ID=5659&what=species&TotRec=4
+350,Actinopterygii,Mugiliformes,Mugilidae,Valamugil,engeli,Kanda,Both,13.5,2.82,Unknown,Unknown,"Sandy, muddy reef flats, near coral reefs",Benthopelagic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=2&ID=5658&what=species&TotRec=4
+351,Actinopterygii,Mugiliformes,Mugilidae,Valamugil,seheli,Bluespot mullet,Both,30.2,6.15,"Algae, diatoms",Herbivore,"Coastal waters, estuaries",Benthic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=0&ID=5659&what=species&TotRec=4
 352,Actinopterygii,Mugiliformes,Mugilidae,Oedalechilus,labiosus,Hornlip mullet,Both,15.9,3.85,Unknown,Unknown,"Reef flats, lagoon reefs",Pelagic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=2&ID=5657&what=species&TotRec=8
 353,Actinopterygii,Mugiliformes,Mugilidae,Liza,vaigiensis,Squaretail mullet,Both,33.8,6.91,"Phytoplankton, algae, detritus","Herbivore, detrivore","Sandy shorelines of lagoons, reef flats",Benthic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=1&ID=5656&what=species&TotRec=5
 354,Actinopterygii,Mugiliformes,Mugilidae,Neomyxus,leuciscus,Acute-jawed mullet,Both,14.1,3.02,"Crustaceans, seaweeds","Invertivore, Herbivore","Inhabit sandy shores, tide pools, rocky surge areas, reef flats",Benthopelagic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=1&ID=5652&what=species&TotRec=3
 355,Actinopterygii,Carangaria,Polynemidae,Polydactylus,sexfilis,Sixfinger threadfin,Both,27.31,5.93,"Crustaceans, polychaete worms, invertebrates",Invertivore,"Sand, mudflats, mangrooves",Benthopelagic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=6&ID=6416&what=species&TotRec=9
 356,Actinopterygii,Carangaria,Latidae,Psammoperca,waigiensis,Waigieu seaperch,Both,23.6,6.42,"Fishes, crustaceans","Invertivore, piscivore","Rocky or coral reefs, weedy areas",Benthic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=1&ID=8212&what=species&TotRec=5
 357,Actinopterygii,Centrarchiformes,Terapontidae,Terapon,jarbua,Jarbua terapon,Both,10.9,3.2,"Fishes, insects, algae, invertebrates","Invertivore, piscivore, herbivore","Estuaries, stream mouths, along sandy beaches",Benthic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=2&ID=4458&what=species&TotRec=11
-358,Actinopterygii,Centrarchiformes,Terapontidae,Mesopristes,argenteus,Silver grunter,Both,24,8.66,NA,Omnivore,"Estuaries, stream mouths, near reefs",Benthic (?),https://www.fishbase.se/photos/PicturesSummary.php?ID=6464&what=species
+358,Actinopterygii,Centrarchiformes,Terapontidae,Mesopristes,argenteus,Silver grunter,Both,24,8.66,NA,Unknown,"Estuaries, stream mouths, near reefs",Benthic (?),https://www.fishbase.se/photos/PicturesSummary.php?ID=6464&what=species
 359,Actinopterygii,Elopiformes,Megalopidae,Megalops,cyprinoides,Indo-Pacific tarpon,Both,32.4,7.33,"Fishes, crustaceans","Invertivore, piscivore","Inner bays, river mouths, mangroves",Benthic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=1&ID=227&what=species&TotRec=8
 360,Actinopterygii,Eupercaria,Monodactylidae,Monodactyus,argenteus,Silver moony,Both,9.1,5.51,"Plankton, detritus",Invertivore,"Estuaries, harbors, silty inshore reefs",Benthic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=3&ID=5807&what=species&TotRec=8
 361,Actinopterygii,Beloniformes,Belonidae,Tylosurus,crocodilus,Hound needlefish,Both,65,3.32,Fishes,Piscivore,"Lagoons, near inshore reefs",Pelagic,https://www.fishbase.se/photos/PicturesSummary.php?StartRow=2&ID=977&what=species&TotRec=7
@@ -1077,30 +1077,30 @@ Sl.No,Class,Order,Family,Genus,Species,Common.Name,X.M.F.Both.,Length..cm.,Heigh
 1077,Actinopterygii,Perciformes ,Acanthuridae,Ctenochaetus,striatus,Striated surgeonfish,Both,16.4,5.93,"Algae, invertebrates","Herbivore, invertivore","Reefl flats, lagoons, seaward reefs",Benthopelagic,https://www.fishbase.se/photos/PicturesSummary.php?need2save=&tosave=&TRPP=1&id=1262&what=species&personnel=&user_session=&lme=&StartRow=4&TotRec=9&SortBy=iucn
 1078,Actinopterygii,Acanthuriformes,Chaetodontidae,Chaetodon,lunulatus,,,,,,"Corallivore, Invertivore",,,
 1079,Actinopterygii,Acanthuriformes,Chaetodontidae,Heniochus,varius,,,,,,"Corallivore, Invertivore",,,
-1080,Actinopterygii,Acanthuriformes,Pomacanthidae,Centropyge,eibli,,,,,,Omnivore,,,
+1080,Actinopterygii,Acanthuriformes,Pomacanthidae,Centropyge,eibli,,,,,,"Herbivore, Invertivore",,,
 1081,Actinopterygii,Acanthuriformes,Chaetodontidae,Chaetodon,andamanensis,,,,,,"Corallivore, Invertivore",,,
 1082,Actinopterygii,Acanthuriformes,Chaetodontidae,Chaetodon,baronessa,,,,,,"Corallivore, Invertivore",,,
 1083,Actinopterygii,Perciformes,Zanclidae,Zanclus,cornutus,,,,,,Invertivore,,,
 1084,Actinopterygii,Perciformes,Serranidae,Cephalopholis,argus,,,,,,"Piscivore, Invertivore",,,
 1085,Actinopterygii,Acanthuriformes,Chaetodontidae,Chaetodon,trifascialis,,,,,,"Corallivore, Invertivore",,,
-1086,Actinopterygii,Perciformes,Pomacanthidae,Chaetodontoplus,mesoleucus,,,,,,Omnivore,,,
+1086,Actinopterygii,Perciformes,Pomacanthidae,Chaetodontoplus,mesoleucus,,,,,,"Herbivore, Invertivore",,,
 1087,Actinopterygii,Acanthuriformes,Chaetodontidae,Chaetodon,meyeri,,,,,,"Corallivore, Invertivore",,,
 1088,Actinopterygii,Acanthuriformes,Chaetodontidae,Chaetodon,falcula,,,,,,"Corallivore, Invertivore",,,
 1089,Actinopterygii,Acanthuriformes,Acanthuridae,Acanthrus,nigrofuscus,,,,,,Herbivore,,,
-1090,Actinopterygii,Tetrodontiformes,Balistidae,Sufflamen,chrysopterum,,,,,,Carnivore,,,
+1090,Actinopterygii,Tetrodontiformes,Balistidae,Sufflamen,chrysopterum,,,,,,Piscivore,,,
 1091,Actinopterygii,Acanthuriformes,Acanthuridae,Naso,elegans,,,,,,Herbivore,,,
 1092,Actinopterygii,Blenniformes,Pomacentridae,Microspathodon,chrysurus,,,,,,"Herbivore, Invertivore",,,
-1093,Actinopterygii,Tetrodontiformes,Balistidae,Balistapus,undulatus,,,,,,Omnivore,,,
-1094,Actinopterygii,Perciformes,Labridae,Thalassoma,lunare,,,,,,Omnivore,,,
+1093,Actinopterygii,Tetrodontiformes,Balistidae,Balistapus,undulatus,,,,,,"Herbivore, Invertivore",,,
+1094,Actinopterygii,Perciformes,Labridae,Thalassoma,lunare,,,,,,"Herbivore, Invertivore",,,
 1095,Actinopterygii,Perciformes,Siganidae,Siganus,javus,,,,,,Herbivore,,,
 1096,Actinopterygii,Acanthuriformes,Chaetodontidae,Chaetodon,triangulum,,,,,,"Corallivore, Invertivore",,,
 1097,Actinopterygii,Perciformes,Serranidae,Cephalapholis,formosa,,,,,,"Piscivore, Invertivore",,,
-1098,Actinopterygii,Amblyglyphidodon�,Pomacentridae,Amblyglyphidodon,aureus,,,,,,Omnivore,,,
-1099,Actinopterygii,Tetrodontiformes,Tetraodontidae,Arothron,stellatus,,,,,,Omnivore,,,
-1100,Actinopterygii,Amblyglyphidodon�,Pomacentridae,Amblyglyphidodon,batunaorum,,,,,,Omnivore,,,
+1098,Actinopterygii,Amblyglyphidodon�,Pomacentridae,Amblyglyphidodon,aureus,,,,,,"Herbivore, Invertivore",,,
+1099,Actinopterygii,Tetrodontiformes,Tetraodontidae,Arothron,stellatus,,,,,,"Herbivore, Invertivore",,,
+1100,Actinopterygii,Amblyglyphidodon�,Pomacentridae,Amblyglyphidodon,batunaorum,,,,,,"Herbivore, Invertivore",,,
 1101,Actinopterygii,Acanthuriformes,Chaetodontidae,Chaetodon,deccusatus,,,,,,"Corallivore, Invertivore",,,
 1102,Actinopterygii,Acanthuriformes,Chaetodontidae,Chaetodon,auriga,,,,,,"Corallivore, Invertivore",,,
-1103,Actinopterygii,Perciformes,Labridae,Labrus,merula,,,,,,Carnivore,,,
-1104,Actinopterygii,Acanthuriformes,Pomacanthidae,Pomacanthus,semicirculatus,,,,,,Omnivore,,,
+1103,Actinopterygii,Perciformes,Labridae,Labrus,merula,,,,,,Piscivore,,,
+1104,Actinopterygii,Acanthuriformes,Pomacanthidae,Pomacanthus,semicirculatus,,,,,,"Herbivore, Invertivore",,,
 1105,Actinopterygii,Acanthuriformes,Acanthuridae,Naso,caesius,,,,,,Herbivore,,,
-1106,Actinopterygii,Perciformes,Labridae,Thalassoma,cupido,,,,,,Omnivore,,,
+1106,Actinopterygii,Perciformes,Labridae,Thalassoma,cupido,,,,,,"Herbivore, Invertivore",,,

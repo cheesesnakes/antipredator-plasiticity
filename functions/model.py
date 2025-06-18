@@ -102,6 +102,9 @@ def run_model(output_dir, stan_data, response, chains=4):
     for file in os.listdir(output_dir):
         os.remove(output_dir + file)
 
+    if os.path.exists("outputs/effects.csv"):
+        os.remove("outputs/effects.csv")
+
     fit = model.sample(
         data=stan_data,
         chains=chains,

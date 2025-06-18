@@ -66,6 +66,9 @@ def plot_effect_size(
     }
 
     if columns is None and rows is None:
+        # mean of population in each draw
+        df = df.groupby(["sample", x, hue])["Effect Size"].mean().reset_index()
+
         # Single plot using pointplot
         fig, ax = plt.subplots(figsize=(10, 6))
         sns.pointplot(
@@ -86,6 +89,21 @@ def plot_effect_size(
         plt.close(fig)
 
     else:
+        # mean of population in each draw
+
+        if rows is None:
+            df = (
+                df.groupby(["sample", x, hue, columns])["Effect Size"]
+                .mean()
+                .reset_index()
+            )
+        else:
+            df = (
+                df.groupby(["sample", x, hue, columns, rows])["Effect Size"]
+                .mean()
+                .reset_index()
+            )
+
         # Faceted plot using catplot
         g = sns.catplot(
             x=x,
@@ -168,15 +186,6 @@ def compare_effects(df_effect, index=[], vars=[]):
     ).reset_index()
 
     compare["Grouper > Barracuda"] = np.mean(compare["Grouper"] > compare["Barracuda"])
-
-    compare["Grouper > Positive Control"] = np.mean(
-        compare["Grouper"] > compare["Positive Control"]
-    )
-
-    compare["Barracuda > Positive Control"] = np.mean(
-        compare["Barracuda"] > compare["Positive Control"]
-    )
-
     return compare
 
 
@@ -232,8 +241,8 @@ def response_protection(df_effect, directory="figures/"):
         df_effect,
         directory,
         filename="response_protection.png",
-        columns="Treatment",
-        hue="Protection",
+        columns="Protection",
+        hue="Treatment",
     )
 
 
@@ -288,10 +297,10 @@ def response_size(df_effect, directory="figures/"):
         df_effect,
         directory,
         filename="response_size.png",
-        columns="Treatment",
+        columns="Protection",
         rows="Behaviour",
         x="size_class",
-        hue="Protection",
+        hue="Treatment",
     )
 
 
@@ -345,10 +354,10 @@ def response_guild(df_effect, directory="figures/"):
         df_effect,
         directory,
         filename="response_guild.png",
-        columns="Treatment",
+        columns="Protection",
         rows="Behaviour",
         x="guild",
-        hue="Protection",
+        hue="Treatment",
     )
 
 
@@ -420,14 +429,15 @@ def clean_effects(model_data):
         values="Response",
     ).reset_index()
 
-    for col in ["Positive Control", "Barracuda", "Grouper"]:
-        response_df[col] -= response_df["Negative Control"]
-    response_df.drop(columns=["Negative Control"], inplace=True)
+    # Calculate the effect size
+
+    for col in ["Barracuda", "Grouper"]:
+        response_df[col] -= response_df["Positive Control"]
+    response_df.drop(columns=["Positive Control", "Negative Control"], inplace=True)
 
     response_df = response_df.melt(
         id_vars=["sample", "Protection", "Individuals", "Behaviour"],
         value_vars=[
-            "Positive Control",
             "Barracuda",
             "Grouper",
         ],
@@ -461,7 +471,6 @@ def counterfactual(model_data, directory="figures/counterfactual/"):
 
     # plot the counterfactual predictions
     print("\nCalculating effects of treatment on behaviour...\n")
-
     effects_treatment(response, directory=directory)
 
     # plot the difference in response across protection levels
@@ -482,8 +491,8 @@ def counterfactual(model_data, directory="figures/counterfactual/"):
 
     ro.r(
         """
-       source("functions/analysis_tables.R")
-       """
+      source("functions/analysis_tables.R")
+      """
     )
 
     print("\nDone.\n")

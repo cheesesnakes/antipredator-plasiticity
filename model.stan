@@ -7,6 +7,7 @@ data {
   int<lower=0> G; // number of guilds
   int<lower=0> K; // number of species
   int<lower=0> T; // number of treatments
+  int<lower=0> Q; // number of deployments
   
   // response variables
   
@@ -16,6 +17,7 @@ data {
   // index variables
   array[N] int<lower=1, upper=S> plot; // plot index
   array[N] int<lower=1, upper=K> species; // species index
+  array[S] int<lower=1, upper=Q> deployment; // deployment index
   
   // plot-level predictors
   array[S] int<lower=1, upper=2> protection; // protection level (0 or 1)
@@ -37,6 +39,7 @@ parameters {
   
   // parameters for zero-inflation
   array[S, B] real alpha_pi; // random intercepts for zero-inflation
+  array[Q, B] real alpha_dep_pi; // effect of deployment on zero-inflation
   array[P, B] real beta_pi; // effect of protection on zero-inflation
   array[B] real gamma_pi; //effect of rugosity on zero-inflation
   array[B] real zeta_pi; // effect of biomass on zero-inflation
@@ -48,6 +51,7 @@ parameters {
   
   // parameters for duration model
   array[S, B] real alpha_D; // random intercepts for duration
+  array[Q, B] real alpha_dep_D; // effect of deployment on duration
   array[P, B] real beta_D; // effect of protection on duration
   array[B] real gamma_D; // effect of rugosity on duration
   array[B] real zeta_D; // effect of biomass on duration
@@ -60,6 +64,7 @@ parameters {
   
   // parameters for bites model
   array[S] real alpha_bites; // random intercepts for risk of bites
+  array[Q] real alpha_dep_bites; // effect of deployment on bites
   array[P] real beta_bites; // effect of protection on bites
   real gamma_bites; // effect of rugosity on bites
   real zeta_bites; // effect of biomass on bites
@@ -87,6 +92,7 @@ transformed parameters {
     int t = treatment[plot[n]]; // treatment for the current plot
     int p = protection[plot[n]]; // protection level for the current plot
     int s = plot[n]; // plot index for the current observation
+    int d = deployment[plot[n]]; // deployment index for the current observation
     int k = species[n]; // species index for the current observation
     int c = size[n]; // size class for the current observation
     int g = group[n]; // group for the current observation
@@ -94,14 +100,16 @@ transformed parameters {
     
     for (b in 1 : B) {
       // calculate expected duration
-      mu[n, b] = alpha_D[s, b] + theta_D[t, b] + beta_D[p, b]
-                 + gamma_D[b] * rugosity_std[s] + zeta_D[b] * biomass_std[s]
-                 + eta_D[pred, b] + omega_D[c, b]
-                 + dot_product(epsilon_D[ : , b], guild[k]) + delta_D[g, b];
+      mu[n, b] = alpha_D[s, b] + alpha_dep_D[d, b] + theta_D[t, b]
+                 + beta_D[p, b] + gamma_D[b] * rugosity_std[s]
+                 + zeta_D[b] * biomass_std[s] + eta_D[pred, b]
+                 + omega_D[c, b] + dot_product(epsilon_D[ : , b], guild[k])
+                 + delta_D[g, b];
       
       // calculate probability of non-zero duration
       
-      pi[n, b] = inv_logit(alpha_pi[s, b] + theta_pi[t, b] + beta_pi[p, b]
+      pi[n, b] = inv_logit(alpha_pi[s, b] + alpha_dep_pi[d, b]
+                           + theta_pi[t, b] + beta_pi[p, b]
                            + gamma_pi[b] * rugosity_std[s]
                            + zeta_pi[b] * biomass_std[s] + eta_pi[pred, b]
                            + omega_pi[c, b]
@@ -111,8 +119,8 @@ transformed parameters {
     
     // calculate expected number of bites
     
-    lambda[n] = exp(alpha_bites[s] + theta_bites[t] + beta_bites[p]
-                    + gamma_bites * rugosity_std[s]
+    lambda[n] = exp(alpha_bites[s] + alpha_dep_bites[d] + theta_bites[t]
+                    + beta_bites[p] + gamma_bites * rugosity_std[s]
                     + zeta_bites * biomass_std[s] + eta_bites[pred]
                     + omega_bites[c] + dot_product(epsilon_bites, guild[k])
                     + delta_bites[g]);
@@ -128,6 +136,7 @@ model {
   // Zero-inflation parameters
   for (b in 1 : B) {
     alpha_pi[ : , b] ~ normal(0, 0.5);
+    alpha_dep_pi[ : , b] ~ normal(0, 0.5);
     beta_pi[ : , b] ~ normal(0, 0.5);
     gamma_pi[b] ~ normal(0, 0.5);
     zeta_pi[b] ~ normal(0, 0.5);
@@ -142,6 +151,7 @@ model {
   
   for (b in 1 : B) {
     alpha_D[ : , b] ~ normal(0, 0.5);
+    alpha_dep_D[ : , b] ~ normal(0, 0.5);
     beta_D[ : , b] ~ normal(0, 0.5);
     gamma_D[b] ~ normal(0, 0.5);
     zeta_D[b] ~ normal(0, 0.5);
@@ -155,6 +165,7 @@ model {
   
   // Bites parameters
   alpha_bites ~ normal(0, 0.5);
+  alpha_dep_bites ~ normal(0, 0.5);
   beta_bites ~ normal(0, 0.5);
   gamma_bites ~ normal(0, 0.5);
   zeta_bites ~ normal(0, 0.5);
@@ -228,21 +239,23 @@ generated quantities {
         int group_std = 1;
         int predator_std = 1;
         int s = plot[n]; // plot index for the current observation
+        int d = deployment[s]; // deployment index for the current plot
         int k = species[n]; // species index for the current observation
         int size_std = size[n]; // size class for the current observation
         int pred = predator[s]; // predator presence for the current plot
         
         for (b in 1 : B) {
-          real mu_cf = alpha_D[s, b] + theta_D[t, b] + beta_D[p, b]
-                       + alpha_pi[s, b] + theta_pi[t, b]
+          real mu_cf = alpha_D[s, b] + alpha_dep_D[d, b] + theta_D[t, b]
+                       + beta_D[p, b] + alpha_pi[s, b] + theta_pi[t, b]
                        + protection[s] * beta_pi[p, b] + gamma_D[b] * rug_std
                        + zeta_D[b] * bio_std + eta_D[predator_std, b]
                        + omega_D[size_std, b]
                        + dot_product(epsilon_D[ : , b], guild[k])
                        + delta_D[group_std, b];
           
-          real pi_cf = inv_logit(alpha_pi[s, b] + theta_pi[t, b]
-                                 + beta_pi[p, b] + gamma_pi[b] * rug_std
+          real pi_cf = inv_logit(alpha_pi[s, b] + alpha_dep_pi[d, b]
+                                 + theta_pi[t, b] + beta_pi[p, b]
+                                 + gamma_pi[b] * rug_std
                                  + zeta_pi[b] * bio_std
                                  + eta_pi[predator_std, b]
                                  + omega_pi[size_std, b]
@@ -256,7 +269,8 @@ generated quantities {
           }
         }
         
-        real lambda_cf = exp(alpha_bites[s] + theta_bites[t] + beta_bites[p]
+        real lambda_cf = exp(alpha_bites[s] + alpha_dep_bites[d]
+                             + theta_bites[t] + beta_bites[p]
                              + gamma_bites * rug_std + zeta_bites * bio_std
                              + eta_bites[predator_std]
                              + omega_bites[size_std]

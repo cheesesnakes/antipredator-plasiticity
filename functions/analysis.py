@@ -241,6 +241,30 @@ def response_protection(df_effect, directory="figures/"):
         "outputs/analysis/compare_response_protection.csv", index=False
     )
 
+    # Compare effect size across protection levels
+
+    response_protection = df_effect.pivot_table(
+        index=["sample", "Individuals", "Behaviour", "Treatment"],
+        columns="Protection",
+        values="Effect Size",
+    ).reset_index()
+
+    # Calculate the difference in effect size between protection levels
+
+    response_protection["Difference"] = (
+        response_protection["Inside PA"] > response_protection["Outside PA"]
+    )
+
+    response_protection = (
+        response_protection.groupby(["Behaviour", "Treatment"])
+        .agg({"Difference": "mean"})
+        .reset_index()
+    )
+
+    # Save the comparison table
+
+    response_protection.to_csv("outputs/analysis/effect_protection.csv", index=False)
+
     # plot the difference in response across protection levels
 
     plot_effect_size(
@@ -279,7 +303,7 @@ def response_size(df_effect, directory="figures/"):
 
     # Summarise the response size
     summary_response_size = summary_effects(
-        df_effect, vars=["Treatment", "Protection", "Behaviour", "size_class"]
+        df_effect, vars=["Treatment", "Behaviour", "size_class"]
     )
 
     # save as csv
@@ -289,7 +313,7 @@ def response_size(df_effect, directory="figures/"):
 
     # --- Compare Responses Table ---
     compare_response_size = compare_effects(
-        df_effect, index=["size_class"], var=["Protection", "size_class"]
+        df_effect, index=["size_class"], var=["size_class"]
     )
 
     # save as csv
@@ -338,7 +362,7 @@ def response_guild(df_effect, directory="figures/"):
 
     # Summarise the response by guild
     summary_response_guild = summary_effects(
-        df_effect, vars=["Treatment", "Protection", "Behaviour", "guild"]
+        df_effect, vars=["Treatment", "Behaviour", "guild"]
     )
 
     # save as csv
@@ -347,9 +371,7 @@ def response_guild(df_effect, directory="figures/"):
     )
 
     # --- Compare Responses Table ---
-    compare_response_guild = compare_effects(
-        df_effect, index=["guild"], var=["Protection", "guild"]
-    )
+    compare_response_guild = compare_effects(df_effect, index=["guild"], var=["guild"])
 
     # save as csv
     compare_response_guild.to_csv(

@@ -42,7 +42,6 @@ table <- flextable(df) %>%
     # make species column italic
     italic(j = "species", part = "body")
 
-print(table)
 
 # Save the table
 save_as_docx(table, path = here("outputs", "species_table.docx"))

@@ -20,8 +20,6 @@ df <- read.csv(here(folder, "summary_effects_treatment.csv"))
 df <- df %>%
     left_join(compare_df, by = c("Behaviour"))
 
-head(df)
-
 table <- df %>%
     select(Behaviour, , Grouper...Barracuda, Treatment, everything()) %>%
     arrange(Behaviour, Treatment, Grouper...Barracuda) %>%
@@ -32,11 +30,11 @@ table <- df %>%
     # center the text
     align(align = "center", part = "all") %>%
     theme_box() %>%
-    merge_v(~ Behaviour + Grouper...Barracuda) %>%
+    merge_v(~Behaviour) %>%
     set_header_labels(
         Treatment = "Treatment",
         Behaviour = "Behaviour",
-        Grouper...Barracuda = "Grouper > Barracuda",
+        Grouper...Barracuda = "P(Grouper > Barracuda)",
         X5th = "5th Percentile",
         X25th = "25th Percentile",
         X75th = "75th Percentile",
@@ -54,11 +52,11 @@ compare_df <- read.csv(here(folder, "compare_response_guild.csv"))
 df <- read.csv(here(folder, "summary_response_guild.csv"))
 
 df <- df %>%
-    left_join(compare_df, by = c("Behaviour", "guild", "Protection"))
+    left_join(compare_df, by = c("Behaviour", "guild"))
 
 table <- df %>%
-    select(guild, Behaviour, Grouper...Barracuda, Treatment, Protection, everything()) %>%
-    arrange(guild, Behaviour, Grouper...Barracuda, Treatment, Protection) %>%
+    select(guild, Behaviour, Grouper...Barracuda, Treatment, everything()) %>%
+    arrange(guild, Behaviour, Grouper...Barracuda, Treatment) %>%
     mutate_if(is.numeric, round, 3) %>%
     flextable() %>%
     set_table_properties(width = 0.9, layout = "fixed") %>%
@@ -77,7 +75,7 @@ table <- df %>%
         X75th = "75th Percentile",
         X95th = "95th Percentile",
         P...0. = "P(> 0)",
-        Grouper...Barracuda = "Grouper > Barracuda"
+        Grouper...Barracuda = "P(Grouper > Barracuda)"
     )
 
 # Save the table
@@ -92,9 +90,14 @@ df <- read.csv(here(folder, "summary_response_protection.csv"))
 df <- df %>%
     left_join(compare_df, by = c("Behaviour", "Protection"))
 
+compare_protection <- read.csv(here(folder, "effect_protection.csv"))
+
+df <- df %>%
+    left_join(compare_protection, by = c("Behaviour", "Treatment"))
+
 table <- df %>%
-    select(Behaviour, Grouper...Barracuda, Protection, Treatment, everything()) %>%
-    arrange(Behaviour, Grouper...Barracuda, Protection, Treatment) %>%
+    select(Behaviour, Treatment, Difference, Protection, everything()) %>%
+    arrange(Behaviour, Treatment, Protection) %>%
     mutate_if(is.numeric, round, 3) %>%
     flextable() %>%
     set_table_properties(width = 0.9, layout = "fixed") %>%
@@ -102,7 +105,7 @@ table <- df %>%
     # center the text
     align(align = "center", part = "all") %>%
     theme_box() %>%
-    merge_v(~ Behaviour + Grouper...Barracuda + Treatment + Protection) %>%
+    merge_v(~ Behaviour + Treatment + Difference + Protection) %>%
     set_header_labels(
         Treatment = "Treatment",
         Protection = "Protection Level",
@@ -112,7 +115,7 @@ table <- df %>%
         X75th = "75th Percentile",
         X95th = "95th Percentile",
         P...0. = "P(> 0)",
-        Grouper...Barracuda = "Grouper > Barracuda"
+        Difference = "P(Inside > Outside)"
     )
 
 # Save the table
@@ -125,11 +128,11 @@ compare_df <- read.csv(here(folder, "compare_response_size.csv"))
 df <- read.csv(here(folder, "summary_response_size.csv"))
 
 df <- df %>%
-    left_join(compare_df, by = c("Behaviour", "size_class", "Protection"))
+    left_join(compare_df, by = c("Behaviour", "size_class"))
 
 table <- df %>%
-    select(Behaviour, size_class, Treatment, Protection, everything()) %>%
-    arrange(Behaviour, size_class, Treatment, Protection) %>%
+    select(Behaviour, size_class, Grouper...Barracuda, Treatment, everything()) %>%
+    arrange(Behaviour, size_class, Treatment) %>%
     mutate_if(is.numeric, round, 3) %>%
     flextable() %>%
     set_table_properties(width = 0.9, layout = "fixed") %>%
@@ -137,7 +140,7 @@ table <- df %>%
     # center the text
     align(align = "center", part = "all") %>%
     theme_box() %>%
-    merge_v(~ Behaviour + size_class + Treatment + Protection) %>%
+    merge_v(~ Behaviour + size_class + Grouper...Barracuda + Treatment) %>%
     set_header_labels(
         Treatment = "Treatment",
         size_class = "Size Class",
@@ -148,8 +151,7 @@ table <- df %>%
         X75th = "75th Percentile",
         X95th = "95th Percentile",
         P...0. = "P(> 0)",
-        Grouper...Barracuda = "Grouper > Barracuda"
+        Grouper...Barracuda = "P(Grouper > Barracuda)"
     )
-
 # Save the table
 save_as_docx(table, path = here("outputs", "summary_response_size.docx"))

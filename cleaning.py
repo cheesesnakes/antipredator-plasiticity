@@ -4,6 +4,8 @@ import os
 
 # Clean individual level data
 
+os.makedirs("outputs/data", exist_ok=True)
+
 
 def clean_individuals():
     """

@@ -41,11 +41,14 @@ print(paste0("N = ", length(unique(data$plot_id)), " plots"))
 
 # define formula
 
-formula <- bf(abundance ~ protection +
+formula <- bf(
+  abundance ~ protection +
   treatment + guild +
   rugosity_mean + biomass +
   protection:treatment + treatment:guild +
-  (1 | deployment_id))
+  protection:treatment:guild +
+  (1 | deployment_id)
+  )
 
 # priors
 

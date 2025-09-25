@@ -47,6 +47,14 @@ summarise_params(model, type = "Fixed", vars = c(
     "b_treatmentgrouper:guildPiscivore",
     "b_treatmentnegativeMcontrol:guildPiscivore",
     "b_treatmentbarracuda:guildPiscivore",
+    "b_protectionProtected:treatmentpositiveMcontrol:guildInvertivore",
+    "b_protectionProtected:treatmentnegativeMcontrol:guildInvertivore",
+    "b_protectionProtected:treatmentgrouper:guildInvertivore",
+    "b_protectionProtected:treatmentbarracuda:guildInvertivore",
+    "b_protectionProtected:treatmentpositiveMcontrol:guildPiscivore",
+    "b_protectionProtected:treatmentnegativeMcontrol:guildPiscivore",
+    "b_protectionProtected:treatmentgrouper:guildPiscivore",
+    "b_protectionProtected:treatmentbarracuda:guildPiscivore",
     "shape"
 ), path = here("outputs", "abundance-plot", "fixed_effects.docx"))
 

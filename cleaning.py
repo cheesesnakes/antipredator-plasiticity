@@ -21,6 +21,12 @@ def clean_individuals():
     individuals["group"] = individuals["group"].cat.codes
     individuals.loc[individuals["group"] < 0, "group"] = 0
 
+    # calculate observed duration
+
+    individuals["observed_duration"] = individuals["time_out"].astype(
+        float
+    ) - individuals["time_in"].astype(float)
+
     return individuals
 
 
@@ -232,8 +238,21 @@ def create_predictors(sites, rug, benthic_classes, abundance):
 
     predictors["treatment"] = predictors["plot_id"].str.split("_").str[1]
 
+    # Ensure all plot_ids are present, fill missing predator abundance with zero
+    predators = abundance[abundance["guild"] == "Piscivore"]
+    all_plot_ids = predictors["plot_id"].unique()
+    # Ensure unique plot_id by aggregating (sum abundance per plot_id)
+    predators = (
+        predators.groupby("plot_id", as_index=False)["abundance"]
+        .sum()
+        .set_index("plot_id")
+        .reindex(all_plot_ids, fill_value=0)
+        .reset_index()
+    )
+    predators["abundance"] = predators["abundance"].fillna(0)
+
     predictors["predator"] = np.array(
-        [1 if x > 0 else 0 for x in abundance["n_predators"].values]
+        [1 if x > 0 else 0 for x in predators["abundance"].values]
     )
 
     print("Predictors data")
@@ -258,21 +277,14 @@ def calc_abn(individuals, predators):
         + individuals["ind_id"].str.split("_").str[1]
     )
 
+    print(individuals.head())
+
     abundance = (
-        individuals[["ind_id", "plot_id"]]
-        .groupby("plot_id")
+        individuals[["ind_id", "plot_id", "guild"]]
+        .groupby(["plot_id", "guild"])
         .size()
-        .reset_index(name="n_prey")
+        .reset_index(name="abundance")
     )
-
-    richness = (
-        individuals[["plot_id", "species"]]
-        .groupby("plot_id")
-        .size()
-        .reset_index(name="n_species")
-    )
-
-    abundance = abundance.merge(richness, how="left", on="plot_id")
 
     predators["plot_id"] = (
         predators["predator_id"].str.split("_").str[1]
@@ -280,14 +292,16 @@ def calc_abn(individuals, predators):
         + predators["predator_id"].str.split("_").str[2]
     )
 
-    abundance = abundance.merge(
-        predators[["plot_id", "predator_id"]]
-        .groupby("plot_id")
-        .size()
-        .reset_index(name="n_predators"),
-        how="left",
-        on="plot_id",
+    predators["guild"] = "Piscivore"
+
+    # Add predator abundance as "Piscivore" guild for each plot
+    predator_abundance = (
+        predators.groupby("plot_id").size().reset_index(name="abundance")
     )
+    predator_abundance["guild"] = "Piscivore"
+
+    # Combine prey and predator abundance
+    abundance = pd.concat([abundance, predator_abundance], ignore_index=True)
 
     abundance.to_csv("outputs/data/abundance.csv", index=False)
 
@@ -407,6 +421,8 @@ def transform_behaviours(observations, behaviours, samples):
 
 
 def create_response(individuals, observations, behaviours, samples):
+    individuals["plot_id"] = individuals["ind_id"].str.split("_").str[0]
+
     response = individuals[
         ["plot_id", "ind_id", "species", "group", "size_class"]
     ].copy()
@@ -453,8 +469,8 @@ def clean_guilds(response):
     traits = pd.read_csv("data/traits.csv")
 
     traits.columns = traits.columns.str.lower()
-    traits = traits[["sl.no", "family", "genus", "species", "feeding.guild"]].copy()
-    traits.columns = ["sl_no", "family", "genus", "species", "guild"]
+    traits = traits[["family", "genus", "species", "feeding.guild"]].copy()
+    traits.columns = ["family", "genus", "species", "guild"]
 
     # Create a reliable mapping from genus to family from existing data
     family_map = (
@@ -512,7 +528,6 @@ def clean_guilds(response):
                 "species": missing_species_in_traits["species"].unique(),
                 "family": "",
                 "guild": "",
-                "sl_no": np.nan,
             }
         )
 
@@ -553,7 +568,7 @@ def clean_guilds(response):
                 traits.at[index, "guild"] = "Unknown"
 
     # Drop unnecessary columns
-    traits.drop(columns=["sl_no", "family", "genus"], inplace=True)
+    traits.drop(columns=["family", "genus"], inplace=True)
 
     # Split multiple guilds into separate rows and clean
     traits["guild"] = traits["guild"].fillna("").astype(str)  # Ensure guild is string
@@ -604,6 +619,8 @@ def ind_traits(individuals, guilds):
 
     table.to_csv("outputs/data/individual_traits.csv", index=False)
 
+    return table
+
 
 # main function
 
@@ -614,20 +631,21 @@ def clean_data():
 
     individuals = clean_individuals()
     observations = clean_observations()
+    behaviours = metadata()
+    samples = clean_samples()
+    response = create_response(individuals, observations, behaviours, samples)
+
+    guilds = clean_guilds(response)
+    individuals_guild = ind_traits(individuals, guilds)
     predators = clean_predators()
+    abundance = calc_abn(individuals_guild, predators)
+    abundance_size = calc_abn_size(individuals, predators)
+
     sites = clean_sites()
     plots = clean_plots()
     benthic_classes = clean_benthic_cover()
     rug, rugosity = clean_rugosity()
-    behaviours = metadata()
-    abundance = calc_abn(individuals, predators)
-    abundance_size = calc_abn_size(individuals, predators)
     predictors = create_predictors(sites, rug, benthic_classes, abundance)
-    samples = clean_samples()
-    response = create_response(individuals, observations, behaviours, samples)
-    guilds = clean_guilds(response)
-
-    ind_traits(individuals, guilds)
 
     print("Data cleaning complete\n")
 

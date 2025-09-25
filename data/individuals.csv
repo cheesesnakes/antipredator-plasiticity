@@ -336,7 +336,7 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250119_barracuda_3_335,Scarus niger,no,10-20,,"424 , 1096,     919, 1387",./data/videos/20250119/barracuda/GX040004.MP4,447463.6833,459892.7667
 20250119_barracuda_4_336,Pomacentrus albicaudatus,no,0-10,,"1044,  982,    1140, 1053",./data/videos/20250119/barracuda/GX080004.MP4,100517.0833,196379.5167
 20250119_grouper_0_337,Pomacentrus albicaudatus,no,0-10,,"1272,  835,    1592, 1031",./data/videos/20250119/grouper/GX050025.MP4,431481.05,530513.3167
-20250119_grouper_1_338,Chaetodon lunulatus,yes,10-20,,"1820,  577,    2370, 1039",./data/videos/20250119/grouper/GX020025.MP4,359642.6167,373923.55W
+20250119_grouper_1_338,Chaetodon lunulatus,yes,10-20,,"1820,  577,    2370, 1039",./data/videos/20250119/grouper/GX020025.MP4,359642.6167,373923.55
 20250119_grouper_1_339,Chaetodon lunulatus,yes,10-20,,"1643, 1170,    1992, 1526",./data/videos/20250119/grouper/GX020025.MP4,362812.45,374257.2167
 20250119_grouper_1_340,Chlorurus sordidus,no,20-30,,"315 ,  492,     643, 687",./data/videos/20250119/grouper/GX020025.MP4,367050.0167,372989.2833
 20250119_grouper_2_341,Thalassoma lunare,no,10-20,,"911 , 1235,    1216, 1463",./data/videos/20250119/grouper/GX060025.MP4,70520.45,80897.48333
@@ -429,4 +429,4 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250127_grouper_4_428,Thalassoma lunare,no,10-20,,"317 ,  853,     699, 986",./data/videos/20250127/grouper/GX020007.MP4,120537.0833,122939.4833
 20250127_negative-control_1_429,Pomacentrus albicaudatus,no,0-10,,"1058, 1137,    1180, 1230",./data/videos/20250127/negative-control/GX020071.MP4,191391.2,0
 20250127_negative-control_2_430,Balistapus undulatus,no,20-30,,"1495,  985,    1646, 1078",./data/videos/20250127/negative-control/GX020071.MP4,412395.3167,419469.05
-20250127_negative-control_4_431,Chaetodon baronessa,no,10-20,,"519 , 1084,     849, 1417",./data/videos/20250127/negative-control/GX050071.MP4,336753.0833,362111.75_
+20250127_negative-control_4_431,Chaetodon baronessa,no,10-20,,"519 , 1084,     849, 1417",./data/videos/20250127/negative-control/GX050071.MP4,336753.0833,362111.75

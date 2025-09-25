@@ -1,9 +1,12 @@
-pacman::p_load(brms, here, tidybayes, ggplot2, marginaleffects)
+pacman::p_load(brms, here, tidybayes, ggplot2, marginaleffects, tidyr, dplyr, stringr)
 
-source(here("analysis", "standardise_behaviour.R"))
+# Load clean data
 
-dir.create(here("outputs", "abundance-plot"))
-dir.create(here("figures", "abundance-plot"))
+plot_abundance <- read.csv(here("outputs", "data", "abundance.csv"), stringsAsFactors = TRUE)
+predictors <- read.csv(here("outputs", "data", "predictors.csv"), stringsAsFactors = TRUE)
+
+dir.create(here("outputs", "abundance-plot"), showWarnings = FALSE)
+dir.create(here("figures", "abundance-plot"), showWarnings = FALSE)
 
 # Set default ggplot theme
 theme_set(
@@ -19,19 +22,30 @@ theme_set(
 
 # make data frame
 
+moments_rugosity <- c(mean(predictors$rugosity_mean), sd(predictors$rugosity_mean))
+moments_biomass <- c(mean(predictors$biomass), sd(predictors$biomass))
+
 data <- plot_abundance %>%
-  left_join(guild, by = "species") %>%
-  filter(!is.na(guild)) %>%
-  group_by(plot_id, guild) %>%
-  summarise(abundance = sum(abundance)) %>%
   left_join(predictors, by = "plot_id") %>%
-  ungroup()
+  ungroup() %>%
+  mutate(
+    deployment_id = str_split(plot_id, "_", simplify = TRUE)[, 1],
+    rugosity_mean = (rugosity_mean - moments_rugosity[1]) / moments_rugosity[2],
+    biomass = (biomass - moments_biomass[1]) / moments_biomass[2],
+    treatment = factor(treatment, levels = c("positive-control", "negative-control", "grouper", "barracuda")),
+    protection = factor(protection, levels = c("Unprotected", "Protected")),
+  ) %>%
+  filter(!is.na(treatment), guild != "Unknown")
 
 print(paste0("N = ", length(unique(data$plot_id)), " plots"))
 
 # define formula
 
-formula <- bf(abundance ~ protected + guild + rugosity_mean + damsel + biomass + protected:guild + rugosity_mean:guild + biomass:guild + (1 | site))
+formula <- bf(abundance ~ protection +
+  treatment + guild +
+  rugosity_mean + biomass +
+  protection:treatment + treatment:guild +
+  (1 | deployment_id))
 
 # priors
 

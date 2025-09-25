@@ -1,4 +1,4 @@
-pacman::p_load(here, dplyr, tidyr)
+pacman::p_load(here, dplyr, tidyr, stringr)
 
 # Function for summarising parameters and hyperparameters
 
@@ -18,12 +18,27 @@ summarise_params <- function(model, type, vars, path) {
     params <- left_join(params, posterior_probs, by = "variable")
 
     params <- params %>%
-            mutate(variable = case_when(
-                str_detect(variable, "b_") ~ str_remove(variable, "b_"),
-                str_detect(variable, "bsp_merugosity_meanrugosity_se") ~ "Rugosity",
-                TRUE ~ variable
-            ))
-    
+        mutate(variable = case_when(
+            str_detect(variable, "b_") ~ str_remove(variable, "b_"),
+            str_detect(variable, "Rugosity_mean") ~ "Rugosity",
+            str_detect(variable, "protectionprotected") ~ "Protection",
+            str_detect(variable, "Treatmentgrouper") ~ "Treatment (Grouper)",
+            str_detect(variable, "TreatmentnegativeMcontrol") ~ "Negative Control",
+            str_detect(variable, "Treatmentbarracuda") ~ "Treatment (Barracuda)",
+            str_detect(variable, "guildInvertivore") ~ "Guild (Invertivore)",
+            str_detect(variable, "guildPiscivore") ~ "Guild (Piscivore)",
+            str_detect(variable, "protectionprotected:Treatmentgrouper") ~ "Protection:Treatment (Grouper)",
+            str_detect(variable, "protectionprotected:TreatmentnegativeMcontrol") ~ "Protection:Negative Control",
+            str_detect(variable, "protectionprotected:Treatmentbarracuda") ~ "Protection:Treatment (Barracuda)",
+            str_detect(variable, "treatmentgrouper:guildinvertivore") ~ "Treatment (Grouper):Guild (Invertivore)",
+            str_detect(variable, "treatmentgrouper:guildpiscivore") ~ "Treatment (Grouper):Guild (Piscivore)",
+            str_detect(variable, "treatmentbarracuda:guildinvertivore") ~ "Treatment (Barracuda):Guild (Invertivore)",
+            str_detect(variable, "treatmentbarracuda:guildpiscivore") ~ "Treatment (Barracuda):Guild (Piscivore)",
+            str_detect(variable, "treatmentnegativeMcontrol:guildinvertivore") ~ "Negative Control:Guild (Invertivore)",
+            str_detect(variable, "treatmentnegativeMcontrol:guildpiscivore") ~ "Negative Control:Guild (Piscivore)",
+            TRUE ~ variable
+        ))
+
     table <- params %>%
         select(c(variable, mean, median, q5, q95, P)) %>%
         mutate(variable = str_to_title(variable)) %>%
@@ -48,7 +63,6 @@ summarise_params <- function(model, type, vars, path) {
 
 # Function to summarise random effects
 
-var_names <- "Site"
 
 table_re <- function(df, var_names, path) {
     # tables
@@ -86,7 +100,7 @@ summarise_r2 <- function(model, path) {
     R2 <- rbind(conditional_r2, marginal_r2)
 
     table3 <- R2 %>%
-    mutate(across(where(is.numeric), ~ round(., 3))) %>%
+        mutate(across(where(is.numeric), ~ round(., 3))) %>%
         flextable() %>%
         set_header_labels(
             type = "Type",
@@ -101,17 +115,16 @@ summarise_r2 <- function(model, path) {
 
 # summaries of counterfactuals
 
-summarise_cf <- function(posterior, do, confound = NULL, groups, path, file, dist = "proportion"){
-
-    if (do  %in% c("rugosity_mean", "biomass")){
+summarise_cf <- function(posterior, do, confound = NULL, groups, path, file, dist = "proportion") {
+    if (do %in% c("rugosity_mean", "biomass")) {
         posterior <- posterior %>%
             filter(!!sym(do) == 0 | !!sym(do) == 1)
-    } 
-    
+    }
+
     effect <- posterior %>%
         ungroup() %>%
         pivot_wider(names_from = !!sym(do), values_from = prop, id_cols = c(!!!syms(c(".draw", groups)))) %>%
-        rename("Control" = `0`, "Treatment" = `1`) 
+        rename("Control" = `0`, "Treatment" = `1`)
 
     if (dist == "Abundance") {
         effect <- effect %>%
@@ -124,7 +137,7 @@ summarise_cf <- function(posterior, do, confound = NULL, groups, path, file, dis
     P <- effect %>%
         group_by(!!!syms(confound)) %>%
         summarise(P = mean(effect > 0), .groups = "drop")
-    
+
     effect_summary <- effect %>%
         group_by(!!!syms(confound)) %>%
         median_qi(effect, .width = c(0.5, 0.9)) %>%
@@ -133,7 +146,7 @@ summarise_cf <- function(posterior, do, confound = NULL, groups, path, file, dis
         select(!!!syms(confound), effect, .lower_0.9, .lower_0.5, .upper_0.5, .upper_0.9, P)
 
     table <- effect_summary %>%
-    mutate(across(where(is.numeric), ~ round(., 3))) %>%
+        mutate(across(where(is.numeric), ~ round(., 3))) %>%
         flextable() %>%
         set_header_labels(
             behaviour = "Behaviour",

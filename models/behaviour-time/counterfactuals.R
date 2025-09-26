@@ -172,6 +172,7 @@ effect %>%
     geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
     geom_pointinterval(aes(ymin = .lower, ymax = .upper), position = position_dodge(width = 0.5)) +
     labs(x = "Behaviour", y = "Log odds ratio", col = "") +
+    scale_color_brewer(palette = "Set1") +
     facet_grid(guild~treatment)
 
 ggsave(here("figures", "behaviour-time", "effect_plot.png"), plot = last_plot(), width = 10, height = 10)

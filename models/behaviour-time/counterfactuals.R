@@ -1,5 +1,8 @@
 pacman::p_load(brms, here, ordbetareg, tidybayes, ggplot2, marginaleffects, flextable)
 
+responses <- read.csv(here("outputs", "data", "response.csv"))
+predictors <- read.csv(here("outputs", "data", "predictors.csv"))
+
 source(here("functions", "summaries.R"))
 
 

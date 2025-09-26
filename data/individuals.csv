@@ -14,12 +14,12 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250127_positive-control_1_13,Scolopsis bilineatus,no,10-20,,"1498, 1212,    1886, 1512",./data/videos/20250127/positive-control/GX030262.MP4,379011.9667,384500.7833
 20250127_positive-control_2_14,Scarus frenatus,no,20-30,,"621 ,  200,    1224, 559",./data/videos/20250127/positive-control/GX070262.MP4,197313.7833,198248.05
 20250127_positive-control_2_15,Chlorurus sordidus,no,10-20,,"471 ,  826,     712, 958",./data/videos/20250127/positive-control/GX070262.MP4,198965.4333,209125.5833
-20250127_positive-control_2_16,Lutjanus deccusatus,no,20-30,,"152 ,  800,     746, 1333",./data/videos/20250127/positive-control/GX070262.MP4,217250.3667,226809.9167
+20250127_positive-control_2_16,Lutjanus decussatus,no,20-30,,"152 ,  800,     746, 1333",./data/videos/20250127/positive-control/GX070262.MP4,217250.3667,226809.9167
 20250127_positive-control_3_17,Acanthurus leucosternon,no,20-30,,"805 , 1021,    1227, 1253",./data/videos/20250127/positive-control/GX010262.MP4,224958.0667,237437.2
-20250127_positive-control_3_18,Chaetodon trifascialis,yes,10-20,,"1769,  570,    2108, 793",./data/videos/20250127/positive-control/GX010262.MP4,227143.5833,232949.3833
+20250127_positive-control_3_18,Chaetodon trifacialis,yes,10-20,,"1769,  570,    2108, 793",./data/videos/20250127/positive-control/GX010262.MP4,227143.5833,232949.3833
 20250127_positive-control_3_19,Chaetodon baronessa,yes,10-20,,"1054,  779,    1397, 1028",./data/videos/20250127/positive-control/GX010262.MP4,232115.2167,244010.4333
 20250127_positive-control_3_20,Acanthurus blochii,yes,20-30,,"611 ,  533,    1044, 885",./data/videos/20250127/positive-control/GX010262.MP4,242342.1,247897.65
-20250127_positive-control_3_21,Chaetodon trifascialis,yes,10-20,,"710 ,  556,    1279, 1056",./data/videos/20250127/positive-control/GX010262.MP4,244244,246312.7333
+20250127_positive-control_3_21,Chaetodon trifacialis,yes,10-20,,"710 ,  556,    1279, 1056",./data/videos/20250127/positive-control/GX010262.MP4,244244,246312.7333
 20250127_positive-control_3_22,Chaetodon meyeri,yes,10-20,,"1752,  384,    2105, 715",./data/videos/20250127/positive-control/GX010262.MP4,250416.8333,254037.1167
 20250127_positive-control_3_23,Chaetodon meyeri,yes,10-20,,"1870,  296,    2223, 611",./data/videos/20250127/positive-control/GX010262.MP4,250900.65,254520.9333
 20250127_positive-control_3_24,Scarus niger,yes,20-30,,"365 ,  921,     978, 1165",./data/videos/20250127/positive-control/GX010262.MP4,256439.5167,260510.25
@@ -56,14 +56,14 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250107_barracuda_3_55,Chaetodon falcula,yes,10-20,,"1008,  614,    1140, 754",./data/videos/20250107/barracuda/GX010003.MP4,413045.9667,513963.45
 20250107_barracuda_3_56,Scarus niger,no,10-20,,"1192,  466,    1333, 590",./data/videos/20250107/barracuda/GX010003.MP4,470353.2167,512195.0167
 20250107_barracuda_4_57,Heniochus varius,no,10-20,,"388 ,  617,     655, 847",./data/videos/20250107/barracuda/GX050003.MP4,79212.46667,118835.3833
-20250107_barracuda_4_58,Lutjanus deccusatus,no,20-30,,"1070, 1115,    1487, 1319",./data/videos/20250107/barracuda/GX050003.MP4,81064.31667,89239.15
+20250107_barracuda_4_58,Lutjanus decussatus,no,20-30,,"1070, 1115,    1487, 1319",./data/videos/20250107/barracuda/GX050003.MP4,81064.31667,89239.15
 20250107_barracuda_4_59,Zanclus cornutus,yes,10-20,,"886 ,  623,    1054, 774",./data/videos/20250107/barracuda/GX050003.MP4,85602.18333,114964.85
 20250107_barracuda_4_60,Zanclus cornutus,yes,10-20,,"755 ,  568,     916, 749",./data/videos/20250107/barracuda/GX050003.MP4,88655.23333,113563.45
-20250107_barracuda_4_61,Anyperodon luecogrammicus,no,20-30,,"11  ,  988,     559, 1333",./data/videos/20250107/barracuda/GX050003.MP4,94644.55,166099.2667
+20250107_barracuda_4_61,Anyperodon leucogrammicus,no,20-30,,"11  ,  988,     559, 1333",./data/videos/20250107/barracuda/GX050003.MP4,94644.55,166099.2667
 20250107_barracuda_7_62,Cheilinus indulatus,yes,20-30,,"811 ,  730,    1639, 1188",./data/videos/20250107/barracuda/GX030003.MP4,83266.51667,87670.91667
 20250107_barracuda_7_63,Zanclus cornutus,yes,10-20,,"1469,  126,    2294, 904",./data/videos/20250107/barracuda/GX030003.MP4,85118.36667,126126
 20250107_barracuda_7_64,Cephalopholis argus,no,10-20,,"32  , 1031,     590, 1203",./data/videos/20250107/barracuda/GX030003.MP4,90590.5,158541.7167
-20250107_barracuda_7_65,Anyperodon luecogrammicus,no,20-30,,"793 , 1015,    1486, 1374",./data/videos/20250107/barracuda/GX030003.MP4,93843.75,108775.3333
+20250107_barracuda_7_65,Anyperodon leucogrammicus,no,20-30,,"793 , 1015,    1486, 1374",./data/videos/20250107/barracuda/GX030003.MP4,93843.75,108775.3333
 20250107_barracuda_7_66,Heniochus varius,yes,10-20,,"1051,  750,    1283, 1015",./data/videos/20250107/barracuda/GX030003.MP4,112245.4667,130113.3167
 20250107_barracuda_7_67,Scarus frenatus,no,20-30,,"58  ,  992,     458, 1352",./data/videos/20250107/barracuda/GX030003.MP4,117150.3667,119536.0833
 20250107_grouper_0_68,Scolopsis affinis,no,10-20,,"484 ,   99,     707, 247",./data/videos/20250107/grouper/GX070048.MP4,219569.35,319535.8833
@@ -72,7 +72,7 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250107_grouper_1_71,Chaetodontoplus mesoleucus,no,10-20,,"518 ,  823,     745, 954",./data/videos/20250107/grouper/GX050048.MP4,187220.3667,221838.2833
 20250107_grouper_1_72,Chromis jubauna,no,0-10,,"1983,  831,    2297, 1008",./data/videos/20250107/grouper/GX050048.MP4,204053.85,263229.6333
 20250107_grouper_1_73,Pomacentrus albicaudatus,no,0-10,,"1134,  766,    1287, 859",./data/videos/20250107/grouper/GX050048.MP4,213546.6667,237503.9333
-20250107_grouper_1_74,Amblyglyphidodon aureus,no,0-10,,"272 ,  538,     544, 693",./data/videos/20250107/grouper/GX050048.MP4,233433.2,238721.8167
+20250107_grouper_1_74,Amblygliphidodon aureus,no,0-10,,"272 ,  538,     544, 693",./data/videos/20250107/grouper/GX050048.MP4,233433.2,238721.8167
 20250107_grouper_2_75,Chaetodon lunulatus,yes,0-10,,"1638,  613,    1750, 735",./data/videos/20250107/grouper/GX050048.MP4,432899.1333,464697.5667
 20250107_grouper_2_76,Chaetodon lunulatus,yes,0-10,,"1576,  557,    1692, 666",./data/videos/20250107/grouper/GX050048.MP4,434867.7667,464564.1
 20250107_grouper_2_77,Chaetodon lunulatus,yes,0-10,,"1686,  583,    1808, 699",./data/videos/20250107/grouper/GX050048.MP4,435218.1167,465081.2833
@@ -81,21 +81,21 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250107_grouper_2_80,Pomacentrus albicaudatus,no,10-20,,"1531, 1233,    1731, 1385",./data/videos/20250107/grouper/GX050048.MP4,449232.1167,518718.2
 20250107_grouper_2_81,Scarus frenatus,no,20-30,,"1074,  710,    1550, 939",./data/videos/20250107/grouper/GX050048.MP4,453686.5667,457423.6333
 20250107_grouper_3_82,Caesio cuning,no,10-20,,"698 ,   46,     901, 225",./data/videos/20250107/grouper/GX090048.MP4,18435.08333,117934.4833
-20250107_grouper_4_83,Acanthrus nigrofuscus,no,10-20,,"1541,  473,    1970, 693",./data/videos/20250107/grouper/GX090048.MP4,310510.2,346295.95
+20250107_grouper_4_83,Acanthurus nigrofuscus,no,10-20,,"1541,  473,    1970, 693",./data/videos/20250107/grouper/GX090048.MP4,310510.2,346295.95
 20250107_grouper_4_84,Caesio cuning,no,10-20,,"704 ,  338,     938, 495",./data/videos/20250107/grouper/GX090048.MP4,315398.4167,407907.5
 20250107_grouper_4_85,Cheilinus fasciatus,no,20-30,,"1101,  479,    1604, 742",./data/videos/20250107/grouper/GX090048.MP4,329062.0667,335585.25
 20250107_grouper_4_86,Chaetodon lunulatus,no,0-10,,"1686, 1308,    2000, 1508",./data/videos/20250107/grouper/GX090048.MP4,331681.35,380730.35
 20250107_negative-control_0_87,Scolopsis margaritifera,no,10-20,,"1615,  487,    1857, 682",./data/videos/20250107/negative-control/GX060232.MP4,246479.5667,255738.8167
 20250107_negative-control_0_88,Neoglyphidodon melas,no,10-20,,"972 ,  836,    1291, 1117",./data/videos/20250107/negative-control/GX060232.MP4,277610.6667,323089.4333
 20250107_negative-control_0_89,Pomacentrus albicaudatus,no,0-10,,"1720,  905,    1865, 1030",./data/videos/20250107/negative-control/GX060232.MP4,280129.85,345528.5167
-20250107_negative-control_1_90,Acanthrus nigrofuscus,no,10-20,,"2096,  617,    2385, 798",./data/videos/20250107/negative-control/GX040232.MP4,42025.31667,78728.65
-20250107_negative-control_3_91,Acanthrus nigrofuscus,no,10-20,,"1821,  949,    2176, 1309",./data/videos/20250107/negative-control/GX070232.MP4,39222.51667,114197.4167
+20250107_negative-control_1_90,Acanthurus nigrofuscus,no,10-20,,"2096,  617,    2385, 798",./data/videos/20250107/negative-control/GX040232.MP4,42025.31667,78728.65
+20250107_negative-control_3_91,Acanthurus nigrofuscus,no,10-20,,"1821,  949,    2176, 1309",./data/videos/20250107/negative-control/GX070232.MP4,39222.51667,114197.4167
 20250107_negative-control_3_92,Pomacentrus leptus,no,0-10,,"2148,  819,    2494, 1044",./data/videos/20250107/negative-control/GX070232.MP4,56473.08333,87203.78333
 20250107_positive-control_0_93,Pomacentrus albicaudatus,no,0-10,,"1084,  911,    1197, 1026",./data/videos/20250107/positive-control/GX050004.MP4,174858.0167,271521.25
 20250107_positive-control_0_94,Chaetodon lunulatus,yes,10-20,,"1477,  265,    1611, 414",./data/videos/20250107/positive-control/GX050004.MP4,185852.3333,192926.0667
 20250107_positive-control_0_95,Chaetodon lunulatus,yes,0-10,,"1803,  186,    1997, 359",./data/videos/20250107/positive-control/GX050004.MP4,187070.2167,189806.2833
 20250107_positive-control_0_96,Scarus niger,no,20-30,,"356 , 1082,     664, 1249",./data/videos/20250107/positive-control/GX050004.MP4,250600.35,258007.75
-20250107_positive-control_1_97,Amblyglyphidodon aureus,no,10-20,,"1149,  948,    1446, 1184",./data/videos/20250107/positive-control/GX090004.MP4,25875.85,109025.5833
+20250107_positive-control_1_97,Amblygliphidodon aureus,no,10-20,,"1149,  948,    1446, 1184",./data/videos/20250107/positive-control/GX090004.MP4,25875.85,109025.5833
 20250107_positive-control_1_98,Zebrasoma desjardinii,no,20-30,,"968 ,   22,    1449, 424",./data/videos/20250107/positive-control/GX090004.MP4,55472.08333,109008.9
 20250107_positive-control_5_99,Chaetodon lunulatus,yes,10-20,,"143 , 1036,     364, 1153",./data/videos/20250107/positive-control/GX070004.MP4,458241.1167,523906.7167
 20250107_positive-control_5_100,Chaetodon lunulatus,yes,10-20,,"210 ,  940,     447, 1103",./data/videos/20250107/positive-control/GX070004.MP4,464981.1833,523906.7167
@@ -106,12 +106,12 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250109_barracuda_0_105,Scarus quoyi,yes,20-30,,"1507,  820,    1810, 981",./data/videos/20250109/barracuda/GX080233.MP4,121788.3333,126209.4167
 20250109_barracuda_0_106,Chaetodon lunulatus,yes,10-20,,"1701,  917,    1931, 1055",./data/videos/20250109/barracuda/GX080233.MP4,122555.7667,128978.85
 20250109_barracuda_0_107,Chaetodon lunulatus,yes,10-20,,"1855,  986,    2194, 1285",./data/videos/20250109/barracuda/GX080233.MP4,123773.65,133633.5
-20250109_barracuda_0_108,Lutjanus deccusatus,no,20-30,,"1698,  777,    2098, 1008",./data/videos/20250109/barracuda/GX080233.MP4,126376.25,131197.7333
+20250109_barracuda_0_108,Lutjanus decussatus,no,20-30,,"1698,  777,    2098, 1008",./data/videos/20250109/barracuda/GX080233.MP4,126376.25,131197.7333
 20250109_barracuda_0_109,Scarus sordidus,yes,20-30,,"1316,  877,    1676, 1040",./data/videos/20250109/barracuda/GX080233.MP4,130530.4,145145
 20250109_barracuda_0_110,Pomacentrus albicaudatus,no,0-10,,"2196, 1063,    2373, 1159",./data/videos/20250109/barracuda/GX080233.MP4,129179.05,190190
 20250109_barracuda_0_111,Scarus frenatus,yes,20-30,,"297 ,  455,     875, 840",./data/videos/20250109/barracuda/GX080233.MP4,132715.9167,145728.9167
 20250109_barracuda_1_112,Centropyge eibli,NO,10-20,,"1527,  918,    1701, 1052",./data/videos/20250109/barracuda/GX060233.MP4,61394.66667,70203.46667
-20250109_barracuda_1_113,Lutjanus deccusatus,no,20-30,,"1684,  897,    2060, 1203",./data/videos/20250109/barracuda/GX060233.MP4,88772.01667,89172.41667
+20250109_barracuda_1_113,Lutjanus decussatus,no,20-30,,"1684,  897,    2060, 1203",./data/videos/20250109/barracuda/GX060233.MP4,88772.01667,89172.41667
 20250109_barracuda_2_114,Chaetodon lunulatus,yes,10-20,,"1686, 1018,    1972, 1257",./data/videos/20250109/barracuda/GX060233.MP4,320403.4167,323856.8667
 20250109_barracuda_2_115,Chaetodon andamanensis,no,10-20,,"538 ,  923,     781, 1086",./data/videos/20250109/barracuda/GX060233.MP4,326759.7667,342375.3667
 20250109_grouper_0_116,Chaetodontoplus mesoleucus,no,10-20,,"641 , 1073,    1118, 1315",./data/videos/20250109/grouper/GX050049.MP4,67200.46667,93026.26667
@@ -123,16 +123,16 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250109_negative-control_0_122,Thalassoma lunare,no,0-10,,"752 , 1335,    1000, 1499",./data/videos/20250109/negative-control/GX040011.MP4,192075.2167,209525.9833
 20250109_negative-control_1_123,Rhinecanthus assasi,no,20-30,,"837 ,  869,    1106, 1026",./data/videos/20250109/negative-control/GX040011.MP4,387203.4833,390106.3833
 20250109_negative-control_2_124,Chaetodon triangulum,no,10-20,,"525 ,  823,     654, 948",./data/videos/20250109/negative-control/GX050011.MP4,187120.2667,198097.9
-20250109_negative-control_5_125,Lutjanus deccusatus,no,20-30,,"1519,  956,    1889, 1161",./data/videos/20250109/negative-control/GX070011.MP4,343626.6167,356773.0833
+20250109_negative-control_5_125,Lutjanus decussatus,no,20-30,,"1519,  956,    1889, 1161",./data/videos/20250109/negative-control/GX070011.MP4,343626.6167,356773.0833
 20250109_negative-control_5_126,Scarus quoyi,no,20-30,,"1693, 1093,    1976, 1308",./data/videos/20250109/negative-control/GX070011.MP4,346295.95,382115.0667
 20250109_negative-control_6_127,Scarus ghobban,no,20-30,,"2251, 1100,    2522, 1413",./data/videos/20250109/negative-control/GX020011.MP4,72472.4,97263.83333
 20250109_negative-control_6_128,Chlorurus sordidus,no,10-20,,"1972, 1200,    2260, 1437",./data/videos/20250109/negative-control/GX020011.MP4,82165.41667,101267.8333
-20250109_negative-control_6_129,Chaetodon trifascialis,no,10-20,,"990 ,  921,    1141, 1062",./data/videos/20250109/negative-control/GX020011.MP4,118535.0833,132515.7167
+20250109_negative-control_6_129,Chaetodon trifacialis,no,10-20,,"990 ,  921,    1141, 1062",./data/videos/20250109/negative-control/GX020011.MP4,118535.0833,132515.7167
 20250109_positive-control_0_130,Chaetodon lunulatus,no,10-20,,"1635, 1120,    1809, 1256",./data/videos/20250109/positive-control/GX090237.MP4,26509.81667,81030.95
 20250109_positive-control_0_131,Chaetodon lunulatus,no,10-20,,"1589, 1034,    1722, 1102",./data/videos/20250109/positive-control/GX090237.MP4,55772.38333,77393.98333
 20250109_positive-control_1_132,Cephalopholis argus,no,10-20,,"1916, 1129,    2162, 1286",./data/videos/20250109/positive-control/GX090237.MP4,263096.1667,275458.5167
 20250109_positive-control_3_133,Pomacentrus albicaudatus,no,0-10,,"1671, 1207,    1822, 1291",./data/videos/20250109/positive-control/GX040237.MP4,159459.3,256439.5167
-20250109_positive-control_3_134,Chaetodon trifascialis,no,20-30,,"990 , 1024,    1142, 1157",./data/videos/20250109/positive-control/GX040237.MP4,175308.4667,192609.0833
+20250109_positive-control_3_134,Chaetodon trifacialis,no,20-30,,"990 , 1024,    1142, 1157",./data/videos/20250109/positive-control/GX040237.MP4,175308.4667,192609.0833
 20250109_positive-control_3_135,Pycnochromis retrofasciatus,no,0-10,,"1475, 1283,    1642, 1434",./data/videos/20250109/positive-control/GX040237.MP4,180063.2167,221971.75
 20241213_barracuda_1_136,Heniochus varius,yes,20-30,,"948 ,  361,    1116, 552",./data/videos/20241213/barracuda/GX070001.MP4,270453.5167,283916.9667
 20241213_barracuda_1_137,Heniochus varius,no,20-30,,"1365,  396,    1653, 643",./data/videos/20241213/barracuda/GX070001.MP4,272071.8,287036.75
@@ -171,13 +171,13 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20241228_barracuda_2_170,Monotaxis grandoculis,no,10-20,,"15  ,  265,     349, 575",./data/videos/20241228/barracuda/GX050003.MP4,14297.61667,49632.91667
 20241228_barracuda_2_171,Scolopsis bilineatus,no,10-20,,"276 ,  893,     484, 1072",./data/videos/20241228/barracuda/GX050003.MP4,17484.13333,37654.28333
 20241228_barracuda_2_172,Monotaxis grandoculis,no,10-20,,"112 ,  378,     538, 686",./data/videos/20241228/barracuda/GX050003.MP4,76643.23333,105455.35
-20241228_barracuda_3_173,Lutjanus deccusatus,no,20-30,,"1178, 1054,    2282, 1788",./data/videos/20241228/barracuda/GX050003.MP4,153903.75,169135.6333
+20241228_barracuda_3_173,Lutjanus decussatus,no,20-30,,"1178, 1054,    2282, 1788",./data/videos/20241228/barracuda/GX050003.MP4,153903.75,169135.6333
 20241228_barracuda_3_174,Pomacentrus albicaudatus,no,0-10,,"1812,  941,    1952, 1096",./data/videos/20241228/barracuda/GX050003.MP4,160310.15,231798.2333
 20241228_barracuda_3_175,Pomacentrus albicaudatus,no,0-10,,"703 , 1167,     975, 1422",./data/videos/20241228/barracuda/GX050003.MP4,164814.65,236452.8833
 20241228_grouper_1_176,Pomacanthus semicirculatus,no,20-30,,"156 ,  484,    1122, 1012",./data/videos/20241228/grouper/GX060001.MP4,13413.4,15665.65
-20241228_grouper_1_177,Lutjanus deccusatus,no,20-30,,"1530,  392,    2439, 847",./data/videos/20241228/grouper/GX060001.MP4,75341.93333,79446.03333
+20241228_grouper_1_177,Lutjanus decussatus,no,20-30,,"1530,  392,    2439, 847",./data/videos/20241228/grouper/GX060001.MP4,75341.93333,79446.03333
 20241228_grouper_2_178,Acanthurus lineatus,no,20-30,,"581 ,  804,    1215, 1130",./data/videos/20241228/grouper/GX060001.MP4,122105.3167,146262.7833
-20241228_grouper_3_179,Cephalapholis formosa,no,20-30,,"1444,  576,    2036, 1075",./data/videos/20241228/grouper/GX060001.MP4,227860.9667,235752.1833
+20241228_grouper_3_179,Cephalopholis formosa,no,20-30,,"1444,  576,    2036, 1075",./data/videos/20241228/grouper/GX060001.MP4,227860.9667,235752.1833
 20241228_grouper_3_180,Acanthurus lineatus,no,20-30,,"2160,  543,    2576, 799",./data/videos/20241228/grouper/GX060001.MP4,234183.95,243793.55
 20241228_grouper_3_181,Acanthurus lineatus,no,20-30,,"2191,   35,    2624, 250",./data/videos/20241228/grouper/GX060001.MP4,260026.4333,267183.5833
 20241228_grouper_3_182,Acanthurus lineatus,no,20-30,,"2124,   83,    2593, 311",./data/videos/20241228/grouper/GX060001.MP4,265848.9167,268501.5667
@@ -215,7 +215,7 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20241230_barracuda_3_214,Scarus frenatus,no,20-30,,"1223,  649,    1850, 1117",./data/videos/20241230/barracuda/GX090230.MP4,98715.28333,101751.65
 20241230_barracuda_3_215,Scarus niger,no,20-30,,"1888,  245,    2395, 590",./data/videos/20241230/barracuda/GX090230.MP4,101017.5833,114697.9167
 20241230_barracuda_3_216,Chaetodon lunulatus,no,10-20,,"75  , 1194,     350, 1521",./data/videos/20241230/barracuda/GX090230.MP4,113396.6167,118034.5833
-20241230_barracuda_4_217,Amblyglyphidodon batunaorum,no,10-20,,"1961,  724,    2188, 897",./data/videos/20241230/barracuda/GX010230.MP4,124891.4333,145595.45
+20241230_barracuda_4_217,Amblygliphidodon batunaorum,no,10-20,,"1961,  724,    2188, 897",./data/videos/20241230/barracuda/GX010230.MP4,124891.4333,145595.45
 20241230_barracuda_4_218,Chaetodon lunulatus,yes,10-20,,"1598, 1030,    2072, 1406",./data/videos/20241230/barracuda/GX010230.MP4,180597.0833,182832.65
 20241230_barracuda_4_219,Chaetodon lunulatus,yes,10-20,,"1636,  556,    1977, 815",./data/videos/20241230/barracuda/GX010230.MP4,182916.0667,188188
 20241230_barracuda_4_220,Chaetodon auriga,yes,10-20,,"1291,  421,    1594, 625",./data/videos/20241230/barracuda/GX010230.MP4,184601.0833,191991.8
@@ -224,12 +224,12 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20241230_grouper_2_223,Pomacentrus albicaudatus,no,0-10,,"2050, 1229,    2419, 1499",./data/videos/20241230/grouper/GX080009.MP4,300183.2167,395445.05
 20241230_grouper_2_224,Cheilinus abudjubbe,no,10-20,,"527 ,  974,     933, 1226",./data/videos/20241230/grouper/GX080009.MP4,313112.8,395445.05
 20241230_grouper_2_225,Pomacentrus albicaudatus,no,0-10,,"1924,  706,    2122, 918",./data/videos/20241230/grouper/GX080009.MP4,325541.8833,395445.05
-20241230_grouper_2_226,Lutjanus deccusatus,no,20-30,,"2181,  387,    2595, 601",./data/videos/20241230/grouper/GX080009.MP4,333316.3167,338988.65
+20241230_grouper_2_226,Lutjanus decussatus,no,20-30,,"2181,  387,    2595, 601",./data/videos/20241230/grouper/GX080009.MP4,333316.3167,338988.65
 20241230_grouper_3_227,Scolopsis bilineatus,no,10-20,,"1915,  694,    2158, 811",./data/videos/20241230/grouper/GX020009.MP4,122105.3167,145829.0167
 20241230_grouper_3_228,Scolopsis margaritifera,no,20-30,,"1253,  866,    2060, 1204",./data/videos/20241230/grouper/GX020009.MP4,139989.85,145595.45
-20241230_grouper_3_229,Chaetodon deccusatus,no,10-20,,"1764,  620,    2500, 1011",./data/videos/20241230/grouper/GX020009.MP4,193610.0833,216399.5167
+20241230_grouper_3_229,Chaetodon decussatus,no,10-20,,"1764,  620,    2500, 1011",./data/videos/20241230/grouper/GX020009.MP4,193610.0833,216399.5167
 20241230_grouper_3_230,Anampses elegans,no,10-20,,"1490, 1059,    1843, 1342",./data/videos/20241230/grouper/GX020009.MP4,208758.55,213229.6833
-20241230_grouper_7_231,Stethojulis strigiventer�,no,10-20,,"348 ,  685,     681, 947",./data/videos/20241230/grouper/GX050009.MP4,317800.8167,323122.8
+20241230_grouper_7_231,Stethojulis strigiventer,no,10-20,,"348 ,  685,     681, 947",./data/videos/20241230/grouper/GX050009.MP4,317800.8167,323122.8
 20241230_grouper_7_232,Halichoeres biocellatus,no,10-20,,"116 , 1223,     519, 1367",./data/videos/20241230/grouper/GX050009.MP4,388154.4333,406322.5833
 20241230_negative-control_0_233,Cephalopholis boenak,no,10-20,,"328 , 1125,     758, 1352",./data/videos/20241230/negative-control/GX080003.MP4,141624.8167,150383.5667
 20241230_negative-control_1_234,Scarus niger,no,20-30,,"1504,  436,    1962, 720",./data/videos/20241230/negative-control/GX080003.MP4,240089.85,241858.2833
@@ -260,7 +260,7 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250103_barracuda_2_259,Scolopsis affinis,no,10-20,,"384 , 1046,    1274, 1403",./data/videos/20250103/barracuda/GX090010.MP4,16983.63333,36503.13333
 20250103_barracuda_3_260,Pomacentrus albicaudatus,no,0-10,,"1556,  886,    1701, 975",./data/videos/20250103/barracuda/GX070010.MP4,309409.1,373156.1167
 20250103_barracuda_4_261,Parupeneus barberinus,no,20-30,,"1639,  819,    1834, 1016",./data/videos/20250103/barracuda/GX080010.MP4,97180.41667,110393.6167
-20250103_barracuda_4_262,Lutjanus deccusatus,no,20-30,,"1274,  787,    1665, 906",./data/videos/20250103/barracuda/GX080010.MP4,102018.5833,110310.2
+20250103_barracuda_4_262,Lutjanus decussatus,no,20-30,,"1274,  787,    1665, 906",./data/videos/20250103/barracuda/GX080010.MP4,102018.5833,110310.2
 20250103_grouper_3_263,Pomacentrus armillatus,no,0-10,,"1362, 1243,    1527, 1406",./data/videos/20250103/grouper/GX080047.MP4,119886.4333,204454.25
 20250103_grouper_3_264,Pomacentrus albicaudatus,no,0-10,,"660 , 1276,     960, 1474",./data/videos/20250103/grouper/GX080047.MP4,135518.7167,204454.25
 20250103_grouper_4_265,Chaetodon capistratus,no,10-20,,"1992,  768,    2105, 906",./data/videos/20250103/grouper/GX050047.MP4,175458.6167,192942.75
@@ -268,7 +268,7 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250103_grouper_5_267,Balistoides viridescens,no,30-40,,"2494,  621,    2698, 895",./data/videos/20250103/grouper/GX050047.MP4,445094.65,473873.4
 20250103_grouper_5_268,Centropyge eibli,no,10-20,,"1414, 1318,    1653, 1479",./data/videos/20250103/grouper/GX050047.MP4,462929.1333,484133.65
 20250103_grouper_5_269,Centropyge eibli,no,10-20,,"1639, 1130,    1856, 1310",./data/videos/20250103/grouper/GX050047.MP4,470620.15,473739.9333
-20250103_negative-control_0_270,Lutjanus deccusatus,no,20-30,,"639 ,  904,     820, 1064",./data/videos/20250103/negative-control/GX050231.MP4,337804.1333,341874.8667
+20250103_negative-control_0_270,Lutjanus decussatus,no,20-30,,"639 ,  904,     820, 1064",./data/videos/20250103/negative-control/GX050231.MP4,337804.1333,341874.8667
 20250103_negative-control_1_271,Lethrinus nebulosus,no,20-30,,"374 ,  483,     736, 786",./data/videos/20250103/negative-control/GX020231.MP4,173489.9833,176826.65
 20250103_negative-control_1_272,Cheilinus chlorourus,no,10-20,,"1419, 1166,    1922, 1500",./data/videos/20250103/negative-control/GX020231.MP4,181364.5167,194143.95
 20250103_negative-control_2_273,Sufflamen chrysopterum,no,20-30,,"199 ,  993,     601, 1380",./data/videos/20250103/negative-control/GX020231.MP4,440173.0667,456706.25
@@ -279,9 +279,9 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250103_positive-control_0_278,Pomacentrus albicaudatus,no,0-10,,"800 ,  797,     909, 912",./data/videos/20250103/positive-control/GX080002.MP4,328094.4333,426509.4167
 20250103_positive-control_0_279,Pomacentrus albicaudatus,no,0-10,,"326 , 1231,     492, 1352",./data/videos/20250103/positive-control/GX080002.MP4,325975.65,426509.4167
 20250103_positive-control_0_280,Thalassoma lunare,no,20-30,,"259 ,  190,     888, 641",./data/videos/20250103/positive-control/GX080002.MP4,350333.3167,356105.75
-20250103_positive-control_4_281,Lutjanus deccusatus,no,20-30,,"357 ,  378,     949, 826",./data/videos/20250103/positive-control/GX020002.MP4,435034.6,442208.4333
+20250103_positive-control_4_281,Lutjanus decussatus,no,20-30,,"357 ,  378,     949, 826",./data/videos/20250103/positive-control/GX020002.MP4,435034.6,442208.4333
 20250114_barracuda_0_282,Pomacentrus albicaudatus,no,0-10,,"1625,  679,    1837, 799",./data/videos/20250114/barracuda/GX030067.MP4,6039.366667,103970.5333
-20250114_barracuda_0_283,Lutjanus deccusatus,no,20-30,,"1635,  751,    2127, 1281",./data/videos/20250114/barracuda/GX030067.MP4,71805.06667,87737.65
+20250114_barracuda_0_283,Lutjanus decussatus,no,20-30,,"1635,  751,    2127, 1281",./data/videos/20250114/barracuda/GX030067.MP4,71805.06667,87737.65
 20250114_barracuda_3_284,Scarus frenatus,no,10-20,,"1673,  668,    1821, 765",./data/videos/20250114/barracuda/GX070067.MP4,180163.3167,190106.5833
 20250114_grouper_0_285,Epinephelus fasciatus,no,10-20,,"1395, 1142,    1780, 1360",./data/videos/20250114/grouper/GX080239.MP4,249482.5667,348531.5167
 20250114_grouper_0_286,Centropyge eibli,no,10-20,,"948 ,  852,    1099, 948",./data/videos/20250114/grouper/GX080239.MP4,249532.6167,261611.35
@@ -323,14 +323,14 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250114_positive-control_5_322,Scolopsis affinis,no,10-20,,"2339,  859,    2612, 1136",./data/videos/20250114/positive-control/GX050051.MP4,297513.8833,304120.4833
 20250119_barracuda_0_323,Naso elegans,no,20-30,,"1853, 1033,    2134, 1253",./data/videos/20250119/barracuda/GX060004.MP4,183583.4,190106.5833
 20250119_barracuda_0_324,Thalassoma lunare,no,10-20,,"482 , 1150,     752, 1417",./data/videos/20250119/barracuda/GX060004.MP4,242959.3833,249499.25
-20250119_barracuda_2_325,Chaetodon trifascialis,no,10-20,,"1677, 1066,    1859, 1195",./data/videos/20250119/barracuda/GX040004.MP4,270770.5,274941.3333
-20250119_barracuda_2_326,Chaetodon trifascialis,yes,10-20,,"2071, 1084,    2313, 1220",./data/videos/20250119/barracuda/GX040004.MP4,272055.1167,278061.1167
+20250119_barracuda_2_325,Chaetodon trifacialis,no,10-20,,"1677, 1066,    1859, 1195",./data/videos/20250119/barracuda/GX040004.MP4,270770.5,274941.3333
+20250119_barracuda_2_326,Chaetodon trifacialis,yes,10-20,,"2071, 1084,    2313, 1220",./data/videos/20250119/barracuda/GX040004.MP4,272055.1167,278061.1167
 20250119_barracuda_2_327,Chaetodon lunulatus,yes,10-20,,"1973, 1034,    2108, 1180",./data/videos/20250119/barracuda/GX040004.MP4,273389.7833,287036.75
 20250119_barracuda_2_328,Chaetodon lunulatus,yes,10-20,,"2236, 1069,    2484, 1298",./data/videos/20250119/barracuda/GX040004.MP4,275074.8,293242.95
 20250119_barracuda_2_329,Chaetodon lunulatus,yes,10-20,,"2157, 1135,    2285, 1264",./data/videos/20250119/barracuda/GX040004.MP4,277193.5833,293176.2167
 20250119_barracuda_2_330,Chaetodon lunulatus,yes,10-20,,"2379, 1312,    2511, 1449",./data/videos/20250119/barracuda/GX040004.MP4,279562.6167,293543.25
 20250119_barracuda_3_331,Chlorurus sordidus,yes,20-30,,"502 ,  952,     827, 1210",./data/videos/20250119/barracuda/GX040004.MP4,390823.7667,396412.6833
-20250119_barracuda_3_332,Chaetodon trifascialis,no,10-20,,"402 ,  872,     662, 1013",./data/videos/20250119/barracuda/GX040004.MP4,395228.1667,402218.4833
+20250119_barracuda_3_332,Chaetodon trifacialis,no,10-20,,"402 ,  872,     662, 1013",./data/videos/20250119/barracuda/GX040004.MP4,395228.1667,402218.4833
 20250119_barracuda_3_333,Chaetodon lunulatus,yes,10-20,,"651 , 1018,     889, 1263",./data/videos/20250119/barracuda/GX040004.MP4,405638.5667,416115.7
 20250119_barracuda_3_334,Scarus ghobban,yes,20-30,,"1546,  688,    2260, 1139",./data/videos/20250119/barracuda/GX040004.MP4,406689.6167,408524.7833
 20250119_barracuda_3_335,Scarus niger,no,10-20,,"424 , 1096,     919, 1387",./data/videos/20250119/barracuda/GX040004.MP4,447463.6833,459892.7667
@@ -351,13 +351,13 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250119_negative-control_5_350,Acanthurus grammoptilus,no,20-30,,"1706, 1008,    1861, 1204",./data/videos/20250119/negative-control/GX020068.MP4,16449.76667,49199.15
 20250119_negative-control_5_351,Acanthurus blochii,no,20-30,,"1310,  632,    1469, 840",./data/videos/20250119/negative-control/GX020068.MP4,20920.9,40190.15
 20250119_negative-control_5_352,Cephalopholis argus,no,10-20,,"1032, 1339,    1493, 1533",./data/videos/20250119/negative-control/GX020068.MP4,23656.96667,39489.45
-20250119_negative-control_5_353,Lutjanus deccusatus,no,10-20,,"119 , 1238,     690, 1419",./data/videos/20250119/negative-control/GX020068.MP4,27260.56667,30697.33333
+20250119_negative-control_5_353,Lutjanus decussatus,no,10-20,,"119 , 1238,     690, 1419",./data/videos/20250119/negative-control/GX020068.MP4,27260.56667,30697.33333
 20250119_negative-control_9_354,Centropyge eibli,no,10-20,,"681 , 1265,     913, 1414",./data/videos/20250119/negative-control/GX040068.MP4,391791.4,403586.5167
 20250119_negative-control_9_355,Acanthurus tristis,yes,10-20,,"1607, 1225,    1754, 1354",./data/videos/20250119/negative-control/GX040068.MP4,398114.3833,405338.2667
 20250119_negative-control_9_356,Pomacentrus albicaudatus,no,0-10,,"1093, 1280,    1275, 1444",./data/videos/20250119/negative-control/GX040068.MP4,401067.3333,473322.85
 20250119_positive-control_4_357,Thalassoma lunare,no,10-20,,"1887, 1077,    2107, 1309",./data/videos/20250119/positive-control/GX070240.MP4,54454.4,56990.26667
 20250119_positive-control_4_358,Thalassoma lunare,no,0-10,,"1447,  928,    1617, 1046",./data/videos/20250119/positive-control/GX070240.MP4,117467.35,128745.2833
-20250119_positive-control_6_359,Lutjanus decusatus,no,10-20,,"1073,  842,    1250, 1016",./data/videos/20250119/positive-control/GX080240.MP4,97564.13333,100467.0333
+20250119_positive-control_6_359,Lutjanus decussatus,no,10-20,,"1073,  842,    1250, 1016",./data/videos/20250119/positive-control/GX080240.MP4,97564.13333,100467.0333
 20250119_positive-control_0_360,Pomacentrus albicaudatus,no,0-10,,"926 , 1088,    1114, 1259",./data/videos/20250119/positive-control/GX050240.MP4,321504.5167,105972.5333
 20250123_barracuda_0_361,Cheilinus abudjubbe,no,10-20,,"272 , 1043,     828, 1494",./data/videos/20250123/barracuda/GX040008.MP4,176960.1167,203820.2833
 20250123_barracuda_0_362,Ctenochaetus cyanocheilus,no,20-30,,"1907,  707,    2171, 849",./data/videos/20250123/barracuda/GX040008.MP4,180897.3833,187103.5833
@@ -382,7 +382,7 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250123_negative-control_3_381,Chrysiptera talboti,no,0-10,,"2284, 1176,    2423, 1309",./data/videos/20250123/negative-control/GX020028.MP4,163513.35,181814.9667
 20250123_positive-control_1_382,Acanthurus lineatus,yes,20-30,,"2211,  637,    2559, 920",./data/videos/20250123/positive-control/GX030005.MP4,257674.0833,260176.5833
 20250123_positive-control_1_383,Acanthurus blochii,yes,20-30,,"2103,  291,    2563, 601",./data/videos/20250123/positive-control/GX030005.MP4,259125.5333,262262
-20250123_positive-control_1_384,Lutjanus deccusatus,no,10-20,,"1143, 1055,    1358, 1278",./data/videos/20250123/positive-control/GX030005.MP4,299649.35,305989.0167
+20250123_positive-control_1_384,Lutjanus decussatus,no,10-20,,"1143, 1055,    1358, 1278",./data/videos/20250123/positive-control/GX030005.MP4,299649.35,305989.0167
 20250123_positive-control_4_385,Chrysiptera talboti,no,0-10,,"1988, 1295,    2130, 1408",./data/videos/20250123/positive-control/GX060005.MP4,162245.4167,257874.2833
 20250123_positive-control_4_386,Pomacentrus albicaudatus,no,0-10,,"679 ,  986,     776, 1090",./data/videos/20250123/positive-control/GX060005.MP4,167500.6667,257857.6
 20250123_positive-control_5_387,Kyphosus cinerascens,no,20-30,,"208 ,  966,     832, 1198",./data/videos/20250123/positive-control/GX040005.MP4,92792.7,109993.2167
@@ -400,12 +400,12 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250127_barracuda_1_399,Scarus niger,no,20-30,,"12  , 1008,     257, 1181",./data/videos/20250127/barracuda/GX070276.MP4,63980.58333,100216.7833
 20250127_barracuda_1_400,Chaetodon lunulatus,yes,10-20,,"2374, 1015,    2650, 1241",./data/videos/20250127/barracuda/GX070276.MP4,83933.85,103636.8667
 20250127_barracuda_1_401,Chaetodon lunulatus,yes,10-20,,"2195, 1057,    2461, 1221",./data/videos/20250127/barracuda/GX070276.MP4,87670.91667,103052.95
-20250127_barracuda_2_402,Chromis virdis,no,0-10,,"677 ,  597,     908, 779",./data/videos/20250127/barracuda/GX080276.MP4,667.3333333,99599.5
+20250127_barracuda_2_402,Chromis viridis,no,0-10,,"677 ,  597,     908, 779",./data/videos/20250127/barracuda/GX080276.MP4,667.3333333,99599.5
 20250127_barracuda_2_403,Pomacentrus moluccensis,no,0-10,,"1535,  884,    1692, 1007",./data/videos/20250127/barracuda/GX080276.MP4,5121.783333,99599.5
 20250127_barracuda_2_404,Scolopsis bilineatus,no,10-20,,"1662,  706,    1892, 828",./data/videos/20250127/barracuda/GX080276.MP4,8091.416667,22489.13333
 20250127_barracuda_2_405,Halichoeres hortulanus,no,10-20,,"14  , 1092,     478, 1244",./data/videos/20250127/barracuda/GX080276.MP4,19035.68333,22706.01667
 20250127_barracuda_2_406,Centropyge eibli,no,10-20,,"1245, 1040,    1502, 1227",./data/videos/20250127/barracuda/GX080276.MP4,22839.48333,26843.48333
-20250127_barracuda_3_407,Acanthrus nigrofuscus,no,20-30,,"1745,  579,    2052, 852",./data/videos/20250127/barracuda/GX080276.MP4,362061.7,364047.0167
+20250127_barracuda_3_407,Acanthurus nigrofuscus,no,20-30,,"1745,  579,    2052, 852",./data/videos/20250127/barracuda/GX080276.MP4,362061.7,364047.0167
 20250127_barracuda_3_408,Scarus ghobban,no,10-20,,"479 ,  417,     781, 648",./data/videos/20250127/barracuda/GX080276.MP4,372021.65,375124.75
 20250127_barracuda_3_409,Chlorurus sordidus,no,10-20,,"73  ,  619,     308, 769",./data/videos/20250127/barracuda/GX080276.MP4,427343.5833,443626.5167
 20250127_barracuda_4_410,Halichoeres chrysotaenia,no,10-20,,"737 , 1230,    1007, 1387",./data/videos/20250127/barracuda/GX010276.MP4,223706.8167,229379.15
@@ -414,9 +414,9 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250127_grouper_1_413,Centropyge eibli,no,10-20,,"1198, 1256,    1413, 1496",./data/videos/20250127/grouper/GX070007.MP4,419118.7,451184.0667
 20250127_grouper_2_414,Dascyllus reticulatus,yes,0-10,,"1097,  332,    1219, 461",./data/videos/20250127/grouper/GX080007.MP4,194360.8333,289956.3333
 20250127_grouper_2_415,Pomacentrus albicaudatus,no,0-10,,"288 ,  488,     464, 646",./data/videos/20250127/grouper/GX080007.MP4,203570.0333,289973.0167
-20250127_grouper_2_416,Chromis virdis,no,0-10,,"974 ,  596,    1123, 687",./data/videos/20250127/grouper/GX080007.MP4,209359.15,289973.0167
+20250127_grouper_2_416,Chromis viridis,no,0-10,,"974 ,  596,    1123, 687",./data/videos/20250127/grouper/GX080007.MP4,209359.15,289973.0167
 20250127_grouper_2_417,Chaetodon andamanensis,no,0-10,,"1794, 1062,    1970, 1236",./data/videos/20250127/grouper/GX080007.MP4,223856.9667,230346.7833
-20250127_grouper_3_418,Chaetodon trifascialis,no,10-20,,"1584,  863,    1995, 1112",./data/videos/20250127/grouper/GX080007.MP4,489338.85,504187.0167
+20250127_grouper_3_418,Chaetodon trifacialis,no,10-20,,"1584,  863,    1995, 1112",./data/videos/20250127/grouper/GX080007.MP4,489338.85,504187.0167
 20250127_grouper_3_419,Centropyge eibli,no,10-20,,"1794,  959,    1925, 1050",./data/videos/20250127/grouper/GX080007.MP4,502218.3833,505021.1833
 20250127_grouper_4_420,Chaetodon andamanensis,yes,0-10,,"433 ,  611,     619, 758",./data/videos/20250127/grouper/GX020007.MP4,40457.08333,58725.33333
 20250127_grouper_4_421,Chaetodon baronessa,yes,10-20,,"481 ,  600,     610, 729",./data/videos/20250127/grouper/GX020007.MP4,41424.71667,51484.76667
@@ -425,7 +425,7 @@ ind_id,species,group,size-class,remarks,coordinates,file,time-in,time-out
 20250127_grouper_4_424,Chaetodon andamanensis,yes,10-20,,"79  ,  679,     326, 834",./data/videos/20250127/grouper/GX020007.MP4,46096.05,57223.83333
 20250127_grouper_4_425,Chaetodon baronessa,yes,10-20,,"214 ,  604,     407, 814",./data/videos/20250127/grouper/GX020007.MP4,84734.65,103586.8167
 20250127_grouper_4_426,Chaetodon baronessa,yes,10-20,,"702 ,  711,     840, 867",./data/videos/20250127/grouper/GX020007.MP4,87003.58333,102569.1333
-20250127_grouper_4_427,Lutjanus deccusatus,no,10-20,,"586 ,  661,     948, 871",./data/videos/20250127/grouper/GX020007.MP4,115031.5833,120303.5167
+20250127_grouper_4_427,Lutjanus decussatus,no,10-20,,"586 ,  661,     948, 871",./data/videos/20250127/grouper/GX020007.MP4,115031.5833,120303.5167
 20250127_grouper_4_428,Thalassoma lunare,no,10-20,,"317 ,  853,     699, 986",./data/videos/20250127/grouper/GX020007.MP4,120537.0833,122939.4833
 20250127_negative-control_1_429,Pomacentrus albicaudatus,no,0-10,,"1058, 1137,    1180, 1230",./data/videos/20250127/negative-control/GX020071.MP4,191391.2,0
 20250127_negative-control_2_430,Balistapus undulatus,no,20-30,,"1495,  985,    1646, 1078",./data/videos/20250127/negative-control/GX020071.MP4,412395.3167,419469.05

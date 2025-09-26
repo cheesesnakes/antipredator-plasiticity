@@ -309,6 +309,12 @@ def calc_abn(individuals, predators):
 
 
 def calc_abn_size(individuals, predators):
+    individuals["plot_id"] = (
+        individuals["ind_id"].str.split("_").str[0]
+        + "_"
+        + individuals["ind_id"].str.split("_").str[1]
+    )
+
     abundance_size = (
         individuals[["ind_id", "plot_id", "size_class"]]
         .groupby(["plot_id", "size_class"])
@@ -421,11 +427,37 @@ def transform_behaviours(observations, behaviours, samples):
 
 
 def create_response(individuals, observations, behaviours, samples):
-    individuals["plot_id"] = individuals["ind_id"].str.split("_").str[0]
+    individuals["plot_id"] = (
+        individuals["ind_id"].str.split("_").str[0]
+        + "_"
+        + individuals["ind_id"].str.split("_").str[1]
+    )
 
     response = individuals[
-        ["plot_id", "ind_id", "species", "group", "size_class"]
+        [
+            "plot_id",
+            "ind_id",
+            "species",
+            "guild",
+            "group",
+            "size_class",
+            "observed_duration",
+        ]
     ].copy()
+
+    # extract family for each species from traits
+
+    traits = pd.read_csv("data/traits.csv")
+
+    families = traits[["Family", "Genus", "Species"]].copy()
+
+    families["Species"] = (
+        families["Genus"].str.strip() + " " + families["Species"].str.strip()
+    )
+
+    families = families[["Family", "Species"]].copy()
+
+    families.columns = ["family", "species"]
 
     # add behavioural observations
 
@@ -438,7 +470,45 @@ def create_response(individuals, observations, behaviours, samples):
     response.rename(columns={"feeding": "foraging", "moving": "movement"}, inplace=True)
     response.rename(columns={"bite_count": "bites"}, inplace=True)
 
+    # calculate bite rates
+
+    response["bites"] = response["bites"] / response["foraging"]
+
+    # convert observed duration to seconds
+
+    response["observed_duration"] = response["observed_duration"] / 1000
+
+    # fix negative observed durations
+
+    # fix observed durations that are greater than total behaviours
+
+    response["total_behaviour"] = (
+        response["foraging"] + response["movement"] + response["vigilance"]
+    )
+    response.loc[
+        (response["observed_duration"] < response["total_behaviour"]),
+        "observed_duration",
+    ] = response["total_behaviour"]
+
+    response.drop(columns=["total_behaviour"], inplace=True)
+
+    # covert time to proportion of observed
+
+    response["foraging"] = (
+        response["foraging"] / response["observed_duration"]
+    ).astype(float)
+    response["movement"] = (
+        response["movement"] / response["observed_duration"]
+    ).astype(float)
+    response["vigilance"] = (
+        response["vigilance"] / response["observed_duration"]
+    ).astype(float)
+
     response.loc[response["species"] == "", "species"] = "Unknown"
+
+    # add families
+
+    response = response.merge(families, how="left", on="species")
 
     print("\n\n")
     print("Behavioural response data")
@@ -454,7 +524,7 @@ def create_response(individuals, observations, behaviours, samples):
 # clean trait data
 
 
-def clean_guilds(response):
+def clean_guilds():
     """
     Cleans the guild data by filling in missing values based on genus and family.
 
@@ -515,25 +585,6 @@ def clean_guilds(response):
     traits["species"] = traits["species"].str.strip()
 
     # Identify and add missing species from 'response' to 'traits'
-    # Only consider species not already present in traits and not 'Unknown'
-    response["species"] = response["species"].str.strip()
-    missing_species_in_traits = response[
-        ~response["species"].isin(traits["species"])
-    ].copy()
-
-    if not missing_species_in_traits.empty:
-        # Create a DataFrame for these missing species with placeholder columns
-        new_species_df = pd.DataFrame(
-            {
-                "species": missing_species_in_traits["species"].unique(),
-                "family": "",
-                "guild": "",
-            }
-        )
-
-        new_species_df["genus"] = new_species_df["species"].str.split(" ", n=1).str[0]
-
-        traits = pd.concat([traits, new_species_df], ignore_index=True)
 
     # --- Imputation Logic ---
 
@@ -568,7 +619,7 @@ def clean_guilds(response):
                 traits.at[index, "guild"] = "Unknown"
 
     # Drop unnecessary columns
-    traits.drop(columns=["family", "genus"], inplace=True)
+    traits.drop(columns=["genus"], inplace=True)
 
     # Split multiple guilds into separate rows and clean
     traits["guild"] = traits["guild"].fillna("").astype(str)  # Ensure guild is string
@@ -583,22 +634,19 @@ def clean_guilds(response):
     traits["value"] = 1
 
     # Group by species and guild, sum the values, then calculate proportion
-    traits_grouped = traits.groupby(["species", "guild"])["value"].sum().reset_index()
+    traits_grouped = (
+        traits.groupby(["family", "species", "guild"])["value"].sum().reset_index()
+    )
     traits_grouped["value"] = traits_grouped["value"] / traits_grouped.groupby(
         "species"
     )["value"].transform("sum")
-
-    # filter species in response
-
-    traits_grouped = traits_grouped[
-        traits_grouped["species"].isin(response["species"])
-    ].reset_index()
 
     # Pivot to get guilds as columns
     traits_pivot = traits_grouped.pivot_table(
         index="species", columns="guild", values="value", fill_value=0
     ).reset_index()
 
+    print(traits_pivot.head(10))
     return traits_pivot
 
 
@@ -614,7 +662,15 @@ def ind_traits(individuals, guilds):
     dominant_guild = dominant_guild[["species", "guild"]]
 
     # Merge with individuals
-    table = individuals[["ind_id", "species", "size_class"]].copy()
+    table = individuals[
+        [
+            "ind_id",
+            "species",
+            "group",
+            "size_class",
+            "observed_duration",
+        ]
+    ].copy()
     table = table.merge(dominant_guild, how="left", on="species")
 
     table.to_csv("outputs/data/individual_traits.csv", index=False)
@@ -633,10 +689,10 @@ def clean_data():
     observations = clean_observations()
     behaviours = metadata()
     samples = clean_samples()
-    response = create_response(individuals, observations, behaviours, samples)
-
-    guilds = clean_guilds(response)
+    guilds = clean_guilds()
     individuals_guild = ind_traits(individuals, guilds)
+    response = create_response(individuals_guild, observations, behaviours, samples)
+
     predators = clean_predators()
     abundance = calc_abn(individuals_guild, predators)
     abundance_size = calc_abn_size(individuals, predators)

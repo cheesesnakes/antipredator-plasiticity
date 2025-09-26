@@ -1,8 +1,10 @@
-pacman::p_load(brms, here, ordbetareg, tidybayes, ggplot2, marginaleffects)
+pacman::p_load(brms, here, ordbetareg, tidybayes, ggplot2, marginaleffects, dplyr, tidyr, stringr)
 
-source(here("analysis", "standardise_behaviour.R"))
+responses <- read.csv(here("outputs", "data", "response.csv"))
+predictors <- read.csv(here("outputs", "data", "predictors.csv"))
 
 dir.create(here("outputs", "behaviour-time"), showWarnings = FALSE)
+
 # Set default ggplot theme
 theme_set(
   theme_bw() +
@@ -15,28 +17,45 @@ theme_set(
     )
 )
 
+moments_rugosity <- c(mean(predictors$rugosity_mean), sd(predictors$rugosity_mean))
+moments_biomass <- c(mean(predictors$biomass), sd(predictors$biomass))
 
-print(paste0("N = ", length(unique(data_ts$ind_id)), " individuals"))
+data <- responses %>%
+  left_join(predictors, by = c("plot_id" = "plot_id")) %>%
+  select(-c(sponge)) %>%
+  filter(guild != "Piscivore", guild != "Unknown")%>%
+  filter(observed_duration > 45) %>%
+  mutate(
+    deployment_id = str_split(plot_id, "_", simplify = TRUE)[, 1],
+    rugosity_mean = (rugosity_mean - moments_rugosity[1]) / moments_rugosity[2],
+    biomass = (biomass - moments_biomass[1]) / moments_biomass[2],
+    treatment = factor(treatment, levels = c("positive-control", "negative-control", "grouper", "barracuda")),
+    protection = factor(protection, levels = c("Unprotected", "Protected")),
+  ) %>%
+  filter(!is.na(treatment), guild != "Unknown", guild != "") %>%
+  distinct()
+
+print(paste0("N = ", length(unique(data$ind_id)), " individuals"))
 
 # make data
 
-behaviours <- c("foraging", "vigilance", "move")
+behaviours <- c("foraging", "vigilance", "movement")
 
 for (b in behaviours) {
   # define model formula
   if (b == "foraging") {
     formula <- bf(
-      foraging ~ protected + rugosity_mean + biomass + predator + group + guild + rugosity_mean:guild + biomass:guild + protected:guild + size_class + (1 | site:plot_id) + (1 | family:species),
+      foraging ~ protection + treatment + rugosity_mean + biomass + group + guild + size_class + protection:guild + treatment:guild + treatment:protection + treatment:guild:protection + (1 | deployment_id) + (1 | family:species),
       phi ~ 1 + (1 | family:species)
     )
   } else if (b == "vigilance") {
     formula <- bf(
-      vigilance ~ protected + rugosity_mean + biomass + predator + group + guild + rugosity_mean:guild + biomass:guild + protected:guild + size_class + (1 | site:plot_id) + (1 | family:species),
+      vigilance ~ protection + treatment + rugosity_mean + biomass + group + guild + size_class + protection:guild + treatment:guild + treatment:protection + treatment:guild:protection + (1 | deployment_id) + (1 | family:species),
       phi ~ 1 + (1 | family:species)
     )
-  } else if (b == "move") {
+  } else if (b == "movement") {
     formula <- bf(
-      move ~ protected + rugosity_mean + biomass + predator + group + guild + rugosity_mean:guild + biomass:guild + protected:guild + size_class + (1 | site:plot_id) + (1 | family:species),
+      movement ~ protection + treatment + rugosity_mean + biomass + group + guild + size_class + protection:guild + treatment:guild + treatment:protection + treatment:guild:protection + (1 | deployment_id) + (1 | family:species),
       phi ~ 1 + (1 | family:species)
     )
   }
@@ -53,7 +72,7 @@ for (b in behaviours) {
   model <- ordbetareg(
     formula = formula,
     manual_prior = priors,
-    data = data_ts,
+    data = data,
     chains = 4,
     cores = 4,
     iter = 2000

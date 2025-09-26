@@ -1,13 +1,12 @@
 pacman::p_load(brms, here, ordbetareg, tidybayes, ggplot2, marginaleffects)
 
-source(here("analysis", "standardise_behaviour.R"))
 source(here("functions", "summaries.R"))
 
 dir.create(here("outputs", "behaviour-time"), showWarnings = FALSE)
 
 # analysis
 
-behaviours <- c("foraging", "vigilance", "move")
+behaviours <- c("foraging", "vigilance", "movement")
 
 for (b in behaviours) {
     print(str_glue("\nSummarising model for {b}"))
@@ -24,17 +23,12 @@ for (b in behaviours) {
     # Random effects
 
     random_effects <- model %>%
-        spread_draws(`r_site:plot_id`[l_s, ]) %>%
-        summarise_draws() %>%
-        ungroup() %>%
-        mutate(
-            Site = str_split(l_s, "_", simplify = TRUE)[, 1],
-            Plot = str_split(l_s, "_", simplify = TRUE)[, 2]
-        ) %>%
-        select(-c(l_s, variable)) %>%
-        select(Site, Plot, mean, median, sd, q5, q95) %>%
-        mutate(Site = site_levels[as.numeric(Site)]) %>%
-        arrange(as.numeric(Plot))
+    spread_draws(`r_deployment_id`[Deployment, ]) %>%
+    summarise_draws() %>%
+    ungroup() %>%
+    select(-c(variable)) %>%
+    mutate(Deployment = as.character(Deployment)) %>%
+    select(Deployment, mean, median, sd, q5, q95)
 
     # make table for random intercepts
 
@@ -49,10 +43,6 @@ for (b in behaviours) {
         mutate(
             Family = str_split(l_s, "_", simplify = TRUE)[, 1],
             Species = str_split(l_s, "_", simplify = TRUE)[, 2]
-        ) %>%
-        mutate(
-            Species = species_levels[as.numeric(Species)],
-            Family = family_levels[as.numeric(Family)]
         ) %>%
         select(-c(l_s, variable)) %>%
         select(Family, Species, mean, median, sd, q5, q95) %>%
@@ -72,10 +62,6 @@ for (b in behaviours) {
             Family = str_split(l_s, "_", simplify = TRUE)[, 1],
             Species = str_split(l_s, "_", simplify = TRUE)[, 2]
         ) %>%
-        mutate(
-            Species = species_levels[as.numeric(Species)],
-            Family = family_levels[as.numeric(Family)]
-        ) %>%
         select(-c(l_s, variable)) %>%
         select(Family, Species, mean, median, sd, q5, q95) %>%
         arrange(Family, Species)
@@ -85,8 +71,24 @@ for (b in behaviours) {
     table_re(df = random_effects_species_phi, var_names = "Family", path = here("outputs", "behaviour-time", paste0(b, "_family_phi", ".docx")))
 
     # Parameters
-
-    summarise_params(model = model, type = "Parameter", vars = c("b_Intercept", "b_protected", "b_rugosity_mean", "b_biomass", "b_predator", "b_group", "b_rugosity_mean:guildInvertivore", "b_biomass:guildInvertivore", "b_protected:guildInvertivore"), path = here("outputs", "behaviour-prob", paste0(b, "_parameters", ".docx")))
+    summarise_params(model = model, type = "Parameter", vars = c(
+    "b_Intercept",
+    "b_protectionProtected",
+    "b_treatmentgrouper",
+    "b_treatmentnegativeMcontrol",
+    "b_treatmentbarracuda",
+    "b_guildInvertivore",
+    "b_rugosity_mean",
+    "b_biomass",
+    "b_protectionProtected:treatmentgrouper",
+    "b_protectionProtected:treatmentnegativeMcontrol",
+    "b_protectionProtected:treatmentbarracuda",
+    "b_treatmentgrouper:guildInvertivore",
+    "b_treatmentnegativeMcontrol:guildInvertivore",
+    "b_treatmentbarracuda:guildInvertivore",
+    "b_protectionProtected:treatmentnegativeMcontrol:guildInvertivore",
+    "b_protectionProtected:treatmentgrouper:guildInvertivore",
+    "b_protectionProtected:treatmentbarracuda:guildInvertivore"), path = here("outputs", "behaviour-time", paste0(b, "_parameters", ".docx")))
 
     # Make tables for conditional and marginal R2
 

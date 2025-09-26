@@ -239,8 +239,8 @@ table <- effect_summary %>%
             treatment == "barracuda" ~ "Barracuda"
         )
     ) %>%
-    flextable() %>%
     mutate(across(where(is.numeric), ~ round(., 3))) %>%
+    flextable() %>%
     set_header_labels(
         treatment = "Treatment",
         protection = "Protection",
@@ -282,8 +282,8 @@ table <- effect_summary %>%
             treatment == "barracuda" ~ "Barracuda"
         )
     ) %>%
-    flextable() %>%
     mutate(across(where(is.numeric), ~ round(., 3))) %>%
+    flextable() %>%
     set_header_labels(
         treatment = "Treatment",
         guild = "Foraging Guild",

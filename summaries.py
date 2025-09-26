@@ -39,6 +39,7 @@ def _(mo):
 @app.cell
 def _():
     import marimo as mo
+
     return (mo,)
 
 
@@ -50,6 +51,7 @@ def _():
     import seaborn as sns
     import os
     import matplotlib.pyplot as plt
+    os.environ['R_HOME'] = '/usr/lib64/R'
     from rpy2 import robjects as ro
 
     # load data
@@ -182,7 +184,12 @@ def _(data, plt, sns):
 
 @app.cell
 def _(data, plt, sns):
-    sns.pairplot(data["predictors"].drop(columns=["deployment_id", "location", "plot_id", "treatment"]), diag_kind="kde")
+    sns.pairplot(
+        data["predictors"].drop(
+            columns=["deployment_id", "location", "plot_id", "treatment"]
+        ),
+        diag_kind="kde",
+    )
 
     plt.savefig("figures/predictor_pairplot.png", dpi=300, bbox_inches="tight")
 
@@ -204,40 +211,14 @@ def _(mo):
 
 @app.cell
 def _(data, mo):
-    mo.md(f"""Abundance of individuals in plots: \n\nmean = {data["abundance"]["n_prey"].mean():.2f}, SD = {data["abundance"]["n_prey"].std():.2f}""")
+    mo.md(f"""Abundance of individuals in plots: \n\nmean = {data["abundance"]["abundance"].mean():.2f}, SD = {data["abundance"]["abundance"].std():.2f}""")
     return
 
 
 @app.cell
 def _(data, plt, sns):
-    sns.histplot(data["abundance"]["n_prey"], binwidth=5, kde=True)
+    sns.histplot(data["abundance"]["abundance"], binwidth=5, kde=True)
     plt.xlabel("Abundance of individuals in plots")
-    return
-
-
-@app.cell
-def _(data, mo):
-    mo.md(f"""Abundance of predators in plots: \n\nmean = {data["abundance"]["n_predators"].mean():.2f}, SD = {data["abundance"]["n_predators"].std():.2f}""")
-    return
-
-
-@app.cell
-def _(data, plt, sns):
-    sns.histplot(data["abundance"]["n_predators"], kde=True)
-    plt.xlabel("Abundance of predators in plots")
-    return
-
-
-@app.cell
-def _(data, mo):
-    mo.md(f"""Species richness in plots: \n\nmean = {data["abundance"]["n_species"].mean():.2f}, SD = {data["abundance"]["n_species"].std():.2f}""")
-    return
-
-
-@app.cell
-def _(data, plt, sns):
-    sns.histplot(data["abundance"]["n_species"], binwidth=5, kde=True)
-    plt.xlabel("Species richness in plots")
     return
 
 
@@ -263,10 +244,10 @@ def _(data, mo, ro):
 
     species.to_csv("outputs/species_list.csv", index=False)
     ro.r(
-            """
+        """
            source("functions/species_table.R")
            """
-        )
+    )
     mo.md(f"Number of observed species: {len(species)}")
     return (species,)
 
@@ -307,10 +288,14 @@ def _(data, species):
         value_name="value",
     )
 
-
     guilds = guilds[guilds["value"] > 0]
 
-    guilds = guilds.groupby("guild").agg({"abundance": "sum"}).reset_index().sort_values("abundance", ascending=False)
+    guilds = (
+        guilds.groupby("guild")
+        .agg({"abundance": "sum"})
+        .reset_index()
+        .sort_values("abundance", ascending=False)
+    )
 
     guilds
     return
@@ -318,7 +303,9 @@ def _(data, species):
 
 @app.cell
 def _(data, mo):
-    size_class_dist = data["response"].groupby("size_class").size().reset_index(name="count")
+    size_class_dist = (
+        data["response"].groupby("size_class").size().reset_index(name="count")
+    )
 
     mo.md("Distribution of individuals by size class")
     return (size_class_dist,)

@@ -39,7 +39,6 @@ def _(mo):
 @app.cell
 def _():
     import marimo as mo
-
     return (mo,)
 
 
@@ -51,7 +50,8 @@ def _():
     import seaborn as sns
     import os
     import matplotlib.pyplot as plt
-    os.environ['R_HOME'] = '/usr/lib64/R'
+
+    os.environ["R_HOME"] = "/usr/lib64/R"
     from rpy2 import robjects as ro
 
     # load data
@@ -61,7 +61,9 @@ def _():
 
     # set plot theme
 
-    sns.set_theme(style="white", context="notebook", palette="Set1", font_scale=1.5)
+    sns.set_theme(
+        style="white", context="notebook", palette="Set1", font_scale=1.5
+    )
     return data, plt, ro, sns
 
 
@@ -230,7 +232,9 @@ def _(mo):
 
 @app.cell
 def _(data, mo, ro):
-    species = data["response"].groupby("species").size().reset_index(name="abundance")
+    species = (
+        data["response"].groupby("species").size().reset_index(name="abundance")
+    )
 
     species = species.sort_values("abundance", ascending=False)
 
@@ -298,6 +302,28 @@ def _(data, species):
     )
 
     guilds
+    return
+
+
+@app.cell
+def _(data, species):
+    guilds_spp = species.melt(
+        id_vars=["species", "abundance"],
+        value_vars=data["guilds"].columns[1:],
+        var_name="guild",
+        value_name="value",
+    )
+
+    guilds_spp = guilds_spp[guilds_spp["value"] > 0]
+
+    guilds_spp = (
+        guilds_spp.groupby("guild")
+        .agg({"species": "count"})
+        .reset_index()
+        .sort_values("species", ascending=False)
+    )
+
+    guilds_spp
     return
 
 

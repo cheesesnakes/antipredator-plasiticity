@@ -1,4 +1,4 @@
-pacman::p_load(brms, here, ordbetareg, tidybayes, ggplot2, marginaleffects)
+pacman::p_load(brms, here, ordbetareg, tidybayes, ggplot2, marginaleffects, flextable)
 
 source(here("functions", "summaries.R"))
 
@@ -80,6 +80,7 @@ for (b in behaviours) {
     "b_guildInvertivore",
     "b_rugosity_mean",
     "b_biomass",
+    "b_group",
     "b_protectionProtected:treatmentgrouper",
     "b_protectionProtected:treatmentnegativeMcontrol",
     "b_protectionProtected:treatmentbarracuda",

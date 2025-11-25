@@ -1,4 +1,4 @@
-pacman::p_load(here, dplyr, tidyr, stringr)
+pacman::p_load(here, dplyr, tidyr, stringr, tidybayes, posterior, brms, flextable, officer)
 
 # Function for summarising parameters and hyperparameters
 
@@ -8,6 +8,17 @@ summarise_params <- function(model, type, vars, path) {
         summarise_draws() %>%
         mutate(type = type)
 
+    # spred variables with "b_size_class" 
+
+    if (type == "Parameter") {
+        # extract variables with names starting "b_size_class"
+        size_params <- posterior::as_draws_df(model) %>%
+            select(matches("^b_size_class")) %>%
+            posterior::summarise_draws() %>%
+            mutate(type = type)
+
+        params <- rbind(params, size_params)
+    }
     posterior_probs <- model %>%
         spread_draws(!!!syms(vars)) %>%
         group_by(.draw) %>%
@@ -36,6 +47,8 @@ summarise_params <- function(model, type, vars, path) {
             str_detect(variable, "treatmentbarracuda:guildpiscivore") ~ "Treatment (Barracuda):Guild (Piscivore)",
             str_detect(variable, "treatmentnegativeMcontrol:guildinvertivore") ~ "Negative Control:Guild (Invertivore)",
             str_detect(variable, "treatmentnegativeMcontrol:guildpiscivore") ~ "Negative Control:Guild (Piscivore)",
+            str_detect(variable, "group") ~ "Group Size",
+            str_detect(variable, "size_class*") ~ paste0("Size Class: ", str_extract(variable, "\\d+",)),
             TRUE ~ variable
         ))
 

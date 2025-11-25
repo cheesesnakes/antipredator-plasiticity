@@ -57,6 +57,7 @@ summarise_params(model = model, type = "Parameter", vars = c(
     "b_guildInvertivore",
     "b_rugosity_mean",
     "b_biomass",
+    "b_group",
     "b_protectionProtected:treatmentgrouper",
     "b_protectionProtected:treatmentnegativeMcontrol",
     "b_protectionProtected:treatmentbarracuda",

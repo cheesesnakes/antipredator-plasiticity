@@ -98,11 +98,12 @@ effect %>%
     ) %>%
     filter(guild %in% c("Herbivore", "Invertivore")) %>%
     median_qi(effect, .width = c(0.5, 0.9)) %>%
-    ggplot(aes(x = behaviour, y = effect, col = protection)) +
+    ggplot(aes(x = behaviour, y = effect, col = protection, shape = protection)) +
     geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
     geom_pointinterval(aes(ymin = .lower, ymax = .upper), position = position_dodge(width = 0.5)) +
-    labs(x = "Behaviour", y = "Log odds ratio", col = "") +
-    facet_wrap(~guild)
+    labs(x = "Behaviour", y = "Log odds ratio", col = "", shape = "") +
+    facet_wrap(~guild)+
+    theme(text = element_text(size = 16)) 
 
 ggsave(here("figures", "behaviour-time", "control_plot.png"), plot = last_plot(), width = 10, height = 6)
 
@@ -168,14 +169,17 @@ effect %>%
     ) %>%
     filter(guild %in% c("Herbivore", "Invertivore")) %>%
     median_qi(effect, .width = c(0.5, 0.9)) %>%
-    ggplot(aes(x = behaviour, y = effect, col = protection)) +
+    ggplot(aes(x = behaviour, y = effect, col = protection, shape = protection)) +
     geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
-    geom_pointinterval(aes(ymin = .lower, ymax = .upper), position = position_dodge(width = 0.5)) +
-    labs(x = "Behaviour", y = "Log odds ratio", col = "") +
+    geom_pointinterval(aes(ymin = .lower, ymax = .upper), position = position_dodge(width = 0.5),
+                       interval_size_domain = c(1, 6),
+                       interval_size_range = c(1, 3)) +
+    labs(x = "Behaviour", y = "Log odds ratio", col = "", shape = "") +
     scale_color_brewer(palette = "Set1") +
-    facet_grid(guild~treatment)
+    facet_grid(guild~treatment)+
+    theme(text = element_text(size = 30))
 
-ggsave(here("figures", "behaviour-time", "effect_plot.png"), plot = last_plot(), width = 10, height = 10)
+ggsave(here("figures", "behaviour-time", "effect_plot.png"), plot = last_plot(), width = 10, height = 10, dpi = 300)
 
 # Summary table
 

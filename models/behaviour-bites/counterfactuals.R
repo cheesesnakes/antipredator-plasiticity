@@ -1,4 +1,4 @@
-pacman::p_load(brms, here, ordbetareg, tidybayes, ggplot2, marginaleffects)
+pacman::p_load(brms, here, ordbetareg, tidybayes, ggplot2, marginaleffects, flextable)
 
 source(here("functions", "summaries.R"))
 
@@ -88,7 +88,7 @@ effect %>%
     ) %>%
     filter(guild %in% c("Herbivore", "Invertivore")) %>%
     median_qi(effect, .width = c(0.5, 0.9)) %>%
-    ggplot(aes(x = guild, y = effect, col = protection)) +
+    ggplot(aes(x = guild, y = effect, col = protection, shape = protection)) +
     geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
     geom_pointinterval(aes(ymin = .lower, ymax = .upper), position = position_dodge(width = 0.5)) +
     labs(x = "Foraging Guild", y = "Log odds ratio", col = "") 
@@ -157,12 +157,15 @@ effect %>%
     ) %>%
     filter(guild %in% c("Herbivore", "Invertivore")) %>%
     median_qi(effect, .width = c(0.5, 0.9)) %>%
-    ggplot(aes(x = guild, y = effect, col = protection)) +
+    ggplot(aes(x = guild, y = effect, col = protection, shape = protection)) +
     geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
-    geom_pointinterval(aes(ymin = .lower, ymax = .upper), position = position_dodge(width = 0.5)) +
-    labs(x = "Foraging guild", y = "Log response ratio", col = "") +
+    geom_pointinterval(aes(ymin = .lower, ymax = .upper), position = position_dodge(width = 0.5),
+                       interval_size_domain = c(1, 6),
+                       interval_size_range = c(1, 3)) +
+    labs(x = "Foraging guild", y = "Log response ratio", col = "", shape = "") +
     scale_color_brewer(palette = "Set1") +
-    facet_wrap(~treatment)
+    facet_wrap(~treatment) +
+    theme(legend.position = "top", text = element_text(size = 20))
 
 ggsave(here("figures", "behaviour-bites", "effect_plot.png"), plot = last_plot(), width = 10, height = 6)
 

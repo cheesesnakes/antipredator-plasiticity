@@ -26,6 +26,17 @@ summarise_params <- function(model, type, vars, path) {
         group_by(variable) %>%
         summarise(P = mean(value > 0), .groups = "drop")
 
+    if (type == "Parameter") {
+        size_posterior_probs <- posterior::as_draws_df(model) %>%
+            select(.draw, matches("^b_size_class")) %>%   
+            group_by(.draw) %>%
+            pivot_longer(cols = matches("^b_size_class"), names_to = "variable", values_to = "value") %>%
+            group_by(variable) %>%
+            summarise(P = mean(value > 0), .groups = "drop")
+
+        posterior_probs <- rbind(posterior_probs, size_posterior_probs)
+    }
+
     params <- left_join(params, posterior_probs, by = "variable")
 
     params <- params %>%
@@ -48,7 +59,7 @@ summarise_params <- function(model, type, vars, path) {
             str_detect(variable, "treatmentnegativeMcontrol:guildinvertivore") ~ "Negative Control:Guild (Invertivore)",
             str_detect(variable, "treatmentnegativeMcontrol:guildpiscivore") ~ "Negative Control:Guild (Piscivore)",
             str_detect(variable, "group") ~ "Group Size",
-            str_detect(variable, "size_class*") ~ paste0("Size Class: ", str_extract(variable, "\\d+",)),
+            str_detect(variable, "size_class") ~ paste0("Size Class: ", str_extract(variable, "\\d+")),  # fixed pattern + removed stray comma
             TRUE ~ variable
         ))
 

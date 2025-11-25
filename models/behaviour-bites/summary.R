@@ -66,7 +66,7 @@ summarise_params(model = model, type = "Parameter", vars = c(
     "b_treatmentbarracuda:guildInvertivore",
     "b_protectionProtected:treatmentnegativeMcontrol:guildInvertivore",
     "b_protectionProtected:treatmentgrouper:guildInvertivore",
-    "b_protectionProtected:treatmentbarracuda:guildInvertivore"), path = here("outputs", "behaviour-bites", paste0(b, "_parameters", ".docx")))
+    "b_protectionProtected:treatmentbarracuda:guildInvertivore"), path = here("outputs", "behaviour-bites", paste0("parameters", ".docx")))
 
 # Make tables for conditional and marginal R2
 

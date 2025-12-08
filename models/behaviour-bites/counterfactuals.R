@@ -162,10 +162,18 @@ effect %>%
     geom_pointinterval(aes(ymin = .lower, ymax = .upper), position = position_dodge(width = 0.5),
                        interval_size_domain = c(1, 6),
                        interval_size_range = c(1, 3)) +
-    labs(x = "Foraging guild", y = "Log response ratio", col = "", shape = "") +
+    labs(x = "Foraging guild", y = "Log response ratio (Bite Rate)", col = "", shape = "") +
     scale_color_brewer(palette = "Set1") +
     facet_wrap(~treatment) +
-    theme(legend.position = "top", text = element_text(size = 20))
+    theme(legend.position = "top", 
+    text = element_text(size = 20),
+    # increase text size
+    axis.title.x = element_text(size = 18),
+    axis.title.y = element_text(size = 18),
+    axis.text.x = element_text(size = 16),    
+    axis.text.y = element_text(size = 16),
+    strip.text = element_text(size = 18),
+    legend.text = element_text(size = 16))
 
 ggsave(here("figures", "behaviour-bites", "effect_plot.png"), plot = last_plot(), width = 10, height = 6)
 

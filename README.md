@@ -6,7 +6,7 @@ Since the 1950s, mechanization and increased demand have drastically increased m
 
 ## Data
 
-### Individuals (`individuals.csv`)
+### Individuals (`data/individuals.csv`)
 - **Description**: Sampled individuals in each plot.
 - **Columns**:
   - `ind_id`: Unique individual ID.
@@ -19,14 +19,14 @@ Since the 1950s, mechanization and increased demand have drastically increased m
   - `time_out`: Time last recorded (ms).
   - `remarks`: Additional notes.
 
-### Observations (`observations.csv`)
+### Observations (`data/observations.csv`)
 - **Description**: Behavioral observations of sampled individuals.
 - **Columns**:
   - `ind_id`: Unique individual ID.
   - `time`: Time of behavior observation (ms).
   - `behaviour`: Observed behavior.
 
-### Predators (`predators.csv`)
+### Predators (`data/predators.csv`)
 - **Description**: Predator presence in each plot.
 - **Columns**:
   - `predator_id`: Unique predator observation ID.
@@ -35,7 +35,7 @@ Since the 1950s, mechanization and increased demand have drastically increased m
   - `time`: Time first recorded (ms).
   - `remarks`: Additional notes.
 
-### Sites (`sites.csv`)
+### Sites (`data/sites.csv`)
 - **Description**: Sampling site information.
 - **Columns**:
   - `date`: Sampling date.
@@ -44,14 +44,14 @@ Since the 1950s, mechanization and increased demand have drastically increased m
   - `protection`: Protection status (MPA or not).
   - `time_in`: Dive start time.
   - `time_out`: Dive end time.
-  - `depth-avg`: Mean depth (m).
-  - `depth-max`: Max depth (m).
+  - `depth_avg`: Mean depth (m).
+  - `depth_max`: Max depth (m).
   - `visibility`: Visibility (m).
   - `lat`, `lon`: Latitude and longitude.
   - `crew`: Boat crew names.
   - `remarks`: Additional notes.
 
-### Plots (`plots.csv`)
+### Plots (`data/plots.csv`)
 - **Description**: Plot-level information.
 - **Columns**:
   - `index`: Unique plot ID.
@@ -60,16 +60,16 @@ Since the 1950s, mechanization and increased demand have drastically increased m
   - `n_videos`: Number of videos.
   - `path`: Relative path to plot folder.
 
-### Samples (`samples.csv`)
+### Samples (`data/samples.csv`)
 - **Description**: Subsamples within each plot (2-minute intervals).
 - **Columns**:
-  - `plot_id`: Unique plot ID.
-  - `sample_id`: Unique subsample ID.
+  - `plot`: Unique plot ID.
+  - `sample`: Unique subsample ID.
   - `start_time`: Subsample start time (s).
   - `video`: Video file name.
   - `status`: Completion status.
 
-### Benthic Cover (`benthic-cover.csv`)
+### Benthic Cover (`data/benthic-cover.csv`)
 - **Description**: Benthic cover analysis of plots.
 - **Columns**:
   - `plot_id`: Unique plot ID.
@@ -77,56 +77,56 @@ Since the 1950s, mechanization and increased demand have drastically increased m
   - `category`: Cover class category.
   - `subcategory`: Cover class subcategory.
 
-### Rugosity (`rugosit.csv`)
+### Rugosity (`data/rugosity.csv`)
 - **Description**: Chain transect data from each plot.
 - **Columns**:
-  - `Deployment-id`: Unique deployment ID.
+  - `deployment_id`: Unique deployment ID.
   - `treatment`: Plot treatment.
   - `sample`: Sample number.
-  - `Measured-length-cm`: Chain length on benthos (cm).
+  - `measured_length_cm`: Chain length on benthos (cm).
 
-## Scripts
+### Traits (`data/traits.csv`)
+- **Description**: Species trait data including feeding guilds.
+- **Columns**: Family, genus, species, feeding guild, and other traits.
 
-### `cleaning.py`
-- **Description**: Processes raw data files into cleaned datasets for analysis.
-
-### `summaries.py`
-- **Description**: Summarizes the cleaned data for analysis.
-
-### `generative_model.py`
-- **Description**: Generate data based on the processes described in the DAG to test the statistical model.
-
-### `params.py`
-- **Description**: Parameters for the generative model.
-
-### `run.py`
-- **Description**: Python script to run the stan models, make figures and summary tables.
-
-### `validate.py`
-- **Description**: Validation of the statistical model.
-
-### `model.stan`
-- **Description**: Bayesian multilevel heirarchial model.
-
-### `functions/`
-- **Description**: Contains utility functions used in the analysis scripts.
+### Behaviours (`data/behaviours.csv`)
+- **Description**: List of observed behaviours and their types (State/Event).
 
 ## Usage
 
-1. Clone the repository:  
-   ```bash
-   git clone https://github.com/cheesesnakes/antipredator-plasiticity.git
-   ```
-2. Install dependencies using uv (install uv if not already installed):  
-
-   ```bash
-   uv sync
-   ```
-3. Run scripts for data processing, analysis, and visualization.
+### Python
+- Install dependencies with [uv](https://github.com/astral-sh/uv):
+  ```bash
+  uv sync
+  ```
+- Clean and standardize data:
+  ```bash
+  uv run cleaning.py
+  ```
+- Generate dashboard and data summaries:
   ```bash
   uv run summaries.py
-  uv run statistical_model.py
   ```
+- Run statistical models and generate figures/tables:
+  ```bash
+  uv run run.py
+  ```
+
+### R
+- Use scripts in the `functions/` and `models/` folders for analysis:
+  - `model.R`: Defines and runs the GLM.
+  - `counterfactuals.R`: Runs counterfactual simulations from the GLM posterior.
+  - `summary.R`: Creates summary tables for the GLM.
+  - Other scripts generate tables and summaries for bite rates and time budgets.
+
+- The R environment is managed with `renv`. To restore:
+  ```R
+  renv::restore()
+  ```
+
+### Notes
+- Helper functions for table creation and model summaries are in the `functions/` folder.
+- Analysis for bite rates and time budgets is outlined in the `models/` folder.
 
 ## License
 

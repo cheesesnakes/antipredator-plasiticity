@@ -10,20 +10,20 @@ moments_rugosity <- c(mean(predictors$rugosity_mean), sd(predictors$rugosity_mea
 moments_biomass <- c(mean(predictors$biomass), sd(predictors$biomass))
 
 data <- responses %>%
-  left_join(predictors, by = c("plot_id" = "plot_id")) %>%
-  select(-c(sponge)) %>%
-  filter(guild != "Piscivore", guild != "Unknown")%>%
-  filter(observed_duration > 45) %>%
-  mutate(
-    deployment_id = str_split(plot_id, "_", simplify = TRUE)[, 1],
-    rugosity_mean = (rugosity_mean - moments_rugosity[1]) / moments_rugosity[2],
-    biomass = (biomass - moments_biomass[1]) / moments_biomass[2],
-    treatment = factor(treatment, levels = c("positive-control", "negative-control", "grouper", "barracuda")),
-    protection = factor(protection, levels = c("Unprotected", "Protected")),
-  ) %>%
-  filter(!is.na(treatment), guild != "Unknown", guild != "") %>%
-  distinct()
-  
+    left_join(predictors, by = c("plot_id" = "plot_id")) %>%
+    select(-c(sponge)) %>%
+    filter(guild != "Piscivore", guild != "Unknown") %>%
+    filter(observed_duration > 45) %>%
+    mutate(
+        deployment_id = str_split(plot_id, "_", simplify = TRUE)[, 1],
+        rugosity_mean = (rugosity_mean - moments_rugosity[1]) / moments_rugosity[2],
+        biomass = (biomass - moments_biomass[1]) / moments_biomass[2],
+        treatment = factor(treatment, levels = c("positive-control", "negative-control", "grouper", "barracuda")),
+        protection = factor(protection, levels = c("Unprotected", "Protected")),
+    ) %>%
+    filter(!is.na(treatment), guild != "Unknown", guild != "") %>%
+    distinct()
+
 # Set default ggplot theme
 theme_set(
     theme_bw() +
@@ -62,7 +62,6 @@ for (b in behaviours) {
 
 
     counterfactual_treatment <- rbind(counterfactual_treatment, posterior_treatment)
-
 }
 
 # Calculate and summarise effect
@@ -70,9 +69,9 @@ for (b in behaviours) {
 effect <- counterfactual_treatment %>%
     pivot_wider(names_from = treatment, values_from = prop, id_cols = c(".draw", "ind_id", "plot_id", "deployment_id", "protection", "size_class", "guild", "behaviour", "rugosity_mean", "biomass")) %>%
     mutate(
-        effect_grouper = log2(grouper/(1-grouper)) - log2(`positive-control`/(1-`positive-control`)),
-        effect_barracuda = log2(barracuda/(1-barracuda)) - log2(`positive-control`/(1-`positive-control`)),
-        effect_control = log2(`positive-control`/(1-`positive-control`)) - log2(`negative-control`/(1-`negative-control`))
+        effect_grouper = log2(grouper / (1 - grouper)) - log2(`positive-control` / (1 - `positive-control`)),
+        effect_barracuda = log2(barracuda / (1 - barracuda)) - log2(`positive-control` / (1 - `positive-control`)),
+        effect_control = log2(`positive-control` / (1 - `positive-control`)) - log2(`negative-control` / (1 - `negative-control`))
     ) %>%
     select(.draw, plot_id, deployment_id, protection, size_class, guild, behaviour, effect_grouper, effect_barracuda, effect_control) %>%
     pivot_longer(cols = starts_with("effect"), names_to = "treatment", values_to = "effect") %>%
@@ -102,8 +101,8 @@ effect %>%
     geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
     geom_pointinterval(aes(ymin = .lower, ymax = .upper), position = position_dodge(width = 0.5)) +
     labs(x = "Behaviour", y = "Log odds ratio", col = "", shape = "") +
-    facet_wrap(~guild)+
-    theme(text = element_text(size = 16)) 
+    facet_wrap(~guild) +
+    theme(text = element_text(size = 16))
 
 ggsave(here("figures", "behaviour-time", "control_plot.png"), plot = last_plot(), width = 10, height = 6)
 
@@ -173,23 +172,74 @@ effect %>%
     mutate(behaviour = factor(behaviour, levels = c("Foraging", "Vigilance", "Movement"))) %>%
     ggplot(aes(x = behaviour, y = effect, col = protection, shape = protection)) +
     geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
-    geom_pointinterval(aes(ymin = .lower, ymax = .upper), position = position_dodge(width = 0.5),
-                       interval_size_domain = c(1, 6),
-                       interval_size_range = c(1, 3)) +
+    geom_pointinterval(aes(ymin = .lower, ymax = .upper),
+        position = position_dodge(width = 0.5),
+        interval_size_domain = c(1, 6),
+        interval_size_range = c(1, 3)
+    ) +
     labs(x = "Behaviour", y = "Log odds ratio", col = "", shape = "") +
     scale_color_brewer(palette = "Set1") +
-    facet_grid(guild~treatment)+
-    theme(legend.position = "top", 
-    text = element_text(size = 20),
-    # increase text size
-    axis.title.x = element_text(size = 18),
-    axis.title.y = element_text(size = 18),
-    axis.text.x = element_text(size = 16),    
-    axis.text.y = element_text(size = 16),
-    strip.text = element_text(size = 18),
-    legend.text = element_text(size = 16))
+    facet_grid(guild ~ treatment) +
+    theme(
+        legend.position = "top",
+        text = element_text(size = 20),
+        # increase text size
+        axis.title.x = element_text(size = 18),
+        axis.title.y = element_text(size = 18),
+        axis.text.x = element_text(size = 16),
+        axis.text.y = element_text(size = 16),
+        strip.text = element_text(size = 18),
+        legend.text = element_text(size = 16)
+    )
 
 ggsave(here("figures", "behaviour-time", "effect_plot.png"), plot = last_plot(), width = 10, height = 10, dpi = 300)
+
+# For poster
+
+# Counterfactual effect of treatment on number individuals in plot
+
+effect %>%
+    filter(treatment != "control") %>%
+    group_by(treatment, behaviour, guild, protection) %>%
+    mutate(
+        protection = case_when(
+            protection == "Protected" ~ "Inside PA",
+            protection == "Unprotected" ~ "Outside PA"
+        ),
+        treatment = case_when(
+            treatment == "grouper" ~ "Grouper",
+            treatment == "barracuda" ~ "Barracuda"
+        )
+    ) %>%
+    filter(guild %in% c("Herbivore", "Invertivore")) %>%
+    median_qi(effect, .width = c(0.5, 0.9)) %>%
+    # set x order to formation, vigilance, movement
+    mutate(behaviour = factor(behaviour, levels = c("Foraging", "Vigilance", "Movement"))) %>%
+    ggplot(aes(x = behaviour, y = effect, col = protection, shape = protection)) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
+    geom_pointinterval(aes(ymin = .lower, ymax = .upper),
+        position = position_dodge(width = 0.5),
+        interval_size_domain = c(1, 6),
+        interval_size_range = c(1, 3)
+    ) +
+    labs(x = "Behaviour", y = "Log odds ratio", col = "", shape = "") +
+    scale_color_manual(values = c("Inside PA" = "#36EBE5", "Outside PA" = "#EB7636")) +
+    facet_grid(guild ~ treatment) +
+    theme_void() +
+    theme(
+        legend.position = "top",
+        text = element_text(size = 20, color = "#52aba8"),
+        # increase text size
+        axis.title.x = element_text(size = 18),
+        axis.title.y = element_text(size = 18),
+        axis.text.x = element_text(size = 16),
+        axis.text.y = element_text(size = 16),
+        strip.text = element_text(size = 18),
+        legend.text = element_text(size = 16)
+    ) +
+    theme(plot.margin = margin(0.2, 0.2, 0.2, 0.2, unit = "cm"))
+
+ggsave(here("figures", "behaviour-time", "effect_plot_poster.png"), plot = last_plot(), width = 10, height = 10, dpi = 300, bg = "transparent")
 
 # Summary table
 
